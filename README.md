@@ -18,6 +18,22 @@ python -m uvicorn tula.web.app:app --host 127.0.0.1 --port 8000 --no-access-log
 
 Bootstrap is a first-install step only: enter a password of at least 12 characters at the hidden prompts. Existing installations should use their provisioned account. Open [the local console](http://127.0.0.1:8000) and sign in. Real RapidOCR is the default; fixture text is explicitly selected only in testing/Bench. Recognition failures produce warnings and inconclusive results.
 
+**Every page requires a signed-in account.** A checkout with no accounts stops at `/login`, which is the intended behaviour, not a fault.
+
+### Local demonstration
+
+To get a populated console instead of an empty one, run the seed script rather than bootstrapping by hand:
+
+```powershell
+python -m pip install -e ".[dev]"
+python scripts/seed_demo.py
+python -m uvicorn tula.web.app:app --host 127.0.0.1 --port 8000 --no-access-log
+```
+
+It provisions `demo.admin`, `demo.inspector` and `demo.supervisor` (password `TulaDemo2026!judge`) and builds twelve inspections that walk the real workflow — package facts confirmed, findings decided, submitted, and approved by a supervisor who did not contribute to them. That last step is what the dashboard's approved-compliance rate counts, so without it every headline figure reads zero.
+
+These accounts exist for a loopback walkthrough. **Delete them or change their passwords before exposing the application to anything but localhost**, and re-run with `--reset` to discard seeded records.
+
 Tula emits privacy-bounded JSON operational events for HTTP requests, inspection stages and report generation. Each response carries `X-Request-ID`; background inspection events retain the originating upload request ID. Use it to correlate a user's error with service logs. Raw URLs, query strings, OCR text, filenames, evidence paths, cookies and passwords are excluded. The application suppresses Uvicorn's duplicate raw access line; keep `--no-access-log` explicit and apply the same query-string policy to any reverse proxy.
 
 `TULA_DATA_DIR` selects a separate runtime directory for the web app and default bootstrap database. Source checkouts default to the repository; installed wheels default to `~/.tula`. Set this variable consistently before provisioning and starting the server. Bootstrap also accepts an explicit `--database` path. Keep the database, originals and working images together. See [authentication and deployment](docs/SECURITY.md) for roles, password management and HTTPS requirements outside loopback.

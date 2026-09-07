@@ -167,7 +167,7 @@ CASES = [
     {"key": "tea-clean", "captured": "2026-08-04", "packing": "2026-05-01",
          "qty": "250 g", "mrp": "Rs. 145.00 inclusive of all taxes",
          "unit_price": "Rs. 0.58 per g", "brand": "Nilgiri Estate", "generic": "Tea",
-         "gtin": "8901234567890", "hindi": True, "qty_box_px": 110,
+         "gtin": "8901112223337", "hindi": True, "qty_box_px": 110,
          "mfr": "Nilgiri Tea Estates Ltd", "address": "Survey 88, Coonoor Road, Ooty 643001",
          "region": "Coimbatore", "geo": (11.0168, 76.9558), "settle": "approve",
          "context": {"category": "food", "shape": "rectangular"}},
@@ -187,7 +187,12 @@ CASES = [
          "region": "Jaipur", "geo": (26.9124, 75.7873), "settle": "approve",
          "context": {"category": "cosmetic", "shape": "other"}},
 
-    # --- English only, non-standard unit, no tax clause --------------------
+    # --- English only, non-standard unit, no tax clause, and a GS1 prefix
+    # (690, allocated in China) that contradicts the printed "Made in India".
+    # The check digit is valid: the forensic finding is about the conflict
+    # between two printed claims, which is corroboration and not proof of
+    # origin -- prefixes record who allocated the number, not where a
+    # product was made.
     {"key": "oil-adversarial", "captured": "2026-08-14", "packing": "2026-06-01",
          "qty": "500 ML", "mrp": "Rs. 168.00", "unit_price": "Rs. 30.00 per 100 ml",
          "brand": "Golden Drop", "generic": "Mustard oil", "gtin": "6901234567892",
@@ -199,14 +204,14 @@ CASES = [
     {"key": "biscuit-delhi", "captured": "2026-09-01", "packing": "2026-07-15",
          "qty": "200 g", "mrp": "Rs. 45.00 inclusive of all taxes",
          "unit_price": "Rs. 0.23 per g", "brand": "Suraj Gold", "generic": "Biscuits",
-         "gtin": "8904321567890", "hindi": True, "qty_box_px": 96,
+         "gtin": "8904321567896", "hindi": True, "qty_box_px": 96,
          "mfr": "Suraj Foods Ltd", "address": "Sector 63, Noida 201301",
          "region": "New Delhi", "geo": (28.6139, 77.2090), "settle": "approve",
          "context": {"category": "food", "shape": "rectangular"}},
     {"key": "atta-bengaluru", "captured": "2026-09-03", "packing": "2026-08-02",
          "qty": "5 kg", "mrp": "Rs. 285.00 inclusive of all taxes",
          "unit_price": "Rs. 57.00 per kg", "brand": "Annapurna Mills", "generic": "Wheat flour",
-         "gtin": "8905671234567", "hindi": True, "qty_box_px": 120,
+         "gtin": "8905671234568", "hindi": True, "qty_box_px": 120,
          "mfr": "Annapurna Mills Pvt Ltd", "address": "Peenya Industrial Area, Bengaluru 560058",
          "width_mm": 220, "height_mm": 340,
          "region": "Bengaluru", "geo": (12.9716, 77.5946), "settle": "approve",

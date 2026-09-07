@@ -2,13 +2,13 @@
 
 Updated 7 September 2026. This guide describes the inspection workspace, its controls, verified source code and known unfinished work. Start with the guided tour below. Sections 2–7 cover everyday use; sections 8–15 explain rules, reports, administration and coverage. Section 17 gives the next improvement priorities.
 
-**Open the current demonstration: [Inspect](http://127.0.0.1:8766/).** The older demonstration used port 8765 and a different database. Use 8766 for this walkthrough; data from those two runtimes is not interchangeable.
+**Open the demonstration: [Inspect](http://127.0.0.1:8000/).** Start it from the repository with `python scripts/seed_demo.py` followed by `python -m uvicorn tula.web.app:app --port 8000`, and sign in as `demo.inspector` or `demo.supervisor`. Every record named in this guide is produced by that seed script through the real pipeline, so the walkthrough regenerates on any machine. Record identifiers differ on each run: find records by brand in Repository rather than by identifier.
 
 These loopback links address the computer running Tula. On a phone, `127.0.0.1` addresses the phone itself. For another device, use an administrator-configured HTTPS deployment address; plain LAN HTTP is refused by the application's transport protection.
 
-The 8766 demonstration was restarted and checked against `2026.09.07-legal-review-1`. Saved inspections made with the older pack still show that older version, as intended.
+The seeded demonstration runs on `2026.09.07-legal-review-1`. Inspections saved under an earlier pack keep the version they were judged under, as intended: a record is evidence of what the rules said on the day it was assessed.
 
-**Current walkthrough:** the 8766 demonstration includes targeted close-ups, parent-revision comparison, conflicting-reading safeguards, clearer unresolved finding headings, possible-overexposure guidance, a retained-area warning for tight crops, and optional consented device-coordinate capture feeding an accessible dashboard plot. The original ten real photos and four additional photos completed actual OCR evaluation, followed by a separate replay through the final extraction code. Section 15 separates these results from generated examples and independent validation still needed. Section 17 lists further improvements.
+**Current walkthrough:** the demonstration includes targeted close-ups, parent-revision comparison, conflicting-reading safeguards, clearer unresolved finding headings, possible-overexposure guidance, a retained-area warning for tight crops, and optional consented device-coordinate capture feeding an accessible dashboard plot. The original ten real photos and four additional photos completed actual OCR evaluation, followed by a separate replay through the final extraction code. Section 15 separates these results from generated examples and independent validation still needed. Section 17 lists further improvements.
 
 Tula helps an officer turn package photographs into extracted declarations, evidence-linked screening findings, a recorded review and downloadable reports. The rules remain a draft. A machine flag, an officer decision and supervisor approval are three different stages.
 
@@ -18,17 +18,18 @@ For your first walkthrough, follow **Inspect → Review inspection → Evidence 
 
 You can explore the saved examples without changing them:
 
-1. Open [Inspect](http://127.0.0.1:8766/). Find the image area, capture source, package context and Analyze button. This is where a new inspection starts.
-   To find an accepted upload later, open [Processing](http://127.0.0.1:8766/processing). Its default unfinished view can be empty while **All jobs** still shows completed examples.
-2. Open [the dotted-label review example](http://127.0.0.1:8766/inspections/1C45AC48B9). Read the summary cards, open an evidence image, and expand one finding. Compare **what OCR read**, **what the rule checked**, and **what the officer decided**. Its unresolved state is intentional.
-   Also open [the real Parle-G photograph](http://127.0.0.1:8766/inspections/78E3ED2198). This fresh actual-OCR record shows a front-only capture, extracted identity and a price candidate requiring review. Missing package sides and unconfirmed context keep it unresolved.
+1. Open [Inspect](http://127.0.0.1:8000/). Find the image area, capture source, package context and Analyze button. This is where a new inspection starts.
+   To find an accepted upload later, open [Processing](http://127.0.0.1:8000/processing). Its default unfinished view can be empty while **All jobs** still shows completed examples.
+2. Open [Repository](http://127.0.0.1:8000/repository) and open the **Sparkle Max** detergent record. Read the summary cards, open the evidence image, and expand one finding. Compare **what OCR read**, **what the rule checked**, and **what the officer decided**. Its two height violations are the metrology result: 1 kg of detergent on a 200 × 300 mm panel with numerals well under the prescribed minimum.
+   Then open the **Nilgiri Estate** tea record. Same pipeline, no violations: it is the control that shows the system is not simply a violation printer.
 3. Scroll to **Officer review & approval**. Locate the correction, finding-decision and rescan controls described in section 6. You do not need to save changes to understand them.
-   Open [the linked close-up example, 1A769C7032](http://127.0.0.1:8766/inspections/1A769C7032) and expand **Earlier officer corrections to verify again**. It retains the original revision and rule version while starting its own review. Its price remains uncertain; the crop is not proof that an unreadable value has been resolved.
-4. Open [the approved QA Sachet example](http://127.0.0.1:8766/inspections/133BC2DDBE). It is Approved revision 2 with an Exempt screened result. Read its submission and approval notes and revision history. Separate QA accounts exercised the role check; this was not a review by two human officers.
+   Open the **Neem Fresh** soap record to see three separate violations on one package: a retail price without the prescribed tax wording, and both height rules.
+4. Open the **Silk Shine** sachet record. Its 6 ml net quantity puts it under the 10 g/ml threshold, so it is screened **Exempt** and is excluded from the compliance rate rather than counted as a pass.
+   Open the **Awadh Pure** ghee record for the opposite state: it is still **Draft**, with nothing decided, which is what an inspection looks like before an officer touches it.
 5. Use **Report (PDF)**, **Editable report**, **Draft notice**, or **JSON record** at the top of a record. The approved exempt example has no officer-verified violation for a notice to allege.
-6. Open [Repository](http://127.0.0.1:8766/repository). Search `133BC2DDBE`, then clear the search and try Category → Cosmetic. Expand the additional filters to distinguish **Finding outcome** from the overall **Machine outcome**.
-7. Open [Dashboard](http://127.0.0.1:8766/dashboard). Use the operational dataset. An approved exempt record does not enter the compliant/non-compliant rate; an unavailable rate is expected when that denominator is empty.
-8. Open [Rules](http://127.0.0.1:8766/rules), then [Bench](http://127.0.0.1:8766/bench). Rules explains the draft checks; Bench creates controlled examples. Open **Scenarios** when you want to run and save the 20 preset tests.
+6. Open [Repository](http://127.0.0.1:8000/repository). Search `Bikaner`, which returns the three-year shrinkflation series, then clear the search and try Category → Cosmetic. Expand the additional filters to distinguish **Finding outcome** from the overall **Machine outcome**.
+7. Open [Dashboard](http://127.0.0.1:8000/dashboard). Use the operational dataset. An approved exempt record does not enter the compliant/non-compliant rate, so the rate is computed from the approved compliant and non-compliant records only; it reads as unavailable when that denominator is empty.
+8. Open [Rules](http://127.0.0.1:8000/rules), then [Bench](http://127.0.0.1:8000/bench). Rules explains the draft checks; Bench creates controlled examples. Open **Scenarios** when you want to run and save the 20 preset tests.
 
 For your own first inspection, use the step-by-step sequence in section 3. Do not use QA records as official case evidence.
 
@@ -84,13 +85,13 @@ The main navigation has seven pages:
 
 | Click | What you do |
 |---|---|
-| [Inspect](http://127.0.0.1:8766/) | Start an inspection, upload/capture package images and begin analysis. |
-| [Processing](http://127.0.0.1:8766/processing) | Find accepted uploads, reopen progress, retry failed jobs and open completed inspections. |
-| [Bench](http://127.0.0.1:8766/bench) | Generate a controlled test label and vary one property. |
-| [Scenarios](http://127.0.0.1:8766/bench/scenarios) | Run the predefined acceptance examples. Opening this page starts test runs. |
-| [Repository](http://127.0.0.1:8766/repository) | Search saved records, filter results and reopen inspections. |
-| [Dashboard](http://127.0.0.1:8766/dashboard) | View stored inspection activity and review outcomes. |
-| [Rules](http://127.0.0.1:8766/rules) | Read the active draft rule definitions and their evidence requirements. |
+| [Inspect](http://127.0.0.1:8000/) | Start an inspection, upload/capture package images and begin analysis. |
+| [Processing](http://127.0.0.1:8000/processing) | Find accepted uploads, reopen progress, retry failed jobs and open completed inspections. |
+| [Bench](http://127.0.0.1:8000/bench) | Generate a controlled test label and vary one property. |
+| [Scenarios](http://127.0.0.1:8000/bench/scenarios) | Run the predefined acceptance examples. Opening this page starts test runs. |
+| [Repository](http://127.0.0.1:8000/repository) | Search saved records, filter results and reopen inspections. |
+| [Dashboard](http://127.0.0.1:8000/dashboard) | View stored inspection activity and review outcomes. |
+| [Rules](http://127.0.0.1:8000/rules) | Read the active draft rule definitions and their evidence requirements. |
 
 An individual inspection opens from its product/reference link in Repository or Dashboard, or from **Review inspection →** after processing.
 
@@ -131,13 +132,15 @@ Follow this sequence to understand the complete workflow:
 
 Wait for **Checking image quality…** to finish on each preview before submitting. Read the recapture guidance and expand **Measured image indicators** if useful. Quality warnings guide your judgment; they are not OCR accuracy scores or automatic proof that a declaration is missing.
 
-For a guided example, open [inspection 1C45AC48B9](http://127.0.0.1:8766/inspections/1C45AC48B9). It was created through the browser using a generated dotted-label image and actual OCR. It contains a rescan request, a net-quantity correction and a recorded finding decision. It deliberately remains **Needs review** because other readings are unresolved. Its detected title “MRF” is an OCR/extraction error, not a trusted brand identity.
+For a guided example, open Repository and choose the **Sparkle Max** detergent record. It carries two measured height violations, a confirmed package category and a full decision history, so every stage of the record page has something in it to read.
 
-For the approval and export stages, open [QA Sachet, inspection 133BC2DDBE](http://127.0.0.1:8766/inspections/133BC2DDBE). A generated cosmetic proof was uploaded through the browser and read by actual RapidOCR. It has confirmed package context, zero unresolved findings and workflow state **Approved**, revision **2**. An inspector QA account submitted it and a separate supervisor QA account approved it through the browser. One QA agent operated both accounts; this verifies account separation, not independent review by two human officers. The approval note records that limitation. Its screened result remains **Exempt**, so it does not add an approved-compliant record to the dashboard. These saved examples demonstrate different stages; neither is an official inspection.
+For the approval and export stages, open the **Silk Shine** sachet record. It has confirmed package context, no unresolved findings and workflow state **Approved**. The seed's inspector account submitted it and a separate supervisor account approved it, which exercises the separation-of-duties rule; it is not review by two human officers.
 
-The latest [real-photo example, 78E3ED2198](http://127.0.0.1:8766/inspections/78E3ED2198), used a retained Parle-G photograph. Browser QA saved its original and crop/rotation in a capture draft, resumed it in a new tab, restored the full image and submitted it to actual OCR. The draft was then deleted; the saved inspection and its matching original hash remained intact. It is a deliberately partial QA capture, still **Needs review**, and adds no independently scored OCR accuracy claim.
+For the opposite end of the workflow, open the **Awadh Pure** ghee record. It is **Draft** with nothing decided — what an inspection looks like the moment analysis finishes and before an officer has touched it.
 
-The [linked close-up example, 1A769C7032](http://127.0.0.1:8766/inspections/1A769C7032), reuses the generated dotted parent image plus a cropped re-upload. It exercised the real browser and OCR workflow, saved-draft resume, original-revision integrity, combined evidence and exports. It is Draft revision 0 with twelve unresolved findings and three machine passes. The earlier officer correction is visible for comparison, not transferred. This is a workflow demonstration, not a new physical-package photograph.
+For a genuinely unresolved case, open the **Deccan Spice** record. It is **Submitted** and waiting on a supervisor, which is where a record sits when the inspector has finished but approval has not happened.
+
+These records are regenerated by `python scripts/seed_demo.py` through the real extraction, rules and review code. If the pipeline changes, they change with it; their identifiers change on every run, which is why this guide names them by brand.
 
 ## 4. Every capture control
 
@@ -672,7 +675,7 @@ The latest source additionally checks active saved-draft original files against 
 
 Technical clients have authenticated endpoints for queued inspection creation, job status/retry, saved review/revisions, analytics, rules and GTIN history. Sessions and mutation protection are required. These are not the entire API surface proposed in the artifact. The authenticated **/docs** page documents the current API without requiring an external documentation CDN.
 
-Open [API reference](http://127.0.0.1:8766/docs) directly; it is not in the main navigation. Use **Find an endpoint** and expand the method/path you need. **Download the complete OpenAPI schema** links to `/openapi.json`; **Inspect your session and CSRF token** links to `/v1/session`. This is a searchable reference, without an interactive request console. `/redoc` redirects here.
+Open [API reference](http://127.0.0.1:8000/docs) directly; it is not in the main navigation. Use **Find an endpoint** and expand the method/path you need. **Download the complete OpenAPI schema** links to `/openapi.json`; **Inspect your session and CSRF token** links to `/v1/session`. This is a searchable reference, without an interactive request console. `/redoc` redirects here.
 
 For an API client, retain the same authenticated session cookies. Read `/v1/session` and send its CSRF token as `X-CSRF-Token` on JSON or multipart mutations. URL-encoded forms can provide `csrf_token`. A copied mutation request without the session or token is rejected; do not publish either credential in logs or examples.
 
@@ -694,7 +697,7 @@ For an API client, retain the same authenticated session cookies. Read `/v1/sess
 | `POST /admin/rules/import`; `POST /admin/rules/activate` | Administrator draft import and version selection. |
 | `GET /healthz` | Public basic server/rule-version status. |
 
-Account-management pages have their own **Dashboard**, **New inspection**, **History**, **Users**, and **Audit log** links. Return to a main page or use [Rule versions](http://127.0.0.1:8766/admin/rules) to reach rule administration.
+Account-management pages have their own **Dashboard**, **New inspection**, **History**, **Users**, and **Audit log** links. Return to a main page or use [Rule versions](http://127.0.0.1:8000/admin/rules) to reach rule administration.
 
 ## 14. Coverage against the linked requirements
 
@@ -839,7 +842,7 @@ The first installed acceptance attempt exposed a test-harness restart flaw: it r
 
 The first full rescan regression run had one outdated assertion requiring an empty normalization dictionary. Extraction correctly retained diagnostics without borrowing the date from another image. The test now explicitly checks absent normalized date components and source-frame isolation; the complete rerun passed. Both outputs remain available, and no production code changed for this test correction.
 
-The QA runtime at [Inspect](http://127.0.0.1:8766/) was refreshed after the geography drill-down source freeze. Its four retained upload jobs were complete, with none queued or running before restart. Migration preserved the nullable coordinate columns and added `idx_inspection_source_geo_recent`; its 24 older inspections remain unlocated. Original analyses and rule versions were preserved. Login and updated CSS returned HTTP 200. The walkthrough used QA Supervisor; an idle session may require signing in again. The separate older runtime on 8765 was not changed.
+The QA runtime at [Inspect](http://127.0.0.1:8000/) was refreshed after the geography drill-down source freeze. Its four retained upload jobs were complete, with none queued or running before restart. Migration preserved the nullable coordinate columns and added `idx_inspection_source_geo_recent`; its 24 older inspections remain unlocated. Original analyses and rule versions were preserved. Login and updated CSS returned HTTP 200. The walkthrough used QA Supervisor; an idle session may require signing in again. The separate older runtime on 8765 was not changed.
 
 ### Actual photographs: the ten-photo development set
 
