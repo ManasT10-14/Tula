@@ -180,7 +180,7 @@ def png_bytes():
     return stream.getvalue()
 
 
-@pytest.mark.parametrize("path", ["/", "/healthz", "/bench", "/bench/scenarios", "/rules", "/repository", "/dashboard", "/v1/rules/current", "/static/htmx.min.js"])
+@pytest.mark.parametrize("path", ["/", "/healthz", "/lab", "/bench", "/bench/scenarios", "/rules", "/repository", "/dashboard", "/v1/rules/current", "/static/htmx.min.js"])
 def test_pages_and_local_assets(client, path):
     assert client.get(path).status_code == 200
 

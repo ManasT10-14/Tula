@@ -206,21 +206,43 @@ class SecurityMiddleware:
 
 
 def _page(title: str, body: str, user: User | None = None) -> HTMLResponse:
-    navigation = '<a href="/dashboard">Dashboard</a><a href="/">New inspection</a><a href="/repository">History</a>' if user else ""
+    """Account pages in the console's own design.
+
+    These used to carry a separate palette and typeface, so signing in or
+    opening Administration threw the officer into what looked like a different
+    product. They now load the console stylesheet and only add the few rules
+    this plain-HTML shell needs on top of it.
+    """
+    navigation = ('<a href="/dashboard">Dashboard</a><a href="/">New inspection</a>'
+                  '<a href="/repository">Inspection records</a>') if user else ""
     if user and user.role == "admin":
-        navigation += '<a href="/admin/users">Users</a><a href="/admin/audit">Audit log</a>'
+        navigation += '<a href="/admin/users">Accounts</a><a href="/admin/audit">Audit log</a>'
     return HTMLResponse('''<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>''' + escape(title) + ''' · Tula</title>
+<link rel="stylesheet" href="/static/console.css">
 <style>
-:root{font-family:Inter,system-ui,sans-serif;color:#18332e;background:#f4f6f5;font-size:16px}
-*{box-sizing:border-box}body{margin:0}header{background:#143d34;color:white;padding:1.2rem 4vw;display:flex;align-items:center;gap:2rem;flex-wrap:wrap}
-header strong{font-family:Georgia,serif;font-size:1.65rem}nav{display:flex;gap:1rem;flex-wrap:wrap}header a{color:#fff;text-decoration:none}a{color:#17634e}a:hover{text-decoration:underline}
-main{max-width:1180px;margin:2.5rem auto;padding:0 1.4rem}h1{font-family:Georgia,serif;font-size:2.1rem;margin:.2rem 0 1rem}h2{font-size:1.2rem}p{line-height:1.6}.muted{color:#536760}.eyebrow{text-transform:uppercase;letter-spacing:.12em;font-size:.75rem;color:#52685f}
-.card{background:white;border:1px solid #d6e0db;border-radius:8px;padding:1.5rem;margin:1.4rem 0}.narrow{max-width:500px;margin:3rem auto}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem}
-label{display:block;font-weight:600;margin:.8rem 0 .35rem}input,select,button{font:inherit;border:1px solid #a7bdb2;border-radius:4px;padding:.7rem .8rem}input:not([type=checkbox]),select{width:100%;background:white;color:#18332e}input:focus,select:focus,button:focus,a:focus{outline:3px solid #dda94d;outline-offset:3px}
-button{background:#18533f;border-color:#18533f;color:white;cursor:pointer;font-weight:600;margin-top:1rem}button:hover{background:#0c3b2c}.error{background:#fff1ec;color:#812e1c;border-left:4px solid #b84e2b;padding:.9rem;line-height:1.5}.success{background:#e6f4eb;color:#18533f;padding:.9rem}
-.table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.9rem}th,td{padding:.8rem;text-align:left;border-bottom:1px solid #d6e0db;vertical-align:top}th{color:#51665c;font-size:.76rem;letter-spacing:.05em;text-transform:uppercase}td input,td select{min-width:115px}td button{margin-top:0}small{display:block;color:#52665c;margin:.4rem 0}pre{white-space:pre-wrap;overflow-wrap:anywhere;max-width:450px;font-size:.78rem}summary{cursor:pointer}code{overflow-wrap:anywhere}footer{max-width:1180px;margin:2rem auto;padding:1rem 1.4rem;color:#536760;font-size:.8rem}
-</style></head><body><header><strong>Tula</strong><nav aria-label="Account navigation">''' + navigation + '''</nav></header><main>''' + body + '''</main><footer>Legal Metrology Inspection Platform · Evidence, review and accountable decisions</footer></body></html>''')
+header.auth{background:var(--rail);color:var(--rail-ink);padding:14px 30px;display:flex;align-items:center;
+  gap:26px;flex-wrap:wrap;box-shadow:inset 0 3px 0 var(--brass)}
+header.auth strong{font-family:var(--f-display);font-size:20px;letter-spacing:-.3px}
+header.auth nav{display:flex;gap:18px;flex-wrap:wrap;font-size:13px}
+header.auth a{color:var(--rail-ink);text-decoration:none}
+header.auth a:hover{text-decoration:underline}
+main{max-width:1180px;margin:0 auto;padding:30px 30px 60px}
+.narrow{max-width:460px;margin:8vh auto}
+.card{margin:18px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.error{background:var(--bad-soft);color:var(--bad);border-left:3px solid var(--bad);padding:12px 15px;
+  border-radius:0 var(--r) var(--r) 0;font-size:13px}
+.success{background:var(--ok-soft);color:var(--ok);padding:12px 15px;border-radius:var(--r);font-size:13px}
+.table-wrap{overflow-x:auto}
+td input,td select{min-width:115px}
+form button{margin-top:12px}
+td button,form.row button{margin-top:0}
+small{display:block;color:var(--muted);margin:5px 0;font-size:12px}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;max-width:450px}
+code{overflow-wrap:anywhere}
+footer{max-width:1180px;margin:0 auto;padding:18px 30px 40px;color:var(--muted);font-size:12px}
+</style></head><body><header class="auth"><strong>Tula</strong><nav aria-label="Account navigation">''' + navigation + '''</nav></header><main>''' + body + '''</main><footer>Legal Metrology Inspection Platform · Evidence, review and accountable decisions</footer></body></html>''')
 
 
 def _hidden(token: str) -> str:

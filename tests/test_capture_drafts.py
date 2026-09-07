@@ -293,4 +293,6 @@ def test_template_exposes_explicit_limits_resume_controls_and_named_dialogs():
     assert "My saved drafts" in markup.html and "Save capture draft" in markup.html
     for name in ("edit", "camera"):
         assert markup.find(id=name + "-dialog")["aria-labelledby"] == name + "-dialog-heading"
-    assert "<h2>Package images</h2>" in markup.html and "<h2>Inspection details</h2>" in markup.html
+    # The capture page is three numbered steps; the numbers match the step bar.
+    for step in ("1 · Package images", "2 · Inspection details", "3 · Confirm and analyze"):
+        assert "<h2>" + step + "</h2>" in markup.html

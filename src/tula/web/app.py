@@ -179,6 +179,10 @@ def repository(request: Request, q: str = "", verdict: str = "", page: int = 1):
     from urllib.parse import urlencode
     allowed = ("category", "review_status", "product_status", "source", "region", "operator", "manufacturer", "date_from", "date_to", "rule_id", "finding_outcome", "geo_lat", "geo_lon")
     filters = {key: request.query_params.get(key, "") for key in allowed}
+    # Casework never shows generated bench runs unless they are asked for. An
+    # officer searching inspection history should not have to filter test data
+    # out of their own records; "all" remains available for support queries.
+    filters["source"] = "" if filters["source"] == "all" else (filters["source"] or "inspection")
     try:
         result = repo.filter_search(q, page=page, overall=verdict, **filters)
     except ValueError as exc:
@@ -271,7 +275,17 @@ def product_history(gtin: str, source: str = "inspection"):
 
 # ---------------------------------------------------------------------------
 # bench -- the test instrument
+#
+# Kept behind /lab in the navigation. Demonstration instruments share the
+# engine with casework but never the dataset, and an officer should never meet
+# a generated label while working a real inspection.
 # ---------------------------------------------------------------------------
+
+
+@app.get("/lab", response_class=HTMLResponse)
+def lab(request: Request):
+    """Entry point for every test instrument, away from the casework pages."""
+    return templates.TemplateResponse(request, "lab.html", {})
 
 
 @app.get("/bench", response_class=HTMLResponse)

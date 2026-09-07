@@ -2,7 +2,7 @@
 
 Updated 7 September 2026. This guide describes the inspection workspace, its controls, verified source code and known unfinished work. Start with the guided tour below. Sections 2–7 cover everyday use; sections 8–15 explain rules, reports, administration and coverage. Section 17 gives the next improvement priorities.
 
-**Open the demonstration: [Inspect](http://127.0.0.1:8000/).** Start it from the repository with `python scripts/seed_demo.py` followed by `python -m uvicorn tula.web.app:app --port 8000`, and sign in as `demo.inspector` or `demo.supervisor`. Every record named in this guide is produced by that seed script through the real pipeline, so the walkthrough regenerates on any machine. Record identifiers differ on each run: find records by brand in Repository rather than by identifier.
+**Open the demonstration: [New inspection](http://127.0.0.1:8000/).** Start it from the repository with `python scripts/seed_demo.py` followed by `python -m uvicorn tula.web.app:app --port 8000`, and sign in as `demo.inspector` or `demo.supervisor`. Every record named in this guide is produced by that seed script through the real pipeline, so the walkthrough regenerates on any machine. Record identifiers differ on each run: find records by brand in Inspection records rather than by identifier.
 
 These loopback links address the computer running Tula. On a phone, `127.0.0.1` addresses the phone itself. For another device, use an administrator-configured HTTPS deployment address; plain LAN HTTP is refused by the application's transport protection.
 
@@ -12,24 +12,24 @@ The seeded demonstration runs on `2026.09.07-legal-review-1`. Inspections saved 
 
 Tula helps an officer turn package photographs into extracted declarations, evidence-linked screening findings, a recorded review and downloadable reports. The rules remain a draft. A machine flag, an officer decision and supervisor approval are three different stages.
 
-For your first walkthrough, follow **Inspect → Review inspection → Evidence and corrections → Finding decisions → Submit → Independent approval → Report → Repository → Dashboard**. Then explore Bench, Scenarios and Rules. The improvement plan at the end is for the next development pass.
+For your first walkthrough, follow **New inspection → Review inspection → Evidence and corrections → Finding decisions → Submit → Independent approval → Report → Inspection records → Dashboard**. Then explore the Test lab and the Rule pack. The improvement plan at the end is for the next development pass.
 
 ## A guided tour before you upload anything
 
 You can explore the saved examples without changing them:
 
-1. Open [Inspect](http://127.0.0.1:8000/). Find the image area, capture source, package context and Analyze button. This is where a new inspection starts.
-   To find an accepted upload later, open [Processing](http://127.0.0.1:8000/processing). Its default unfinished view can be empty while **All jobs** still shows completed examples.
-2. Open [Repository](http://127.0.0.1:8000/repository) and open the **Sparkle Max** detergent record. Read the summary cards, open the evidence image, and expand one finding. Compare **what OCR read**, **what the rule checked**, and **what the officer decided**. Its two height violations are the metrology result: 1 kg of detergent on a 200 × 300 mm panel with numerals well under the prescribed minimum.
+1. Open [New inspection](http://127.0.0.1:8000/). The page is three numbered steps: **1 · Package images**, **2 · Inspection details** and **3 · Confirm and analyze**. Everything optional — coordinates, allergens, package facts, panel size — is folded into **Optional details** so the required path stays short.
+   To find an accepted upload later, open [Processing](http://127.0.0.1:8000/processing). Its default unfinished view can be empty while **All jobs** still shows completed examples; the four totals at the top are links that filter the list.
+2. Open [Inspection records](http://127.0.0.1:8000/repository) and open the **Sparkle Max** detergent record. Read the summary cards, open the evidence image, and expand one finding. Compare **what OCR read**, **what the rule checked**, and **what the officer decided**. Its two height violations are the metrology result: 1 kg of detergent on a 200 × 300 mm panel with numerals well under the prescribed minimum.
    Then open the **Nilgiri Estate** tea record. Same pipeline, no violations: it is the control that shows the system is not simply a violation printer.
-3. Scroll to **Officer review & approval**. Locate the correction, finding-decision and rescan controls described in section 6. You do not need to save changes to understand them.
+3. The record is organised into five tabs — **Findings & review**, **Declarations**, **Evidence**, **Label intelligence** and **Record & audit**. Stay on the first one and scroll to **Officer review & approval**. Locate the correction, finding-decision and rescan controls described in section 6. You do not need to save changes to understand them.
    Open the **Neem Fresh** soap record to see three separate violations on one package: a retail price without the prescribed tax wording, and both height rules.
 4. Open the **Silk Shine** sachet record. Its 6 ml net quantity puts it under the 10 g/ml threshold, so it is screened **Exempt** and is excluded from the compliance rate rather than counted as a pass.
    Open the **Awadh Pure** ghee record for the opposite state: it is still **Draft**, with nothing decided, which is what an inspection looks like before an officer touches it.
 5. Use **Report (PDF)**, **Editable report**, **Draft notice**, or **JSON record** at the top of a record. The approved exempt example has no officer-verified violation for a notice to allege.
-6. Open [Repository](http://127.0.0.1:8000/repository). Search `Bikaner`, which returns the three-year shrinkflation series, then clear the search and try Category → Cosmetic. Expand the additional filters to distinguish **Finding outcome** from the overall **Machine outcome**.
-7. Open [Dashboard](http://127.0.0.1:8000/dashboard). Use the operational dataset. An approved exempt record does not enter the compliant/non-compliant rate, so the rate is computed from the approved compliant and non-compliant records only; it reads as unavailable when that denominator is empty.
-8. Open [Rules](http://127.0.0.1:8000/rules), then [Bench](http://127.0.0.1:8000/bench). Rules explains the draft checks; Bench creates controlled examples. Open **Scenarios** when you want to run and save the 20 preset tests.
+6. Open [Inspection records](http://127.0.0.1:8000/repository). Search `Bikaner`, which returns the three-year shrinkflation series, then clear the search and try Category → Cosmetic. Expand the additional filters to distinguish **Finding outcome** from the overall **Machine outcome**.
+7. Open [Dashboard](http://127.0.0.1:8000/dashboard). Select any of the four headline figures to open the records behind it. An approved exempt record does not enter the compliant/non-compliant rate, so the rate is computed from the approved compliant and non-compliant records only; it reads as unavailable when that denominator is empty.
+8. Open [Rule pack](http://127.0.0.1:8000/rules), then [Test lab](http://127.0.0.1:8000/lab). The rule pack explains the draft checks; the lab holds every demonstration instrument — the label generator and the 20-scenario acceptance matrix — deliberately kept out of the casework pages.
 
 For your own first inspection, use the step-by-step sequence in section 3. Do not use QA records as official case evidence.
 
@@ -56,9 +56,9 @@ For your own first inspection, use the step-by-step sequence in section 3. Do no
 7. [Product, dates, ingredients and allergens](#7-product-dates-ingredients-and-allergens)
 8. [Rules and physical measurements](#8-rules-and-physical-measurements)
 9. [Reports and retained evidence](#9-reports-and-retained-evidence)
-10. [Repository and product history](#10-repository-and-product-history)
+10. [Inspection records and product history](#10-inspection-records-and-product-history)
 11. [Dashboard](#11-dashboard)
-12. [Bench and all 20 scenarios](#12-bench-and-all-20-scenarios)
+12. [Test lab: bench and all 20 scenarios](#12-test-lab-bench-and-all-20-scenarios)
 13. [Administration and technical access](#13-administration-and-technical-access)
 14. [Coverage against the linked requirements](#14-coverage-against-the-linked-requirements)
 15. [Tests actually performed](#15-tests-actually-performed)
@@ -81,23 +81,28 @@ The reference's claimed accuracy, response times, full offline mobile support an
 
 ## 2. Navigation and accounts
 
-The main navigation has seven pages:
+A left sidebar carries every page, grouped by the kind of work it is. **+ New inspection** sits at the top on its own because starting an inspection is the one action an officer takes most often.
 
-| Click | What you do |
-|---|---|
-| [Inspect](http://127.0.0.1:8000/) | Start an inspection, upload/capture package images and begin analysis. |
-| [Processing](http://127.0.0.1:8000/processing) | Find accepted uploads, reopen progress, retry failed jobs and open completed inspections. |
-| [Bench](http://127.0.0.1:8000/bench) | Generate a controlled test label and vary one property. |
-| [Scenarios](http://127.0.0.1:8000/bench/scenarios) | Run the predefined acceptance examples. Opening this page starts test runs. |
-| [Repository](http://127.0.0.1:8000/repository) | Search saved records, filter results and reopen inspections. |
-| [Dashboard](http://127.0.0.1:8000/dashboard) | View stored inspection activity and review outcomes. |
-| [Rules](http://127.0.0.1:8000/rules) | Read the active draft rule definitions and their evidence requirements. |
+| Group | Click | What you do |
+|---|---|---|
+| — | [+ New inspection](http://127.0.0.1:8000/) | Start an inspection, upload/capture package images and begin analysis. |
+| Casework | [Processing](http://127.0.0.1:8000/processing) | Find accepted uploads, reopen progress, retry failed jobs and open completed inspections. |
+| Casework | [Inspection records](http://127.0.0.1:8000/repository) | Search saved records, filter results and reopen inspections. |
+| Casework | [Dashboard](http://127.0.0.1:8000/dashboard) | View stored inspection activity and review outcomes. |
+| Reference | [Rule pack](http://127.0.0.1:8000/rules) | Read the active draft rule definitions and their evidence requirements. |
+| Reference | [API reference](http://127.0.0.1:8000/docs) | Browse the authenticated endpoint list. |
+| Administration | [Accounts](http://127.0.0.1:8000/admin/users), [Rule versions](http://127.0.0.1:8000/admin/rules), [Audit log](http://127.0.0.1:8000/admin/audit) | Administrators only; hidden for other roles. |
+| Demonstration | [Test lab](http://127.0.0.1:8000/lab) | Every test instrument, marked **demo** and kept out of casework. |
 
-An individual inspection opens from its product/reference link in Repository or Dashboard, or from **Review inspection →** after processing.
+An individual inspection opens from its product/reference link in Inspection records or Dashboard, or from **Review inspection →** after processing.
 
-On a narrow phone screen, the top navigation scrolls horizontally; swipe it to reach every page. Wide evidence tables scroll within their own boxes. Keyboard users can Tab to a table or correction-image region and use arrow keys to scroll. Expand a section by selecting its heading/summary. **Skip to content** is the first keyboard shortcut link on each main page.
+**Nothing that tests the system appears on a casework page.** The label generator, the acceptance matrix, the bench analytics view and the bench record list all live under Test lab. Inspection records shows operational inspections only; a generated run reaches a listing only when you open the bench dataset from the lab, and it is labelled **Test bench** wherever it appears.
 
-Click your name in the upper-right corner to change your password: enter **Current password**, **New password**, then **Update password**. There is no separate general Settings/Profile page. **Sign out** ends your session. Administrators additionally see **Administration**, leading to account management, and **Rule versions**, leading to rule-pack administration.
+The one-line strip above each page — *AI-assisted inspection. Machine findings require officer verification* — is the standing caveat. It is deliberately compact rather than a banner on every page, because a warning that fills a quarter of the screen on every visit stops being read.
+
+Below the rail breakpoint (a phone or a narrow tablet), the sidebar becomes a compact row of chips at the top of the page, so the page content still starts near the top of the screen. Wide evidence tables scroll within their own boxes. Keyboard users can Tab to a table or correction-image region and use arrow keys to scroll; record tabs also respond to ← → Home End. Expand a section by selecting its heading/summary. **Skip to content** is the first keyboard shortcut link on each main page.
+
+Your name is at the bottom of the sidebar. Select it to change your password: enter **Current password**, **New password**, then **Update password**. There is no separate general Settings/Profile page. **Sign out** ends your session.
 
 | Account role | Current use |
 |---|---|
@@ -115,24 +120,24 @@ The walkthrough was checked using inspector, supervisor and administrator QA acc
 
 Follow this sequence to understand the complete workflow:
 
-1. Open **Inspect**.
+1. Open **+ New inspection**.
 2. Select clear photographs of **one physical package**. Include the main display face, back and every other printed panel.
 3. Review each preview's **Package panel** assignment. The first image defaults to front/PDP, the second to back; verify these defaults.
 4. Add a close-up of small or dotted MRP, manufacturing, expiry and batch markings.
 5. Rotate sideways images. Use **Crop / zoom** only when needed, retaining the whole declaration and enough surrounding context.
-6. Keep **Capture source → Field inspection** for an officer demonstration. Enter a location if useful.
-7. Expand **Confirm package context for applicable rules**. Select the category, bundle, origin and shape you can verify; check the confirmation box. Leave unknown facts unconfirmed. Optionally enter allergens to highlight and measured physical panel dimensions.
+6. In **2 · Inspection details**, keep **Capture source → Field inspection** for an officer demonstration. Enter a location if useful.
+7. Expand **Optional details**. Under **Package facts**, select the category, bundle, origin and shape you can verify and check the confirmation box; leave unknown facts unconfirmed. The same panel holds inspection coordinates, allergens to highlight and measured physical panel dimensions.
 8. Confirm **Every printed face of this package is included** only after checking actual coverage.
 9. Click **Analyze package →**. The processing card shows the actual stage and then **Review inspection →**.
 10. Open the record. Compare the extracted text with its source image before deciding any finding.
 11. Correct misread declarations, save reasoned finding decisions, or request a clearer image.
 12. When unresolved findings are cleared, enter a review note and **Submit for approval**.
 13. A different supervisor who did not create, correct or decide the record reviews it and approves.
-14. Download the report. Open Repository and Dashboard to see the saved record and its current review status.
+14. Download the report. Open Inspection records and Dashboard to see the saved record and its current review status.
 
 Wait for **Checking image quality…** to finish on each preview before submitting. Read the recapture guidance and expand **Measured image indicators** if useful. Quality warnings guide your judgment; they are not OCR accuracy scores or automatic proof that a declaration is missing.
 
-For a guided example, open Repository and choose the **Sparkle Max** detergent record. It carries two measured height violations, a confirmed package category and a full decision history, so every stage of the record page has something in it to read.
+For a guided example, open Inspection records and choose the **Sparkle Max** detergent record. It carries two measured height violations, a confirmed package category and a full decision history, so every stage of the record page has something in it to read.
 
 For the approval and export stages, open the **Silk Shine** sachet record. It has confirmed package context, no unresolved findings and workflow state **Approved**. The seed's inspector account submitted it and a separate supervisor account approved it, which exercises the separation-of-duties rule; it is not review by two human officers.
 
@@ -206,11 +211,11 @@ On **Processing**, the default **Unfinished and failed** view shows queued, proc
 
 Each row shows the submitting inspector, image count, capture source, location when recorded, submission time, state, attempt count and last processing stage. Choose **Open progress →** for live updates or to read a failure and use **Retry saved images**. A completed row offers **Review inspection →**. Inspectors see their own jobs; supervisors and administrators can see jobs across accounts. An unavailable or unauthorised saved-job link does not expose another inspector's upload.
 
-The Processing page tracks uploads. Find inspections awaiting officer decisions or supervisor approval through **Repository → Review status**. There is no automatic assignment or risk ranking of cases.
+The Processing page tracks uploads. Find inspections awaiting officer decisions or supervisor approval through **Inspection records → Review status**. There is no automatic assignment or risk ranking of cases.
 
-Pending image selections and crop edits are **not automatically saved**. Use **Save capture draft** to keep unfinished work. Once Analyze is accepted, the server retains the inspection evidence independently; completed records remain in Repository. Restore remembered processing work using the same account as well as the same browser and server address.
+Pending image selections and crop edits are **not automatically saved**. Use **Save capture draft** to keep unfinished work. Once Analyze is accepted, the server retains the inspection evidence independently; completed records remain in Inspection records. Restore remembered processing work using the same account as well as the same browser and server address.
 
-Queued work resumes when the server starts, without requiring you to open a page. An interrupted running attempt becomes an explicit retryable failure once its worker lease expires; the saved images and last processing stage remain available. In-progress work has a limited shutdown grace period. Do not upload a duplicate simply because the browser disconnected; check the remembered job or Repository first.
+Queued work resumes when the server starts, without requiring you to open a page. An interrupted running attempt becomes an explicit retryable failure once its worker lease expires; the saved images and last processing stage remain available. In-progress work has a limited shutdown grace period. Do not upload a duplicate simply because the browser disconnected; check the remembered job or Inspection records first.
 
 This is a local durable job workflow, not an offline mobile sync service. Leaving a browser tab does not make processing run on a phone.
 
@@ -225,13 +230,23 @@ This is a local durable job workflow, not an offline mobile sync service. Leavin
 
 Drafts are private to their owner, including against other supervisor/administrator accounts. Limits are **10 drafts, 100 MB of originals per draft and 300 MB per account**; the usual per-image and combined 12-image limits still apply. Drafts expire 30 days after the last successful save and are cleaned up on subsequent draft-list/save requests. A linked rescan draft also checks authorization and the retained parent evidence before resuming.
 
-A saved capture draft, a processing job and an inspection in workflow state **Draft** are different: the first is unfinished input, the second is an accepted analysis upload, and the third is a saved analysis awaiting review. Capture drafts do not appear in Repository, Processing or inspection dashboard totals. Saving is an explicit server operation requiring a connection; it is not offline phone synchronization.
+A saved capture draft, a processing job and an inspection in workflow state **Draft** are different: the first is unfinished input, the second is an accepted analysis upload, and the third is a saved analysis awaiting review. Capture drafts do not appear in Inspection records, Processing or inspection dashboard totals. Saving is an explicit server operation requiring a connection; it is not offline phone synchronization.
 
 Deleting or expiring a draft prevents access and removes its unreferenced original files. Audit events and the deleted/expired metadata row remain for lifecycle tracking. Inspection evidence is protected separately.
 
 If another tab saved a newer revision, the app refuses to overwrite it. Resume the latest saved version before saving again. A failed save keeps the images in the present tab; retry after resolving the displayed problem. If a saved original is missing or changed, resume is blocked. Delete only drafts you no longer need; deletion is not an inspection-deletion feature.
 
 ## 5. Read the inspection record
+
+The record opens on **Findings & review**. Five tabs divide a record that would otherwise be one very long page. A link to a specific section opens the tab holding it, and nothing is lost: printing the record, or opening it with JavaScript unavailable, renders all five panels in sequence.
+
+| Tab | What is in it |
+|---|---|
+| Findings & review | Every rule finding with its evidence, the shrinkflation watch, and the officer review, correction and approval controls. |
+| Declarations | What OCR read, which rules that makes applicable, and the measurement annexe with uncertainties. |
+| Evidence | Retained images, the capture-quality and OCR diagnostics for each one, linked close-up captures, and the evidence-integrity hashes. |
+| Label intelligence | Dates, batch markings, claims and ingredient/allergen screening. Informational; none of it decides a finding alone. |
+| Record & audit | Inspection particulars, review summary, adjudication trail, corrections, officer notes and this product's inspection history. |
 
 Start with the four summary cards:
 
@@ -505,13 +520,14 @@ The application preserves original uploads and working images with hashes, and c
 
 Draft reports can be downloaded before approval, with their review state visible. The wider reference requirement for a legally authorised, served notice remains unfinished.
 
-## 10. Repository and product history
+## 10. Inspection records and product history
 
-Open **Repository**. Type an inspection reference, product text, brand, manufacturer, GTIN or an explicit month and year such as “August 2026”. Click **Search**.
+Open **Inspection records**. Type an inspection reference, product text, brand, manufacturer, GTIN or an explicit month and year such as “August 2026”. Click **Search**.
+
+The page shows **operational inspections only**. Generated test-bench runs are reachable from the [Test lab](http://127.0.0.1:8000/lab) (or directly at `/repository?source=bench`), and the page then says so; `?source=all` remains available for support queries. Approved result, review status and category are the three filters most searches need, and the rest are folded into **More filters**, which opens automatically when one of them is set.
 
 | Filter | Use |
 |---|---|
-| Dataset | All records, Operational inspections or Test-bench runs. |
 | Approved result | Compliant, Non-compliant, Needs review, Exempt or Not applicable. |
 | Review status | Draft, In review, Submitted or Approved. |
 | Category | General packaged commodity, Food, Alcohol, Tobacco, Pan masala, Medical device, Cosmetic, Seed, legacy Personal care/Household/Industrial categories, and Unknown / not confirmed. Stored custom categories also remain searchable. |
@@ -537,13 +553,15 @@ Free-text citation search includes the full stored citation. “Rule 7” matche
 
 Search covers indexed product/inspection metadata and finding rule/citation/message/outcome text. It is not a full search across every OCR line, ingredient observation, review comment or exported report.
 
-Use an explicit month/year phrase by itself, such as `August 2026`; combine other criteria through the dedicated filters. There is no separate **Catalog** page: product access is through Repository and an inspection's Product history.
+Use an explicit month/year phrase by itself, such as `August 2026`; combine other criteria through the dedicated filters. There is no separate **Catalog** page: product access is through Inspection records and an inspection's Product history.
 
 There is no current bulk-delete, bulk-export or full manufacturer entity-resolution interface.
 
 ## 11. Dashboard
 
-Open **Dashboard**, choose **Operational inspections** or **Test-bench runs**, optionally set dates, then **Apply filters**.
+Open **Dashboard**. It reports operational inspections; the equivalent view over generated runs is opened from the [Test lab](http://127.0.0.1:8000/lab), and says plainly that it is showing test data. Set a range under **Date range** when you need one.
+
+Each of the four headline figures is a link into Inspection records filtered to exactly the records behind it, carrying the dataset and date range with it — a figure an officer cannot open is decoration.
 
 | Display | Meaning |
 |---|---|
@@ -560,7 +578,7 @@ Open **Dashboard**, choose **Operational inspections** or **Test-bench runs**, o
 | Inspector activity | Saved work grouped by inspector. |
 | Manufacturer activity | Stored inspections and potential findings by extracted manufacturer. |
 | Recorded locations | Grouping by the optional typed district/location. It remains separate from device coordinates. |
-| Recorded inspection coordinates | An offline SVG coordinate plot for consented saved coordinates, rounded to 0.001°. Point size shows inspection count; orange means at least one machine-potential finding and green means none. Select a point or the matching location in the accessible table to open those inspections in Repository with dataset/date/coordinate filters preserved. Coordinates outside the India plotting extent remain in the table. This is an operational plot, not an official boundary map or market-prevalence heat map. |
+| Recorded inspection coordinates | An offline SVG coordinate plot for consented saved coordinates, rounded to 0.001°. Point size shows inspection count; orange means at least one machine-potential finding and green means none. Select a point or the matching location in the accessible table to open those inspections in Inspection records with dataset/date/coordinate filters preserved. Coordinates outside the India plotting extent remain in the table. This is an operational plot, not an official boundary map or market-prevalence heat map. |
 | Recent inspections | Direct links back to saved records. |
 
 Bench examples are separated from operational counts. These statistics describe this local database; they do not establish national market prevalence or a deduplicated list of offending companies.
@@ -571,19 +589,21 @@ The compliance chart excludes pending, exempt and not-applicable records from it
 
 Clicking a rule under **Declarations flagged most often** preserves the dataset/date range and opens records where that same rule has a **Violation** or **Advisory** finding. Passing findings alone do not match this link. These are potential machine flags; approval and officer decisions are separate filters and columns.
 
-The plot shows at most the 200 most frequent rounded coordinate groups while its summary count still includes every matching inspection. Dataset and date filters apply to it. A coordinate outside the fixed 6–38°N, 68–98°E India plotting extent remains in the accessible table and is called out below the plot. Repository also exposes paired **Coordinate latitude/longitude** filters; both values are required and select the same 0.001° group. Risk-ranked worklists, route planning, validated boundary/heat maps, cross-state offender graphs and automatic trend alerts remain future work.
+The plot shows at most the 200 most frequent rounded coordinate groups while its summary count still includes every matching inspection. Dataset and date filters apply to it. A coordinate outside the fixed 6–38°N, 68–98°E India plotting extent remains in the accessible table and is called out below the plot. Inspection records also exposes paired **Coordinate latitude/longitude** filters; both values are required and select the same 0.001° group. Risk-ranked worklists, route planning, validated boundary/heat maps, cross-state offender graphs and automatic trend alerts remain future work.
 
 ### Inspection coverage by district
 
-**Inspection coverage by district** ranks the typed inspection locations for the selected dataset and date range. Bar length is the number of inspections recorded there; an amber bar marks a district where at least one potential machine finding was raised, and the chip beside the count is how many. Selecting a district opens Repository filtered to exactly those records, preserving the dataset and date scope. An accessible table below the chart carries the same figures.
+**Inspection coverage by district** ranks the typed inspection locations for the selected dataset and date range. Bar length is the number of inspections recorded there; an amber bar marks a district where at least one potential machine finding was raised, and the chip beside the count is how many. Selecting a district opens Inspection records filtered to exactly those records, preserving the dataset and date scope. An accessible table below the chart carries the same figures.
 
 This counts inspections this office recorded, not market prevalence: a district with more inspections is a district that was visited more often. It uses the typed location field, which is independent of the optional recorded coordinates below it — an inspection can have either, both or neither.
 
 Tula deliberately does **not** draw an administrative boundary map of India. Depicting national or state boundaries in an official context requires an authorised base map, and an approximate outline taken from a general-purpose dataset would be both wrong and inappropriate for a government product. The coordinate plot is therefore labelled as an operational coordinate frame, and district aggregation is shown as a ranked chart rather than a shaded map. An approved boundary layer remains future work.
 
-## 12. Bench and all 20 scenarios
+## 12. Test lab: bench and all 20 scenarios
 
-Use **Bench** to explain or debug one behavior with known generated geometry.
+Every test instrument lives under **Test lab** in the sidebar, marked *demo*, and never on a casework page. The overview page explains the four separations that keep generated runs out of operational figures — storage, analytics, product history and labelling — and links the label generator, the acceptance matrix, the bench analytics view and the bench record list.
+
+Use the **label generator** to explain or debug one behavior with known generated geometry.
 
 1. Click a preset; it fills the form.
 2. Select the recognition engine.
@@ -593,7 +613,7 @@ Use **Bench** to explain or debug one behavior with known generated geometry.
 
 **fixture** uses supplied reference text, so it isolates rule/extraction/measurement behavior. **rapidocr** reads actual image pixels. Recheck the engine after loading a preset. A fixture result is not an OCR accuracy demonstration.
 
-### Every Bench input
+### Every label-generator input
 
 | Controls | What they vary |
 |---|---|
@@ -639,7 +659,7 @@ Use **Bench** to explain or debug one behavior with known generated geometry.
 | marketing_copy_generic | Marketing text alone is not a reliable commodity name. |
 | truncated_gtin | Invalid/incomplete identifier remains unverified. |
 
-**Scenarios** runs this catalogue as a table with expectations and measurement checks. Opening the page starts and saves Bench runs; real OCR fills gradually. This is a software test matrix, not a legal validation certificate.
+The **acceptance matrix** runs this catalogue as a table with expectations and measurement checks. Opening the page starts and saves Bench runs; real OCR fills gradually. This is a software test matrix, not a legal validation certificate.
 
 The generator uses a Hindi-capable font and shaping support when Devanagari is selected. If the machine lacks either, it reports the missing requirement; deselect Devanagari to generate an explicitly Latin-only label. Synthetic scenarios cover selected software boundaries, not the full legal or real-label accuracy problem. Future legal corrections must be reflected in their expectations.
 
@@ -721,7 +741,7 @@ This matrix accounts for every numbered section in the retained reference. “Pa
 | 2 | Inspect the existing codebase | **Completed process.** Routes, services, templates, JavaScript, rule data, storage, reports, tests, packaging and runtime behavior were audited before and during the fixes. |
 | 3 | Product vision | **Partial.** Tula operates as an evidence-led inspection system; production and jurisdiction-wide readiness are not claimed. |
 | 4 | UI/UX | **Partial.** Responsive capture/review/history/admin flows, empty/error/loading states and keyboard/accessibility checks exist; formal accessibility and representative-device certification remain. |
-| 5 | Dashboard | **Partial.** Live database summaries cover activity, outcomes, category, typed location, review work and optional rounded inspection coordinates. The accessible indexed coordinate view opens its underlying Repository records while preserving scope, but it is not a validated political-boundary/market-prevalence map; external production load proof remains. |
+| 5 | Dashboard | **Partial.** Live database summaries cover activity, outcomes, category, typed location, review work and optional rounded inspection coordinates. The accessible indexed coordinate view opens its underlying inspection records while preserving scope, but it is not a validated political-boundary/market-prevalence map; external production load proof remains. |
 | 6 | Inspection workflow | **Available.** Guided upload, panel assignment, processing, review, corrections, rescan, submit, approve and exports are connected end to end. |
 | 7 | Robust OCR | **Partial.** Actual local RapidOCR, multiple processing passes, orientation/region handling and evidence spans are used; independent representative accuracy and all difficult scripts/layouts remain. |
 | 8 | Do not trust OCR blindly | **Available with limits.** Alternatives, confidence, source regions, warnings, conflicts and human corrections prevent uncertain text from becoming silent fact. Calibration still needs independent data. |
@@ -793,7 +813,7 @@ This matrix accounts for every numbered section in the retained reference. “Pa
 | FR-26 History | GTIN history, inspection revisions and linked parent/child capture history with the captured parent revision and earlier corrections. | Full packer identity/history resolution. |
 | FR-27 Quantity/price drift | Basic GTIN quantity-change observations available. | Validated product matching and richer longitudinal alerts. |
 | FR-28 Roles | Inspector, supervisor and administrator implemented. | Auditor/brand/citizen roles and district/state/brand tenancy. |
-| FR-29 Dashboard | Database-backed activity, approved compliance by capture date, category, typed location, review summaries and an indexed optional-coordinate plot/table with scoped Repository drill-down; local 100,000-record migration/query performance measured. | Validated boundary/heat maps, case-level geographic comparison and external production/load validation. |
+| FR-29 Dashboard | Database-backed activity, approved compliance by capture date, category, typed location, review summaries and an indexed optional-coordinate plot/table with scoped record drill-down; local 100,000-record migration/query performance measured. | Validated boundary/heat maps, case-level geographic comparison and external production/load validation. |
 | FR-30 Targeting/routes | Not implemented. | Risk models, field evaluation and route planning. |
 | FR-31 Offline sync | Local OCR and durable server jobs. | Complete offline mobile operation and sync conflict resolution. |
 | FR-32 Rule authoring | Read-only Rules page plus protected administrator import, selection and rollback. | Visual authoring, diff and test-impact preview. |
@@ -1025,7 +1045,7 @@ Use this map to choose a future improvement after trying the corresponding contr
 | Rule definitions | Rules | Complete official-source, amendment and category coverage with named legal sign-off. |
 | Rule administration | Administrator Rule versions | Add visual differences and test-impact previews before version selection. |
 | Reports and draft notices | Record header download links | Verify office-editor compatibility, archival conformance and authorized signing/service workflows. |
-| Repository and history | Repository; Product history | Test large datasets; improve matching, saved filters and longitudinal quantity/price review. |
+| Inspection records and history | Inspection records; Product history | Test large datasets; improve matching, saved filters and longitudinal quantity/price review. |
 | Dashboard | Dashboard → dataset/date filters → Recorded inspection coordinates | The rounded point/table drill-down is delivered. Add an approved boundary layer, map accessibility research, geographic case comparison and richer trend analysis while preserving approved-result denominators, privacy and dataset separation. |
 | Bench and Scenarios | Bench; Scenarios | Add difficult, legally reviewed cases and keep generated tests separate from measured real-photo accuracy. |
 | Audit and evidence integrity | Audit log; Immutable revision history | Add an independently verifiable custody/export process and test operational recovery. |
@@ -1033,4 +1053,4 @@ Use this map to choose a future improvement after trying the corresponding contr
 
 For support, each page/API response includes an `X-Request-ID`. Service logs use that value to connect the browser request, queued background analysis and report events without recording uploaded text or paths. An unexpected server response shows the ID in a generic message. Give that ID to the deployment operator; it is a diagnostic reference, not a password or proof that an action succeeded. See the operations guide for retention and proxy-log requirements.
 
-Follow **Inspect → Review evidence → Correct/rescan → Decide → Submit → Independent approval → Report → Repository → Dashboard**, then explore Bench and Rules. Use the feature map to choose the next improvement after trying each workflow.
+Follow **New inspection → Review evidence → Correct/rescan → Decide → Submit → Independent approval → Report → Inspection records → Dashboard**, then explore the Test lab and the Rule pack. Use the feature map to choose the next improvement after trying each workflow.

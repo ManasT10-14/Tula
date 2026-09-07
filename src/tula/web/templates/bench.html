@@ -2,18 +2,26 @@
 {% block title %}Bench · Tula{% endblock %}
 {% block content %}
 
-<p class="eyebrow">Test bench</p>
+<div class="lab-banner">
+  <span class="chip">Demo</span>
+  <p><strong>Test lab — not casework.</strong> Labels generated here are stored in the separate bench
+  dataset and never counted in Dashboard totals or Inspection records.
+  <a href="/">Start a real inspection →</a></p>
+</div>
+
+<nav class="labnav" aria-label="Test lab sections">
+  <a href="/lab">Overview</a>
+  <a href="/bench" aria-current="page">Label generator</a>
+  <a href="/bench/scenarios">Acceptance matrix</a>
+</nav>
+
+<div class="page-heading"><div>
+<p class="eyebrow">Label generator</p>
 <h1>Synthesise a label and watch it be judged</h1>
 <p class="lede">The bench draws a real label at true millimetre geometry, so the measurement
 coming out of the pipeline can be checked against what actually went in. Change one control,
 re-run, and see which clause moves.</p>
-
-<div class="row" style="margin:.6rem 0 0">
-  <a class="button-link secondary" href="/bench/scenarios">Run the acceptance matrix →</a>
-  <span class="small muted">{{ scenarios|length }} scenarios, each isolating one behaviour.</span>
-</div>
-
-<hr class="tickrule">
+</div><span class="small muted">{{ scenarios|length }} presets, each isolating one behaviour.</span></div>
 
 <div class="grid split">
   <div>

@@ -790,3 +790,51 @@ def test_dashboard_district_names_are_escaped(repository, navigation_client):
     assert page.status_code == 200
     assert '<script>alert("x")</script>' not in page.text
     assert "&lt;script&gt;" in page.text
+
+
+def test_inspection_records_exclude_generated_bench_runs_until_asked(repository, navigation_client):
+    """Casework listings are operational by default.
+
+    An officer searching inspection history should not have to filter the test
+    bench out of their own records; the bench dataset stays one deliberate click
+    away in the lab, and says what it is when opened.
+    """
+    import re
+
+    repository.save(analysis("OPS-ONLY", "2026-09-06T09:00:00", brand="Ops brand", generic="Test"))
+    repository.save(analysis("BENCH-ONLY", "2026-09-06T09:00:00", brand="Bench brand", generic="Test",
+                             source="bench"))
+
+    def ids_on(query):
+        page = navigation_client.get("/repository" + query)
+        assert page.status_code == 200
+        return set(re.findall(r'href="/inspections/([^"]+)"', page.text)), page.text
+
+    default, default_text = ids_on("")
+    assert "OPS-ONLY" in default and "BENCH-ONLY" not in default
+    assert "Test-bench dataset" not in default_text
+
+    bench, bench_text = ids_on("?source=bench")
+    assert "BENCH-ONLY" in bench and "OPS-ONLY" not in bench
+    assert "Test-bench dataset" in bench_text
+    assert 'href="/repository"' in bench_text  # a way back to casework
+
+    both, _ = ids_on("?source=all")
+    assert {"OPS-ONLY", "BENCH-ONLY"} <= both
+
+
+def test_dashboard_headline_figures_open_their_own_records(finding_records, navigation_client):
+    """Each metric links into the records behind it, carrying dataset and dates."""
+    import re
+
+    page = navigation_client.get("/dashboard", params={"date_from": "2026-09-01", "date_to": "2026-09-30"})
+    assert page.status_code == 200
+    links = {unescape(link) for link in re.findall(r'href="([^"]+)"', page.text)
+             if link.startswith("/repository?")}
+    statuses = {parse_qs(urlsplit(link).query).get("product_status", [""])[0] for link in links}
+    assert {"COMPLIANT", "NON_COMPLIANT", "NEEDS_REVIEW"} <= statuses
+    target = next(link for link in links if "product_status=NEEDS_REVIEW" in link)
+    assert parse_qs(urlsplit(target).query) == {
+        "product_status": ["NEEDS_REVIEW"], "source": ["inspection"],
+        "date_from": ["2026-09-01"], "date_to": ["2026-09-30"]}
+    assert navigation_client.get(target).status_code == 200

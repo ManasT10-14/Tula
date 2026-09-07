@@ -175,3 +175,32 @@ def test_unavailable_parent_images_are_warned_before_capture(case, missing):
     response = case.client.get("/", params={"rescan": "NAV-PARENT"})
     assert "The original evidence is missing or changed" not in response.text
     assert Elements(response.text).by_id("parent-scan-id")["value"] == ""
+
+
+def test_record_tabs_pair_with_panels_and_survive_without_javascript(case):
+    """The record is tabbed, but no section may become unreachable.
+
+    Every tab addresses a panel that exists, the tab strip degrades to in-page
+    anchors, and a <noscript> rule plus the print stylesheet reveal the panels
+    that JavaScript would otherwise hide.
+    """
+    response = case.client.get("/inspections/NAV-CHILD")
+    assert response.status_code == 200
+    page = Elements(response.text)
+    tabs = [attrs for _, attrs in page.tags if attrs.get("role") == "tab"]
+    panels = [attrs for _, attrs in page.tags if attrs.get("role") == "tabpanel"]
+
+    assert len(tabs) == 5
+    assert {tab["aria-controls"] for tab in tabs} == {panel["id"] for panel in panels}
+    assert all(tab["href"] == "#" + tab["aria-controls"] for tab in tabs)
+    assert all(tab["aria-controls"] == tab["id"].replace("tab-", "panel-") for tab in tabs)
+    # Exactly one panel is offered before the script runs, and it is the first.
+    assert [tab["aria-selected"] for tab in tabs] == ["true", "false", "false", "false", "false"]
+    assert sum("hidden" in panel for panel in panels) == len(panels) - 1
+    assert ".panel[hidden]{display:block!important}" in response.text
+
+    # Sections keep their homes: the review controls and the linked capture
+    # history are what an officer opens the record for.
+    findings_panel = response.text.split('id="panel-declarations"')[0]
+    assert 'id="review"' in findings_panel
+    assert "Linked capture history" in response.text

@@ -42,19 +42,24 @@ Use the [operations guide](docs/OPERATIONS.md) for offline backup, archive verif
 
 ## Try it
 
-| Page | Purpose |
-|---|---|
-| `/` | Upload/capture images, assign panels, rotate/crop, check quality, save/resume private capture drafts and confirm package facts |
-| `/processing` | Find saved uploads, follow progress, retry failures and open completed inspections |
-| `/inspections/{id}` | Review evidence, correct readings, record decisions, rescan, submit and independently approve |
-| `/bench` | Generate labels with known geometry; compare fixture and real OCR |
-| `/bench/scenarios` | Run the 20-scenario acceptance matrix |
-| `/rules` | Inspect draft rules, dates and assurance requirements |
-| `/repository` | Search inspections and product history |
-| `/dashboard` | View local aggregates, inspection coverage by district and optional recorded coordinates |
-| `/admin/users` | Administrator account and access management |
-| `/admin/rules` | Administrator rule import, selection and rollback |
-| `/docs` | Authenticated searchable API reference |
+A left sidebar groups the pages by the kind of work they are, and every demonstration
+instrument sits behind `/lab` so nothing that tests the system appears on a casework page.
+
+| Page | Group | Purpose |
+|---|---|---|
+| `/` | — | Upload/capture images, assign panels, rotate/crop, check quality, save/resume private capture drafts and confirm package facts |
+| `/processing` | Casework | Find saved uploads, follow progress, retry failures and open completed inspections |
+| `/repository` | Casework | Search inspections and product history. Operational inspections only; `?source=bench` opens generated runs |
+| `/dashboard` | Casework | Local aggregates, inspection coverage by district and optional recorded coordinates; each headline figure links to the records behind it |
+| `/inspections/{id}` | — | Review evidence, correct readings, record decisions, rescan, submit and independently approve, in five record tabs |
+| `/rules` | Reference | Inspect draft rules, dates and assurance requirements |
+| `/docs` | Reference | Authenticated searchable API reference |
+| `/admin/users` | Administration | Administrator account and access management |
+| `/admin/rules` | Administration | Administrator rule import, selection and rollback |
+| `/admin/audit` | Administration | Append-only application event log |
+| `/lab` | Demonstration | Every test instrument, with the generated-versus-operational separation stated |
+| `/bench` | Demonstration | Generate labels with known geometry; compare fixture and real OCR |
+| `/bench/scenarios` | Demonstration | Run the 20-scenario acceptance matrix |
 
 Try `undersize_numerals`, `boundary_straddle`, `english_only`, `partial_capture`, `unreadable_capture` and `citizen_advisory`. English-only passes the script screen; the erroneous bilingual requirement and MRP rounding check have been removed.
 

@@ -2,6 +2,18 @@
 {% block title %}Acceptance matrix · Tula{% endblock %}
 {% block content %}
 
+<div class="lab-banner">
+  <span class="chip">Demo</span>
+  <p><strong>Test lab — not casework.</strong> Every row generates its own label and stores the run in
+  the separate bench dataset. <a href="/">Start a real inspection →</a></p>
+</div>
+
+<nav class="labnav" aria-label="Test lab sections">
+  <a href="/lab">Overview</a>
+  <a href="/bench">Label generator</a>
+  <a href="/bench/scenarios" aria-current="page">Acceptance matrix</a>
+</nav>
+
 <p class="eyebrow">Acceptance matrix</p>
 <h1>{{ scenarios | length }} scenarios, one behaviour each</h1>
 <p class="lede">Every row synthesises a label, runs the full pipeline, and asserts that named

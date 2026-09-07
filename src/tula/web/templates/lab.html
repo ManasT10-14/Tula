@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Test lab · Tula{% endblock %}
+{% block content %}
+<div class="page-heading"><div>
+  <p class="eyebrow">Demonstration &amp; diagnostics</p>
+  <h1>Test lab</h1>
+  <p class="lede">Instruments for proving the system behaves correctly. Nothing here is casework: every
+  run is generated, kept in a separate dataset and excluded from operational totals.</p>
+</div><a class="button-link secondary" href="/dashboard">Back to casework ↗</a></div>
+
+<div class="lab-banner">
+  <span class="chip">Demo</span>
+  <p>These pages exist to <strong>show and check</strong> the pipeline, not to inspect a real package.
+  Runs are stored with source <code>bench</code> and do not appear in Dashboard or Inspection records
+  unless you open the bench dataset from here. Start a real inspection from <a href="/">New inspection</a>.</p>
+</div>
+
+<nav class="labnav" aria-label="Test lab sections">
+  <a href="/lab" aria-current="page">Overview</a>
+  <a href="/bench">Label generator</a>
+  <a href="/bench/scenarios">Acceptance matrix</a>
+</nav>
+
+<div class="grid two">
+  <section class="card lab-card">
+    <h3>Synthetic label generator</h3>
+    <p>Draws a label at true millimetre geometry, so a measurement coming out of the pipeline can be
+    checked against exactly what went in. Change one control — character height, a missing declaration,
+    the unit price — re-run, and watch which clause moves.</p>
+    <p class="small muted">Answers: <em>“is the measurement real, or is it guessing?”</em></p>
+    <a class="button-link" href="/bench">Open the generator →</a>
+  </section>
+
+  <section class="card lab-card">
+    <h3>Acceptance matrix</h3>
+    <p>Twenty scenarios, each isolating one behaviour. A row passes only if every named clause reaches
+    its named verdict <em>and</em> the measurement contains the geometry actually drawn. The last rows
+    hand the system partial, unreadable and citizen captures — there the property under test is the
+    <strong>absence</strong> of an accusation.</p>
+    <p class="small muted">Answers: <em>“does it refuse to convict when the evidence is thin?”</em></p>
+    <a class="button-link" href="/bench/scenarios">Run the matrix →</a>
+  </section>
+
+  <section class="card lab-card">
+    <h3>Test-bench analytics</h3>
+    <p>The same Dashboard, restricted to generated runs. Useful for showing that operational figures and
+    test figures are computed by one code path over two separated datasets.</p>
+    <a class="button-link secondary" href="/dashboard?source=bench">Open bench analytics →</a>
+  </section>
+
+  <section class="card lab-card">
+    <h3>Test-bench records</h3>
+    <p>Every generated run keeps a full record — findings, evidence, rule version — searchable exactly
+    like an inspection, and clearly labelled as bench data.</p>
+    <a class="button-link secondary" href="/repository?source=bench">Browse bench records →</a>
+  </section>
+</div>
+
+<h2>Why the lab is a separate place</h2>
+<div class="card">
+  <p class="small">A compliance system that mixes demonstration data into casework cannot be trusted with
+  either. Tula keeps the separation in four places at once:</p>
+  <ul class="small">
+    <li><strong>Storage</strong> — every record carries a <code>source</code> of <code>inspection</code>
+    or <code>bench</code>; they are never summed together.</li>
+    <li><strong>Analytics</strong> — Dashboard counts, compliance rate, trend and district coverage all
+    read operational records only unless the bench dataset is explicitly selected here.</li>
+    <li><strong>Product history</strong> — a bench run against a GTIN never appears in that product's
+    operational history, so a generated label cannot manufacture a shrinkflation signal.</li>
+    <li><strong>Labelling</strong> — a bench run is marked <em>Test bench</em> in every listing and on its
+    own record page, so a generated label cannot be mistaken for casework at a glance.</li>
+  </ul>
+  <p class="small muted">The equivalent assertions also run headless under
+  <code>pytest tests/test_bench.py</code>, so the matrix on screen and the test suite cannot drift apart.</p>
+</div>
+{% endblock %}

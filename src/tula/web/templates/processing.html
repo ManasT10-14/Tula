@@ -1,26 +1,35 @@
 {% extends "base.html" %}
-{% block title %}Saved processing jobs · Tula{% endblock %}
+{% block title %}Processing · Tula{% endblock %}
 {% block content %}
-<div class="page-heading"><div><p class="eyebrow">Continue an inspection</p><h1>Saved processing jobs</h1>
-<p class="lede">Find an upload that is processing, needs another attempt or is ready for evidence review. Accepted images remain saved when you leave the browser.</p></div>
+<div class="page-heading"><div><p class="eyebrow">Continue an inspection</p><h1>Processing</h1>
+<p class="lede">Uploads that are still analysing, need another attempt, or are ready for evidence review. Accepted images stay saved when you leave the browser.</p></div>
 <a class="button-link" href="/">+ Start inspection</a></div>
-<p class="small muted">{{ 'Showing jobs from all accounts. Only supervisors and administrators can open another account’s processing job.' if all_accounts else 'Showing your own processing jobs. Completed inspection records are also available in Repository.' }}</p>
+
+<p class="small muted">{{ 'Showing jobs from all accounts. Only supervisors and administrators can open another account’s processing job.' if all_accounts else 'Showing your own processing jobs. Completed inspection records are also in Inspection records.' }}</p>
+
 <div class="tiles" aria-label="Processing totals">
-{% for key in ['queued','running','failed','complete'] %}<div class="tile"><b>{{ counts[key] }}</b><span>{{ state_labels[key] }}</span></div>{% endfor %}
+{% for key in ['queued','running','failed','complete'] %}<a class="tile" href="/processing?state={{ key }}"><b>{{ counts[key] }}</b><span>{{ state_labels[key] }}</span></a>{% endfor %}
 </div>
-<form method="get" class="card" style="margin-top:18px"><div class="row">
-<label style="flex:1;max-width:26rem">Show jobs<select name="state">{% for value,label in state_labels.items() %}<option value="{{ value }}" {{ 'selected' if state==value }}>{{ label }}</option>{% endfor %}</select></label>
-<button style="align-self:end">Apply filter</button><a class="button-link secondary" href="{{ page_url(page) }}">Refresh jobs</a>
-</div><p class="small muted" style="margin-top:12px">Checked {{ as_of }}. Totals cover your permitted jobs across all states. Refresh this list for changes; Open progress follows a job live.</p></form>
-<div class="section-label"><h2>{{ total }} matching job{{ '' if total==1 else 's' }}</h2><span class="small muted">Page {{ page }} of {{ pages }}</span></div>
+
+<div class="toolbar">
+  <form method="get" class="row" style="gap:9px">
+    <label style="margin-bottom:0">Show jobs
+      <select name="state" style="min-width:210px">{% for value,label in state_labels.items() %}<option value="{{ value }}" {{ 'selected' if state==value }}>{{ label }}</option>{% endfor %}</select></label>
+    <button class="compact" style="align-self:end">Apply</button>
+  </form>
+  <a class="button-link secondary compact" href="{{ page_url(page) }}">Refresh</a>
+  <span class="small muted">Checked {{ as_of }}. Totals cover your permitted jobs across all states; Open progress follows a job live.</span>
+</div>
+
+<div class="section-label" style="margin-top:18px"><h2>{{ total }} matching job{{ '' if total==1 else 's' }}</h2><span class="small muted">Page {{ page }} of {{ pages }}</span></div>
 <div class="tw" tabindex="0" role="region" aria-label="Saved processing jobs"><table><thead><tr><th>Upload / inspector</th><th>Submitted (UTC)</th><th>State</th><th>Last processing stage</th><th>Continue</th></tr></thead><tbody>
 {% for job in rows %}<tr>
-<td><strong>{{ job.operator or 'Inspector not recorded' }}</strong><br><span class="mono">{{ job.id }}</span><br><span class="small muted">{{ job.image_count if job.image_count is not none else 'Unknown' }} image(s) · {{ job.lane or 'Source not recorded' }}{% if job.region %}<br>{{ job.region }}{% endif %}</span></td>
-<td>{{ job.created_at[:19]|replace('T',' ') }}</td>
-<td><span class="chip {{ 'ok' if job.state=='complete' else 'bad' if job.state=='failed' else 'info' }}">{{ state_labels.get(job.state,job.state) }}</span><br><span class="small muted">{{ job.attempts }} attempt{{ '' if job.attempts==1 else 's' }}</span></td>
+<td><strong>{{ job.operator or 'Inspector not recorded' }}</strong><br><span class="mono">{{ job.id }}</span><br><span class="table-sub">{{ job.image_count if job.image_count is not none else 'Unknown' }} image(s) · {{ job.lane or 'Source not recorded' }}{% if job.region %}<br>{{ job.region }}{% endif %}</span></td>
+<td class="num">{{ job.created_at[:19]|replace('T',' ') }}</td>
+<td><span class="chip {{ 'ok' if job.state=='complete' else 'bad' if job.state=='failed' else 'info' }}">{{ state_labels.get(job.state,job.state) }}</span><br><span class="table-sub">{{ job.attempts }} attempt{{ '' if job.attempts==1 else 's' }}</span></td>
 <td>{{ job.detail }}{% if job.error %}<p class="small" style="margin-top:8px">{{ job.error }}</p>{% endif %}</td>
 <td>{% if job.state=='complete' and job.scan_id %}<a href="/inspections/{{ job.scan_id|urlencode }}">Review inspection →</a>{% else %}<a href="/?job={{ job.id|urlencode }}">Open progress →</a>{% if job.state=='failed' %}<p class="small muted">Review the error, then retry the saved images.</p>{% endif %}{% endif %}</td>
-</tr>{% else %}<tr><td colspan="5"><h3>No jobs match this view</h3><p>{{ 'All your visible uploads have finished, or none have been submitted yet.' if state=='unfinished' else 'Choose another state to find saved work.' }}</p><a href="/processing?state=all">View all jobs</a> · <a href="/repository">Open inspection history</a></td></tr>{% endfor %}
+</tr>{% else %}<tr><td colspan="5"><div class="empty-state"><h3>No jobs match this view</h3><p>{{ 'All your visible uploads have finished, or none have been submitted yet.' if state=='unfinished' else 'Choose another state to find saved work.' }}</p><a href="/processing?state=all">View all jobs</a> · <a href="/repository">Open inspection records</a></div></td></tr>{% endfor %}
 </tbody></table></div>
 <div class="pagination">{% if page>1 %}<a href="{{ page_url(page-1) }}">← Previous page</a>{% else %}<span></span>{% endif %}<span>{{ page_size }} jobs per page</span>{% if page<pages %}<a href="{{ page_url(page+1) }}">Next page →</a>{% endif %}</div>
 {% endblock %}
