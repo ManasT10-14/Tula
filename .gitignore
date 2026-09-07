@@ -21,6 +21,7 @@ data/capture-previews/
 # runtime locks: OS locks decide liveness, not these files
 .tula-runtime-*.lock
 *.db
+*.db.*
 *.db-wal
 *.db-shm
 *.sqlite3
