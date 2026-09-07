@@ -745,3 +745,48 @@ def test_finding_filter_pagination_retains_query_scope_and_aggregate_outcome(rep
     found_second = set(re.findall(r'href="/inspections/([^"]+)"', second.text))
     assert len(found_first) == 25 and len(found_second) == 2
     assert found_first.isdisjoint(found_second) and found_first | found_second == expected
+
+
+def test_dashboard_district_chart_links_scope_and_marks_flagged_locations(repository, navigation_client):
+    """Bar colour must follow potential findings, and only real districts link."""
+    import re
+
+    repository.save(analysis("DIST-FLAGGED", "2026-09-05T09:00:00", brand="Flagged", generic="Test",
+                             region="Nagpur", findings=[finding("DIST-F", Verdict.VIOLATION)]))
+    repository.save(analysis("DIST-CLEAN", "2026-09-05T10:00:00", brand="Clean", generic="Test",
+                             region="Coimbatore", findings=[finding("DIST-C", Verdict.PASS)]))
+    repository.save(analysis("DIST-BLANK", "2026-09-05T11:00:00", brand="Nowhere", generic="Test",
+                             findings=[finding("DIST-B", Verdict.PASS)]))
+
+    page = navigation_client.get("/dashboard", params={"date_from": "2026-09-05", "date_to": "2026-09-05"})
+    assert page.status_code == 200
+    assert "Inspection coverage by district" in page.text
+    assert "not market prevalence" in page.text
+    # A district carrying a potential finding is amber; a clean one is not.
+    flagged = re.search(r'Nagpur.*?<i class="(\w+)"', page.text, re.DOTALL)
+    clean = re.search(r'Coimbatore.*?<i class="(\w+)"', page.text, re.DOTALL)
+    assert flagged and flagged.group(1) == "flagged"
+    assert clean and clean.group(1) == "clear"
+
+    links = {unescape(link) for link in re.findall(r'href="([^"]+)"', page.text) if "region=" in link}
+    assert any("region=Nagpur" in link for link in links)
+    # 'Unspecified' is a grouping label, not a stored value: linking it would filter to nothing.
+    assert not any("Unspecified" in link for link in links)
+
+    target = next(link for link in links if "region=Nagpur" in link)
+    assert parse_qs(urlsplit(target).query) == {
+        "region": ["Nagpur"], "source": ["inspection"],
+        "date_from": ["2026-09-05"], "date_to": ["2026-09-05"]}
+    results = navigation_client.get(target)
+    assert results.status_code == 200
+    assert set(re.findall(r'href="/inspections/([^"]+)"', results.text)) == {"DIST-FLAGGED"}
+
+
+def test_dashboard_district_names_are_escaped(repository, navigation_client):
+    """District text is operator-typed and reaches both a label and an href."""
+    repository.save(analysis("DIST-XSS", "2026-09-05T12:00:00", brand="Inject", generic="Test",
+                             region='<script>alert("x")</script>', findings=[finding("DIST-X", Verdict.PASS)]))
+    page = navigation_client.get("/dashboard", params={"date_from": "2026-09-05", "date_to": "2026-09-05"})
+    assert page.status_code == 200
+    assert '<script>alert("x")</script>' not in page.text
+    assert "&lt;script&gt;" in page.text

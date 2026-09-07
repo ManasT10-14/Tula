@@ -4,7 +4,7 @@ A local SIH prototype for screening packaged-commodity labels using CPU OCR, dec
 
 The bundled pack `2026.09.07-legal-review-1` has source-linked legal corrections and applicability gates, but still requires independent legal sign-off. The supplied PRD also describes capabilities beyond this application. See the current [implementation ledger](docs/IMPLEMENTATION_STATUS.md) and [legal source matrix](docs/LEGAL_SOURCE_MATRIX.md).
 
-Start with the [user manual and improvement plan](docs/USER_MANUAL.md) for a guided tour, every control and scenario, result interpretation, and current limitations.
+Start with the [user manual and improvement plan](docs/USER_MANUAL.md) for a guided tour, every control and scenario, result interpretation, and current limitations. [What the recogniser can and cannot read](docs/OCR_CAPABILITY.md) reports measured recovery across twenty-four degraded labels, including dot-matrix MRP and date coding.
 
 ## Run
 
@@ -51,7 +51,7 @@ Use the [operations guide](docs/OPERATIONS.md) for offline backup, archive verif
 | `/bench/scenarios` | Run the 20-scenario acceptance matrix |
 | `/rules` | Inspect draft rules, dates and assurance requirements |
 | `/repository` | Search inspections and product history |
-| `/dashboard` | View local aggregates and optional recorded inspection coordinates |
+| `/dashboard` | View local aggregates, inspection coverage by district and optional recorded coordinates |
 | `/admin/users` | Administrator account and access management |
 | `/admin/rules` | Administrator rule import, selection and rollback |
 | `/docs` | Authenticated searchable API reference |

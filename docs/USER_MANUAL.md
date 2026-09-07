@@ -573,6 +573,14 @@ Clicking a rule under **Declarations flagged most often** preserves the dataset/
 
 The plot shows at most the 200 most frequent rounded coordinate groups while its summary count still includes every matching inspection. Dataset and date filters apply to it. A coordinate outside the fixed 6–38°N, 68–98°E India plotting extent remains in the accessible table and is called out below the plot. Repository also exposes paired **Coordinate latitude/longitude** filters; both values are required and select the same 0.001° group. Risk-ranked worklists, route planning, validated boundary/heat maps, cross-state offender graphs and automatic trend alerts remain future work.
 
+### Inspection coverage by district
+
+**Inspection coverage by district** ranks the typed inspection locations for the selected dataset and date range. Bar length is the number of inspections recorded there; an amber bar marks a district where at least one potential machine finding was raised, and the chip beside the count is how many. Selecting a district opens Repository filtered to exactly those records, preserving the dataset and date scope. An accessible table below the chart carries the same figures.
+
+This counts inspections this office recorded, not market prevalence: a district with more inspections is a district that was visited more often. It uses the typed location field, which is independent of the optional recorded coordinates below it — an inspection can have either, both or neither.
+
+Tula deliberately does **not** draw an administrative boundary map of India. Depicting national or state boundaries in an official context requires an authorised base map, and an approximate outline taken from a general-purpose dataset would be both wrong and inappropriate for a government product. The coordinate plot is therefore labelled as an operational coordinate frame, and district aggregation is shown as a ranked chart rather than a shaded map. An approved boundary layer remains future work.
+
 ## 12. Bench and all 20 scenarios
 
 Use **Bench** to explain or debug one behavior with known generated geometry.

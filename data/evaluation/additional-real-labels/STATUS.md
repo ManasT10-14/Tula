@@ -1,3 +1,17 @@
+## Redistribution and version control
+
+The two Nestlé photographs (`nestle-india-tin.png`, `nestle-india-box.jpg`) and the tin crop
+`visual-crops/can-raw-900-1500.png` are **excluded from version control**. Their source terms permit
+extracts for private non-commercial use but not unrestricted dataset redistribution, and publishing a
+repository is redistribution. They remain on the original working machine so
+`scripts/evaluate_additional_labels.py` can be reproduced there; the retained results, annotations,
+hashes and source manifests in this repository record what was measured without republishing the
+pixels. Re-acquire them from the URLs in `additional-sources.json` under the same terms if the
+evaluation must be repeated elsewhere.
+
+The two Wikimedia Commons photographs remain tracked: CC BY-SA 3.0 and CC BY-SA 4.0 permit
+redistribution with the attribution recorded in `sources.json`.
+
 # Frozen annotations — baseline and uncertainty rerun completed
 
 Four real photographs were visually inspected and annotated before OCR on 7 September 2026. The first actual OCR/extraction evaluation and a subsequent rerun after the uncertainty safeguards were frozen have now completed. Both used the unchanged originals and annotations; the source and model versions for each run are retained with its evidence.
