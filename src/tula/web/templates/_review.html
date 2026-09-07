@@ -1,0 +1,35 @@
+{% set review_user = request.state.user %}
+{% set review_participant = review_user.role in ['admin','supervisor'] or a.scan.inspector_id == review_user.id|string %}
+{% set can_edit_review = review_participant and a.review.status != 'approved' %}
+<section id="review"><h2>Officer review & approval</h2>
+<div class="review-grid"><div class="card"><h3>Resolve findings, then submit</h3><p class="small muted">Open each finding below to inspect its source and record a decision. Submission requires every potential violation and uncertain finding to be resolved.</p>
+{% if a.review.status == 'approved' %}<div class="notice">Approved by {{ a.review.approved_by }} · {{ a.review.approved_at }}<br>{{ a.review.approval_reason }}</div>{% endif %}
+{% if not review_participant %}<p class="notice">Read-only access: the assigned inspector or a supervisor can change this inspection.</p>{% endif %}
+{% if can_edit_review or review_user.role in ['admin','supervisor'] %}
+<form action="/inspections/{{ a.scan.scan_id }}/review" method="post" data-review-form>
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="revision" value="{{ a.review.revision }}">
+<label for="review-note">Review note<textarea id="review-note" name="reason" required minlength="5" maxlength="3000" placeholder="Record the evidence checked, outstanding concern or approval basis"></textarea></label>
+<div class="row" style="margin-top:12px">
+{% if a.review.status != 'approved' %}<button name="action" value="comment" class="ghost compact">Add comment</button><button name="action" value="request_rescan" class="ghost compact">Request rescan</button>{% if a.review.status in ['draft','in_review'] %}<button name="action" value="submit" class="compact">Submit for approval</button>{% endif %}{% endif %}
+{% if request.state.user.role in ['admin','supervisor'] %}{% if a.review.status=='submitted' %}<button name="action" value="approve" class="compact">Approve inspection</button>{% elif a.review.status=='approved' %}<button name="action" value="reopen" class="ghost compact">Reopen for correction</button>{% endif %}{% endif %}
+</div></form>
+{% endif %}
+{% if review_participant %}<p class="small"><a href="/?rescan={{ a.scan.scan_id }}">Capture a targeted close-up →</a></p>{% endif %}
+{% for comment in a.review.comments %}<p class="small"><strong>{{ comment.actor }} · {{ comment.action|replace('_',' ') }}</strong><br>{{ comment.text }}<br><span class="muted">{{ comment.created_at }}</span></p>{% endfor %}
+</div><div class="card"><h3>Correct a declaration</h3><p class="small muted">Keep the original OCR and add the text you verified. Select the source rectangle in the image. Corrections rerun the rules and clear earlier finding decisions.</p>
+{% if can_edit_review %}
+<form action="/inspections/{{ a.scan.scan_id }}/review" method="post" data-review-form id="correction-form"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="revision" value="{{ a.review.revision }}"><input type="hidden" name="action" value="correct"><input type="hidden" name="bbox" id="correction-bbox" value="[]">
+<div class="grid two"><label>Declaration<select name="kind" id="correction-kind">{% for key,label in declaration_labels.items() %}<option value="{{ key.value }}" data-frame="{{ a.scan.frames.index(a.declarations[key].frame) if key in a.declarations and a.declarations[key].frame in a.scan.frames else 0 }}">{{ label }}</option>{% endfor %}</select></label><label>Source image<select name="frame_index" id="correction-frame">{% for frame in a.scan.frames %}<option value="{{ loop.index0 }}">Image {{ loop.index }}</option>{% endfor %}</select></label></div>
+<label style="margin-top:10px">Verified label text<textarea name="raw" id="correction-raw" required maxlength="4000"></textarea></label><p class="small muted" id="correction-bounds-help">Wait for the source image to load, then drag to locate the complete declaration. Keyboard alternative: enter whole-pixel bounds below. A cancelled drag restores the previous selection.</p>
+<p id="correction-source-status" class="small muted" role="status" aria-live="polite">Loading source image…</p><button id="correction-retry-image" type="button" class="ghost compact" hidden>Retry source image</button>
+<div class="canvas-viewport" tabindex="0" role="region" aria-label="Declaration correction image"><canvas id="correction-canvas" aria-label="Source image: drag to select declaration"></canvas></div>
+<div class="grid" style="grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0">{% for coord in ['Left','Top','Right','Bottom'] %}<label>{{ coord }}<input type="number" min="{{ 0 if loop.index0 < 2 else 1 }}" step="1" inputmode="numeric" id="bbox-{{ loop.index0 }}" class="bbox-coordinate" aria-describedby="correction-bounds-help correction-geometry-error" required></label>{% endfor %}</div>
+<p id="correction-geometry-error" class="error-box" role="alert"></p>
+<label>Correction reason<input name="reason" required minlength="5" maxlength="3000" placeholder="What did OCR read incorrectly?"></label><button class="compact" style="margin-top:12px">Save correction & recheck</button></form>
+{% elif a.review.status == 'approved' %}<p class="small muted">An approved record must be reopened by a supervisor before correction.</p>{% else %}<p class="small muted">Only the assigned inspector or a supervisor can correct declarations.</p>{% endif %}
+</div></div>
+<details style="margin:18px 0"><summary>Immutable revision history · {{ revisions|length }} entries</summary><div class="tw" tabindex="0" role="region" aria-label="Inspection revision history"><table><thead><tr><th>Revision</th><th>When</th><th>Action</th><th>Reason</th></tr></thead><tbody>{% for r in revisions %}<tr><td><a href="/inspections/{{ a.scan.scan_id }}/revisions/{{ r.revision }}">{{ r.revision }} · JSON</a></td><td>{{ r.created_at }}</td><td>{{ r.action|replace('.',' ') }}</td><td>{{ r.reason or 'Original machine analysis' }}</td></tr>{% endfor %}</tbody></table></div></details>
+{% include "_package_context.html" %}
+</section>
+<script type="application/json" id="declaration-data">{{ a.model_dump(mode='json').declarations|tojson }}</script>
+<script src="{{ asset_url('review.js') }}" defer></script>

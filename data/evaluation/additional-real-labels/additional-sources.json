@@ -1,0 +1,66 @@
+{
+  "images": [
+    {
+      "id": "nestle-india-tin",
+      "filename": "nestle-india-tin.png",
+      "type": "image",
+      "original_url": "https://www.familynes.in/sites/default/files/inline-images/tin_pack_batch_code_1_optimized_450.png",
+      "source_page": "https://www.familynes.in/nestle-india-know-your-product",
+      "publisher": "Nestle India Limited / FamilyNes",
+      "author": "Photographer not separately identified",
+      "license": "Copyright Nestle or its licensors; no open license. Site permits extracts for private noncommercial use while retaining notices.",
+      "license_url": "https://www.familynes.in/terms-conditions",
+      "reuse_scope": "Local SIH development evaluation only; not a freely redistributable dataset or endorsement.",
+      "accessed_at": "2026-09-07T01:03:44.056271+00:00",
+      "local_modifications": "None; original source bytes retained",
+      "final_url": "https://www.familynes.in/sites/default/files/inline-images/tin_pack_batch_code_1_optimized_450.png",
+      "size": [
+        983,
+        1075
+      ],
+      "format": "PNG",
+      "status": "downloaded",
+      "sha256": "dfb7cf344b895bd4860468493d8c519ec60cd83f25f41370beca362add64b772",
+      "bytes": 416779
+    },
+    {
+      "id": "nestle-india-box",
+      "filename": "nestle-india-box.jpg",
+      "type": "image",
+      "original_url": "https://www.familynes.in/sites/default/files/inline-images/bib_pack_back_code_1.jpg",
+      "source_page": "https://www.familynes.in/nestle-india-know-your-product",
+      "publisher": "Nestle India Limited / FamilyNes",
+      "author": "Photographer not separately identified",
+      "license": "Copyright Nestle or its licensors; no open license. Site permits extracts for private noncommercial use while retaining notices.",
+      "license_url": "https://www.familynes.in/terms-conditions",
+      "reuse_scope": "Local SIH development evaluation only; not a freely redistributable dataset or endorsement.",
+      "accessed_at": "2026-09-07T01:03:44.058268+00:00",
+      "local_modifications": "None; original source bytes retained",
+      "final_url": "https://www.familynes.in/sites/default/files/inline-images/bib_pack_back_code_1.jpg",
+      "size": [
+        1600,
+        1600
+      ],
+      "format": "JPEG",
+      "status": "downloaded",
+      "sha256": "93867d4924e90d8c7e0ace4d9f687f85cdddccf1a707fc394a4130a46de483b5",
+      "bytes": 113996
+    },
+    {
+      "id": "fssai-label-photo",
+      "filename": "fssai-label-photo.pdf",
+      "type": "pdf",
+      "original_url": "https://hygiene.fssai.gov.in/files/docs/88894_pdf3.pdf",
+      "source_page": "https://hygiene.fssai.gov.in/files/docs/88894_pdf3.pdf",
+      "publisher": "FSSAI Hygiene Rating portal",
+      "author": "Uploader/photographer not identified",
+      "license": "No explicit image redistribution license established; government-hosted document is publicly accessible.",
+      "reuse_scope": "Local analysis only; do not describe as openly licensed or infer regulatory approval.",
+      "accessed_at": "2026-09-07T01:03:44.060636+00:00",
+      "local_modifications": "None; original source bytes retained",
+      "status": "failed",
+      "error": "HTTPError: HTTP Error 403: Forbidden"
+    }
+  ],
+  "ocr_run_before_annotation": false
+}

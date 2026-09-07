@@ -1,0 +1,20 @@
+# Fixture label: "Crunchy Gold" biscuits, principal display panel.
+# Format: x0,y0,x1,y1|text   (pixel geometry lets the metrology path run
+# without a camera). Built to trip one differentiator each:
+#   - "200 gms"                 -> non-standard unit symbol, Rule 6(1)(c)
+#   - MRP with no tax clause    -> prescribed form, Rule 6(1)(e)
+#   - unit price 20.00/100 g    -> arithmetic is wrong (45/200*100 = 22.50)
+#   - 56 px net-qty numerals    -> below the 2 mm floor for a 216 cm2 panel
+#   - English only              -> Rule 9(3) bilingual requirement
+#   - GTIN prefix 690           -> allocated by GS1 China, but "Made in India"
+100,120,520,200|Crunchy Gold
+100,220,340,270|Biscuits
+100,700,420,756|Net Wt. 200 gms
+100,780,380,830|MRP Rs. 45.00
+100,840,560,890|Unit Sale Price: Rs. 20.00 per 100 g
+100,900,600,950|Manufactured by: Gold Foods Pvt Ltd
+100,955,640,1005|Plot 42, MIDC Industrial Estate, Pune 411018
+100,1015,320,1065|Mfg: 03/2026
+100,1075,700,1125|Consumer Care: care@goldfoods.co.in, 1800 200 1234
+100,1135,300,1185|Made in India
+100,1195,360,1245|6901234567892

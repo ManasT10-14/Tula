@@ -1,0 +1,34 @@
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.pytest-tmp/
+.pytest-*/
+.ruff_cache/
+
+# runtime output
+out/
+build/
+dist/
+data/uploads/
+data/bench/
+data/seed/
+data/capture-drafts/
+data/capture-previews/
+
+# runtime locks: OS locks decide liveness, not these files
+.tula-runtime-*.lock
+*.db
+*.db-wal
+*.db-shm
+*.sqlite3
+
+# model weights are downloaded, never committed
+models/
+*.onnx
+
+.env
+.DS_Store
+Thumbs.db

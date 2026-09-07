@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Rule pack · Tula{% endblock %}
+{% block content %}
+
+<p class="eyebrow">Rule pack {{ pack.version }}</p>
+<h1>The statute, as the engine reads it</h1>
+<p class="lede">{{ pack.rules | length }} versioned rule definitions with evidence requirements and legal sources. The engine combines these definitions with applicability and measurement logic. Citation summaries are screening paraphrases; read the linked official text and applicable amendments before a legal decision.</p>
+
+<div class="card" style="border-left:3px solid var(--bad);margin:1rem 0">
+  <p class="eyebrow" style="color:var(--bad)">Unverified draft</p>
+  <p class="small" style="margin:0">{{ pack.notes }}</p>
+</div>
+
+<hr class="tickrule">
+
+<div class="tw" tabindex="0" role="region" aria-label="Rule definitions">
+  <table style="min-width:820px">
+    <thead>
+      <tr><th>Clause</th><th>Rule</th><th>In force</th><th>Min tier</th><th>Severity</th></tr>
+    </thead>
+    <tbody>
+      {% for r in rules %}
+      <tr>
+        <td><span class="cite">{{ r.citation.clause }}</span></td>
+        <td>
+          <strong style="font-family:var(--f-display);font-size:.94rem">{{ r.title }}</strong>
+          <div class="mono small muted">{{ r.id }}</div>
+          {% if r.citation.text %}
+          <p class="small muted" style="margin:.35rem 0 0;max-width:60ch">{{ r.citation.text }}</p>
+          {% endif %}
+          {% if r.sources %}<details><summary class="small">Official sources and review scope</summary><ul class="small">{% for source in r.sources %}<li><a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.get('notification', 'Official source') }}</a> · {{ source.get('publication_date','') }}<br>{{ source.get('clause','') }}<br>{{ source.get('review_status','') }}</li>{% endfor %}</ul></details>{% endif %}
+        </td>
+        <td class="num small">
+          {{ r.effective_from }}<br>
+          <span class="muted">{{ r.effective_to or "current" }}</span>
+        </td>
+        <td>
+          <span class="chip {{ 'info' if r.min_assurance_tier.value in ('A','B') else 'muted' }}">
+            {{ r.min_assurance_tier.value }}</span>
+          <div class="small muted" style="margin-top:.2rem">
+            {{ "Calibrated evidence required" if r.min_assurance_tier.value in ("A","B") else "Evidence and coverage gates apply" }}
+          </div>
+        </td>
+        <td>
+          <span class="chip {{ 'bad' if r.severity.value == 'critical' else ('warn' if r.severity.value == 'major' else 'muted') }}">
+            {{ r.severity.value }}</span>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<p class="small muted">
+  The machine-readable pack is served at <a href="/v1/rules/current" class="mono">/v1/rules/current</a>.
+  Sign-in is required. Historical inspection records retain their original version; selecting a
+  new version does not re-evaluate earlier records.
+</p>
+
+{% endblock %}

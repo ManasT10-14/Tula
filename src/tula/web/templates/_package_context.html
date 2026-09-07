@@ -1,0 +1,41 @@
+<section id="package-context" class="card" style="margin-top:18px">
+  <h3>Package facts & applicable rules</h3>
+  {% set context = a.package.legal_context %}
+  {% set can_edit_context = a.review.status != 'approved' and (request.state.user.role in ['admin','supervisor'] or a.scan.inspector_id == request.state.user.id|string) %}
+  <p class="small muted">Confirm facts from this package and inspection. A change reruns the original rule version and clears earlier finding decisions. Unknown facts remain subject to review.</p>
+  <p class="small">Assessment date: {{ context.get('assessment_date', 'Not confirmed') }} · Rule version {{ a.rules_version }}</p>
+  {% for note in context.get('legal_review_reasons', []) %}<p class="notice small">{{ note }}</p>{% endfor %}
+  {% if can_edit_context %}
+  <form method="post" action="/inspections/{{ a.scan.scan_id }}/context" data-review-form>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <input type="hidden" name="revision" value="{{ a.review.revision }}">
+    <div class="grid two">
+      <label>Product category<select name="category">
+        {% for value, label in [('unknown','Not confirmed'),('general','General packaged commodity'),('food','Food'),('alcohol','Alcohol'),('tobacco','Tobacco'),('pan_masala','Pan masala'),('medical_device','Medical device'),('cosmetic','Cosmetic'),('seed','Seed')] %}
+        <option value="{{ value }}" {{ 'selected' if context.get('category','unknown')==value }}>{{ label }}</option>
+        {% endfor %}
+      </select></label>
+      <label>Package / bundle<select name="bundle_type">
+        {% for value, label in [('unknown','Not confirmed'),('single','Single package'),('combination','Combination package'),('group','Group package'),('multipiece','Multi-piece package')] %}
+        <option value="{{ value }}" {{ 'selected' if context.get('bundle_type','unknown')==value }}>{{ label }}</option>
+        {% endfor %}
+      </select></label>
+      <label>Origin context<select name="origin">
+        <option value="unknown" {{ 'selected' if not context.get('imported_confirmed') }}>Not confirmed</option>
+        <option value="domestic" {{ 'selected' if context.get('imported_confirmed') and context.get('is_imported')==false }}>Domestic commodity</option>
+        <option value="imported" {{ 'selected' if context.get('imported_confirmed') and context.get('is_imported')==true }}>Imported commodity</option>
+      </select></label>
+      <label>Package shape<select name="shape">
+        {% for value, label in [('unknown','Not confirmed'),('rectangular','Rectangular'),('cylindrical','Cylindrical'),('other','Other')] %}
+        <option value="{{ value }}" {{ 'selected' if context.get('shape','unknown')==value }}>{{ label }}</option>
+        {% endfor %}
+      </select></label>
+    </div>
+    <label class="row" style="margin:12px 0"><input type="checkbox" name="confirmed" value="1">I verified the selected facts from the package and inspection.</label>
+    <label>Evidence and reason for this context<input name="reason" required minlength="5" maxlength="3000" placeholder="What established the category, origin and package facts?"></label>
+    <button class="compact" style="margin-top:12px">Save package facts & recheck</button>
+  </form>
+  {% else %}
+  <dl class="small"><dt>Category</dt><dd>{{ context.get('category','unknown')|replace('_',' ') }} · {{ 'Confirmed' if context.get('category_confirmed') else 'Not confirmed' }}</dd><dt>Package</dt><dd>{{ context.get('bundle_type','unknown')|replace('_',' ') }}</dd><dt>Origin</dt><dd>{{ ('Imported' if context.get('is_imported') else 'Domestic') if context.get('imported_confirmed') else 'Not confirmed' }}</dd><dt>Shape</dt><dd>{{ context.get('shape','unknown') }}</dd></dl>
+  {% endif %}
+</section>

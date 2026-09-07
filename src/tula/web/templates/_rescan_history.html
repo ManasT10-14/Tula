@@ -1,0 +1,33 @@
+{% set related = linked_captures|default({}) %}
+{% if a.scan.parent_scan_id or related.get('children') %}
+<section id="linked-captures" class="card" aria-labelledby="linked-captures-heading" style="margin:18px 0">
+  <h2 id="linked-captures-heading">Linked capture history</h2>
+  <p class="small muted">Each close-up creates a new analysis with the retained package images. Review and approval belong to each inspection separately; earlier decisions remain in their original record.</p>
+  {% if a.scan.parent_scan_id %}
+    <p class="small">Original inspection: <a class="mono" href="/inspections/{{ a.scan.parent_scan_id }}">{{ a.scan.parent_scan_id }}</a>.
+    {% if related.get('parent') %}Current workflow: {{ related.parent.review_status|replace('_',' ')|title }} · revision {{ related.parent.revision }} · rules {{ related.parent.rules_version }}.{% else %}Its current summary is unavailable.{% endif %}</p>
+    {% if a.scan.rescan_target %}<p class="small"><strong>Close-up focus:</strong> {{ a.scan.rescan_target|replace('_',' ')|capitalize }}.</p>{% endif %}
+    {% if related.get('snapshot') %}
+      {% set snapshot = related.snapshot %}
+      <p class="small">This capture used original revision <a href="/inspections/{{ a.scan.parent_scan_id }}/revisions/{{ snapshot.revision }}" target="_blank" rel="noopener">{{ snapshot.revision }} · open retained JSON</a>, rules {{ snapshot.rules_version }}. The retained reference hash matches.</p>
+      {% if snapshot.corrections %}<details><summary>Earlier officer corrections to verify again ({{ snapshot.correction_count }})</summary>
+        <p class="small muted">These are earlier assertions, not corrections applied to this new analysis. Compare them with the combined images before recording your decision.{% if snapshot.correction_count > snapshot.corrections|length %} Showing the most recent {{ snapshot.corrections|length }}; the linked revision retains all corrections.{% endif %}</p>
+        {% for correction in snapshot.corrections %}<div style="margin:12px 0"><strong>{{ correction.kind|replace('_',' ')|capitalize }}</strong><blockquote class="small" style="white-space:pre-wrap">{{ correction.raw }}</blockquote><p class="small">{{ correction.actor }} · {{ correction.reason }}</p></div>{% endfor %}
+      </details>{% endif %}
+    {% elif a.scan.parent_revision is not none %}<p class="notice">The recorded original revision {{ a.scan.parent_revision }} could not be verified for comparison. Restore the matching retained revision before relying on its earlier corrections.</p>
+    {% else %}<p class="small muted">This older record did not retain the original revision number. The original link opens its current state.</p>{% endif %}
+  {% endif %}
+  {% if related.get('children') %}
+    <p class="small">{{ related.total_children }} linked rescan(s){% if related.total_children > related.children|length %}; showing the {{ related.children|length }} most recent. Older records remain searchable in Repository{% endif %}.</p>
+    <div class="tw" tabindex="0" role="region" aria-label="Linked rescan inspections">
+      <table><thead><tr><th>Inspection</th><th>Captured · UTC</th><th>Officer</th><th>Review</th><th>Screened result</th><th>Rules</th></tr></thead>
+      <tbody>{% for child in related.children %}<tr>
+        <td><a class="mono" href="/inspections/{{ child.scan_id }}">{{ child.scan_id }}</a></td>
+        <td>{{ child.captured_at }}</td><td>{{ child.operator or 'Not recorded' }}</td>
+        <td>{{ child.review_status|replace('_',' ')|title }} · revision {{ child.revision }}</td>
+        <td>{{ child.product_status|replace('_',' ')|title }}</td><td>{{ child.rules_version }}</td>
+      </tr>{% endfor %}</tbody></table>
+    </div>
+  {% endif %}
+</section>
+{% endif %}

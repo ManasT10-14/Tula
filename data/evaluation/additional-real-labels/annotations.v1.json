@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "dataset_id": "additional-real-labels-visual-first-v1",
+  "annotator": "Codex single-agent visual inspection; no independent adjudication",
+  "annotation_date": "2026-09-07",
+  "ocr_run_before_annotation": false,
+  "protocol": "Literal text and original-image boxes were frozen before any local OCR run on these four photographs. The annotator had implemented the pipeline and selected sources to exercise known weaknesses; this is unblinded development evaluation, not held-out accuracy. No OCR outputs, filenames, catalogue metadata, source-page transcriptions or arithmetic supplied unseen label truth.",
+  "scope": "Four real photographs, 14 readable literal targets. Five targets have sufficiently explicit semantics for normalized structured scoring: one B-prefixed batch code, two printed rupee amounts and two unit prices. Seven date fragments and two unlabelled codes are literal-only targets. No legal, product-authenticity, medical, safety or package-completeness verdict is annotated. No net quantity is visible; do not derive it from the price ratio.",
+  "coordinates": "Approximate axis-aligned [left,top,right,bottom] boxes in the original decoded image pixel grid. Originals retained with no local modification; plain crop files are visual inspection aids only and not additional evaluation inputs.",
+  "matching": "Literal case and whitespace may be normalized; punctuation and every digit remain material. A spatially overlapping selected line or same-pass candidate must contain the complete target literal with token boundaries. Structured comparisons require the exact annotated value and source overlap; price currency and unit-price basis must also match. Unknown or semantically ambiguous fields are excluded, not scored as correctly absent.",
+  "images": [
+    {
+      "id": "commons-best-before-canada",
+      "path": "data/evaluation/additional-real-labels/best-before-canada.jpg",
+      "sha256": "1197be6040c20437bff3033177f883891a7d378208edbbe90ca7e8767ff560aa",
+      "size": [3703,496],
+      "panel": "unknown",
+      "country_context": "Canada according to the photographer's file description; not a country-of-origin declaration in the image",
+      "visual_notes": "Narrow original photograph of a box edge. BEST BEFORE/MEILLEUR AVANT cue and dotted code are visible; upper cue is partly cut by the image boundary. The first code segment reads 13 JN 02, followed by 04:02 and RM3. Do not infer the century or date order from EXIF or the upload date. JN is a printed two-letter code rather than an unambiguous English month name.",
+      "unknown_default": "All other package fields and all unseen faces are unknown.",
+      "targets": [
+        {"id":"canada-best-before-literal","kind":"date_literal","literal":"13 JN 02","bbox":[125,195,1235,455],"cue":"BEST BEFORE/MEILLEUR AVANT","structured_field":"best_before","structured_scored":false,"reason":"Date order, century and coded month interpretation are not uniquely established from this photograph; literal text is scored without selecting a normalized date."}
+      ]
+    },
+    {
+      "id": "commons-manufacture-expiration",
+      "path": "data/evaluation/additional-real-labels/manufacture-expiration.jpg",
+      "sha256": "bf518265b38bc89aeb97b652934a9c1bf7059dab8cc5d06ef75cd7ca184fbd9e",
+      "size": [4032,3024],
+      "panel": "unknown",
+      "country_context": "Product market and country of origin are not visible. The photographer's source page locates the camera in the UAE; this is provenance only.",
+      "visual_notes": "Reflective can base with two dotted English/numeric lines and Arabic-script text. First line P:13/04/2023, second E:12/04/2024, with visible B:103A at the right. P alone does not distinguish production from packing. The four-digit first date implies day/month order locally, but the second date is conservatively left literal-only. Arabic text is not confidently transcribed. A time appears above the batch code and is excluded from target denominators.",
+      "unknown_default": "Product identity, quantity, prices, manufacturer, origin and unseen package declarations are unknown.",
+      "targets": [
+        {"id":"can-p-date-literal","kind":"date_literal","literal":"13/04/2023","bbox":[1080,1570,1890,1775],"cue":"P:","structured_field":null,"structured_scored":false,"reason":"Literal date is readable, but P does not specify manufacture versus packing; no field type is supplied from the filename or web caption."},
+        {"id":"can-e-date-literal","kind":"date_literal","literal":"12/04/2024","bbox":[1045,1780,1890,1965],"cue":"E:","structured_field":"expiry_date","structured_scored":false,"reason":"Readable date; conservative evaluation preserves the month/day ambiguity instead of asserting one normalized date."},
+        {"id":"can-batch","kind":"batch_code","literal":"103A","bbox":[2960,1770,3390,1965],"cue":"B:","structured_field":"batch_number","structured_scored":true,"expected":{"value":"103A"},"reason":"The B-prefixed printed code is readable; no source metadata or inferred digits are used."}
+      ]
+    },
+    {
+      "id": "nestle-india-tin",
+      "path": "data/evaluation/additional-real-labels/nestle-india-tin.png",
+      "sha256": "dfb7cf344b895bd4860468493d8c519ec60cd83f25f41370beca362add64b772",
+      "size": [983,1075],
+      "panel": "unknown",
+      "country_context": "Published for India by Nestle India; product origin is not visible and is not scored",
+      "visual_notes": "Real tin-bottom photograph with a red rectangle already added by the publisher around an unlabelled ten-character code. That markup is retained and may make detection easier; this is not an unmarked field photograph. The dates JUL/25 - OCT/26 lack printed manufacture/expiry labels. Price Rs.600.00 and unit price Rs.1.26 per g are clear. There is no net quantity or complete MRP/tax clause in this view.",
+      "unknown_default": "No unseen label fields, legal completeness or net quantity are inferred.",
+      "targets": [
+        {"id":"tin-code","kind":"untyped_code","literal":"51850453T1","bbox":[260,440,484,503],"structured_field":null,"structured_scored":false,"reason":"No printed batch/lot cue. The source web page's identification and red rectangle are not substituted for label evidence when scoring semantic field assignment."},
+        {"id":"tin-date-left","kind":"date_literal","literal":"JUL/25","bbox":[265,516,414,574],"structured_field":null,"structured_scored":false,"reason":"Date fragment is readable but its type is not labelled; no century or date role is inferred."},
+        {"id":"tin-date-right","kind":"date_literal","literal":"OCT/26","bbox":[420,516,581,574],"structured_field":null,"structured_scored":false,"reason":"Date fragment is readable but its type is not labelled; no expiry meaning is supplied from layout alone."},
+        {"id":"tin-price","kind":"printed_price","literal":"Rs.600.00","bbox":[243,581,444,650],"structured_field":"retail_sale_price","structured_scored":true,"expected":{"value":600.0,"currency":"INR"},"reason":"Visible rupee amount only; does not certify statutory MRP or included taxes."},
+        {"id":"tin-unit-price","kind":"unit_price","literal":"Rs.1.26 per g","bbox":[450,581,747,654],"structured_field":"unit_sale_price","structured_scored":true,"expected":{"value":1.26,"currency":"INR","basis_value":1.0,"basis_unit":"g"},"reason":"Printed unit price; do not derive a package quantity by division."}
+      ]
+    },
+    {
+      "id": "nestle-india-box",
+      "path": "data/evaluation/additional-real-labels/nestle-india-box.jpg",
+      "sha256": "93867d4924e90d8c7e0ace4d9f687f85cdddccf1a707fc394a4130a46de483b5",
+      "size": [1600,1600],
+      "panel": "unknown",
+      "country_context": "Published for India by Nestle India; product origin is not visible and is not scored",
+      "visual_notes": "Real box-edge photograph with a source-added red rectangle around an unlabelled code. Source bytes and rectangle are retained. JAN/26 - JAN/27 is legible but has no printed date-role labels. Rs.775.00 and Rs.1.94/g are legible. No net quantity is shown.",
+      "unknown_default": "Other faces and declarations are unknown; web-page batch descriptions are not label-derived truth.",
+      "targets": [
+        {"id":"box-code","kind":"untyped_code","literal":"60280453K1","bbox":[376,730,760,820],"structured_field":null,"structured_scored":false,"reason":"Readable code; no printed batch cue, and source-page metadata is not used to supply its label class."},
+        {"id":"box-date-left","kind":"date_literal","literal":"JAN/26","bbox":[367,836,630,918],"structured_field":null,"structured_scored":false,"reason":"Date fragment is readable; manufacture or packing semantics are not explicit."},
+        {"id":"box-date-right","kind":"date_literal","literal":"JAN/27","bbox":[697,830,939,919],"structured_field":null,"structured_scored":false,"reason":"Date fragment is readable; expiry or best-before semantics are not explicit."},
+        {"id":"box-price","kind":"printed_price","literal":"Rs.775.00","bbox":[358,931,704,1026],"structured_field":"retail_sale_price","structured_scored":true,"expected":{"value":775.0,"currency":"INR"},"reason":"Visible rupee amount only; no MRP/tax-completeness assertion."},
+        {"id":"box-unit-price","kind":"unit_price","literal":"Rs.1.94/g","bbox":[738,926,1088,1028],"structured_field":"unit_sale_price","structured_scored":true,"expected":{"value":1.94,"currency":"INR","basis_value":1.0,"basis_unit":"g"},"reason":"Printed unit price only; no quantity inferred from it."}
+      ]
+    }
+  ]
+}

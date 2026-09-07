@@ -1,0 +1,41 @@
+{
+  "id": "LMPCR.R6.1.C.NET_QUANTITY",
+  "title": "Net quantity declaration",
+  "citation": {
+    "clause": "Rule 6(1)(c)",
+    "text": "Every package shall bear the net quantity, in terms of the standard unit of weight or measure, of the commodity contained in the package, or where the commodity is packed by number, the number of the commodity contained in it."
+  },
+  "effective_from": "2011-04-01",
+  "declaration": "net_quantity",
+  "assert": {
+    "all": [
+      {
+        "present": "$decl.net_quantity"
+      },
+      {
+        "present": "$decl.net_quantity.norm.value"
+      }
+    ]
+  },
+  "severity": "critical",
+  "min_assurance_tier": "C",
+  "penalty_ref": "LM Act 2009 s.36(1)",
+  "messages": {
+    "pass": "Net quantity is declared in a standard unit.",
+    "violation": "No net quantity declaration could be found on the package."
+  },
+  "evidence": [
+    "net_quantity"
+  ],
+  "tests": "tests/test_rules_engine.py",
+  "sources": [
+    {
+      "url": "https://consumeraffairs.gov.in/public/upload/files/8_1732871406.pdf",
+      "notification": "G.S.R.202(E)",
+      "publication_date": "2011-03-07",
+      "clause": "PCR 2011; read with subsequent amendments",
+      "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+    }
+  ],
+  "legal_check": {}
+}

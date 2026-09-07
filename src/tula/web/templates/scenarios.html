@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Acceptance matrix · Tula{% endblock %}
+{% block content %}
+
+<p class="eyebrow">Acceptance matrix</p>
+<h1>{{ scenarios | length }} scenarios, one behaviour each</h1>
+<p class="lede">Every row synthesises a label, runs the full pipeline, and asserts that named
+clauses reach named verdicts. A row passes only if every expectation matches <em>and</em> the
+measurement contains the geometry that was actually drawn.</p>
+
+<div class="card" style="border-left:3px solid var(--accent);margin:1rem 0">
+  <p class="small" style="margin:0"><strong>The last six rows are the important ones.</strong>
+  Everything above them hands the system a complete, legible label — which is exactly the
+  blind spot that let real photographs produce fifty non-conformities against compliant
+  national brands. Those six hand it what a real inspection produces instead: one face of a
+  package, a frame that failed, a citizen's phone. The property under test there is the
+  absence of an accusation.</p>
+</div>
+
+<div class="row" style="margin:.8rem 0">
+  <span class="small muted">Recogniser:</span>
+  <a href="/bench/scenarios?engine=fixture">
+    <button type="button" class="{{ '' if engine == 'fixture' else 'ghost' }}">fixture — perfect OCR</button></a>
+  <a href="/bench/scenarios?engine=rapidocr">
+    <button type="button" class="{{ '' if engine == 'rapidocr' else 'ghost' }}">rapidocr — real OCR</button></a>
+  <span class="small muted">
+    {% if engine == 'rapidocr' %}Real recognition — roughly 8 s per row, so the table fills gradually.
+    {% else %}Exact geometry, so a failure here is a bug in the rules or the metrology, never in the OCR.
+    {% endif %}
+  </span>
+</div>
+
+<div class="card" style="border-left:3px solid var(--brass);margin-bottom:1.2rem">
+  <p class="small" style="margin:0"><strong>Why two engines.</strong> The fixture supplies reference text to isolate extraction, measurement and rule behavior. RapidOCR reads actual image pixels and can expose missing or competing readings. The limited language screen accepts supported Latin or Devanagari evidence; it does not establish complete language compliance. Generated package facts are known for these scenarios. Review actual findings and expectations below; fixture results do not measure OCR accuracy.</p>
+</div>
+
+<hr class="tickrule">
+
+<div class="tw" tabindex="0" role="region" aria-label="Acceptance scenarios">
+  <table style="min-width:900px">
+    <thead>
+      <tr><th style="width:30%">Scenario</th><th style="width:30%">Expectations</th>
+          <th style="width:28%">Measurement vs ground truth</th><th>Links</th></tr>
+    </thead>
+    <tbody>
+      {% for s in scenarios %}
+      <tr id="{{ s.key }}" hx-get="/bench/scenarios/{{ s.key }}?engine={{ engine }}"
+          hx-trigger="load" hx-swap="outerHTML">
+        <td>
+          <strong style="font-family:var(--f-display);font-size:.95rem">{{ s.title }}</strong>
+          <div class="mono small muted">{{ s.key }}</div>
+        </td>
+        <td colspan="3" class="muted small">running…</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<p class="small muted">Scenario definitions live in <span class="mono">src/tula/bench.py</span>.
+The same definitions drive the preset buttons on the <a href="/bench">bench</a>, so a preset and
+its matrix row cannot drift apart. The equivalent assertions also run headless under
+<span class="mono">pytest tests/test_bench.py</span>.</p>
+
+{% endblock %}

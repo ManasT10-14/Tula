@@ -1,0 +1,45 @@
+{
+  "id": "LMPCR.R6.1.E.MRP_FORM",
+  "title": "Retail sale price declared in the prescribed form",
+  "citation": {
+    "clause": "Rule 6(1)(e) read with Rule 2(m)",
+    "text": "The retail sale price shall be declared in the form 'Maximum Retail Price Rs. ... inclusive of all taxes', or in the form 'MRP Rs. ... incl. of all taxes'."
+  },
+  "effective_from": "2011-04-01",
+  "declaration": "retail_sale_price",
+  "applies_when": {
+    "present": "$decl.retail_sale_price"
+  },
+  "assert": {
+    "contains_phrase": [
+      "$decl.retail_sale_price.raw",
+      [
+        "inclusive of all taxes",
+        "incl of all taxes",
+        "inclusive of all taxes local or otherwise"
+      ],
+      0.82
+    ]
+  },
+  "severity": "major",
+  "min_assurance_tier": "C",
+  "penalty_ref": "LM Act 2009 s.36(1)",
+  "messages": {
+    "pass": "The retail sale price is declared in the prescribed form, inclusive of all taxes.",
+    "violation": "The retail sale price is not declared in the prescribed form. The words 'inclusive of all taxes' are absent, so the declared price does not tell the consumer what they will actually pay."
+  },
+  "evidence": [
+    "retail_sale_price"
+  ],
+  "tests": "tests/test_rules_engine.py",
+  "sources": [
+    {
+      "url": "https://consumeraffairs.gov.in/public/upload/files/8_1732871406.pdf",
+      "notification": "G.S.R.202(E)",
+      "publication_date": "2011-03-07",
+      "clause": "PCR 2011; read with subsequent amendments",
+      "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+    }
+  ],
+  "legal_check": {}
+}

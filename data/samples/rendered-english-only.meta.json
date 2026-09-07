@@ -1,0 +1,9 @@
+{
+  "panel": "pdp",
+  "mm_per_px": 0.083333,
+  "mm_per_px_source": "device_depth",
+  "pdp_width_mm": 120.0,
+  "pdp_height_mm": 180.0,
+  "packing_date": "2026-03-01",
+  "notes": "synthetic render at 12 px/mm; net quantity drawn at 1.4 mm cap height"
+}

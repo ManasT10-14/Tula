@@ -1,0 +1,150 @@
+{# Bench result: the rendered label beside every stage of the pipeline. #}
+<hr class="tickrule">
+<div class="grid split">
+  <div>
+    <p class="eyebrow">Determination</p>
+    <h2 style="margin-top:0">{{ headline }}</h2>
+    <p class="mono muted small">
+      {{ a.scan.scan_id }} · rules {{ a.rules_version }} · Tier {{ a.scan.tier.value }}
+      · engine {{ r.engine }} · {{ r.elapsed_ms }} ms
+    </p>
+  </div>
+  <div>
+    <p class="eyebrow">Rendered label</p>
+    <img src="/bench/image/{{ stem }}.png?v={{ a.scan.scan_id }}" alt="Rendered label"
+         style="max-width:100%;border:1px solid var(--line);border-radius:3px;background:#fff">
+  </div>
+</div>
+
+<h3>Measurement against ground truth</h3>
+<p class="small muted" style="margin-top:0">The renderer knows exactly what it drew. This is
+the check that makes the millimetre claim falsifiable rather than decorative.</p>
+<div class="tw" tabindex="0" role="region" aria-label="Generated label measurements">
+  <table>
+    <thead><tr><th>Quantity</th><th>Drawn</th><th>Measured</th><th>Error</th>
+               <th>Tier</th><th>Truth inside interval?</th></tr></thead>
+    <tbody>
+      {% for t in r.truth_checks %}
+      <tr>
+        <td>{{ t.quantity }}</td>
+        <td class="num">{{ "%.2f"|format(t.drawn) }} {{ t.unit }}</td>
+        <td class="num">
+          {% if t.measured %}{{ "%.2f"|format(t.measured.value) }} ± {{ "%.2f"|format(t.measured.uncertainty) }} {{ t.unit }}
+          {% else %}<span class="muted">not measured</span>{% endif %}
+        </td>
+        <td class="num">
+          {% if t.error is not none %}{{ "%+.3f"|format(t.error) }} ({{ "%.1f"|format(t.error_pct) }}%)
+          {% else %}—{% endif %}
+        </td>
+        <td>{% if t.measured %}<span class="chip info">{{ t.measured.tier.value }}</span>{% else %}—{% endif %}</td>
+        <td>
+          {% if t.within_interval is none %}<span class="chip muted">n/a</span>
+          {% elif t.within_interval %}<span class="chip ok">yes</span>
+          {% else %}<span class="chip bad">NO — metrology error</span>{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if a.scan.scales %}
+<p class="small muted">Scale sources:
+  {% for s in a.scan.scales %}<span class="mono">{{ s.source }} = {{ "%.5f"|format(s.mm_per_px) }} ± {{ "%.5f"|format(s.sigma) }} mm/px (Tier {{ s.tier.value }})</span>{{ "; " if not loop.last }}{% endfor %}
+</p>
+{% endif %}
+
+{% if r.checks %}
+<h3>Expected verdicts</h3>
+<div class="tw" tabindex="0" role="region" aria-label="Generated label measurements">
+  <table>
+    <thead><tr><th>Rule</th><th>Expected</th><th>Actual</th><th></th></tr></thead>
+    <tbody>
+      {% for c in r.checks %}
+      <tr>
+        <td class="mono small">{{ c.rule_id }}</td>
+        <td class="mono">{{ c.expected }}</td>
+        <td class="mono">{{ c.actual }}</td>
+        <td>{% if c.ok %}<span class="chip ok">match</span>{% else %}<span class="chip bad">mismatch</span>{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<h3>Stage 1 · What the recogniser read</h3>
+<div class="tw" tabindex="0" role="region" aria-label="Generated label measurements">
+  <table>
+    <thead><tr><th>Text</th><th>Confidence</th><th>Cap height</th><th>Script</th></tr></thead>
+    <tbody>
+      {% for s in a.spans %}
+      <tr>
+        <td class="mono small">{{ s.text }}</td>
+        <td class="num">{{ "%.2f"|format(s.confidence) }}</td>
+        <td class="num">{{ "%.1f"|format(s.height_px) if s.height_px else "—" }} px</td>
+        <td><span class="chip muted">{{ s.script.value }}</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<h3>Stage 2 · Declarations, normalised</h3>
+<div class="tw" tabindex="0" role="region" aria-label="Generated label measurements">
+  <table>
+    <thead><tr><th>Declaration</th><th>As printed</th><th>Normalised</th><th>Scripts</th></tr></thead>
+    <tbody>
+      {% for k, d in a.declarations.items() %}
+      <tr>
+        <td class="mono small">{{ k.value }}</td>
+        <td class="small">{{ d.raw|replace("\n", " / ") }}</td>
+        <td class="mono small">{{ d.norm }}</td>
+        <td class="small">{{ d.scripts | map(attribute='value') | join(", ") }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<h3>Stage 3 · Applicability</h3>
+<p class="small">
+  Package class <span class="chip info">{{ a.package.klass.value }}</span>
+  {% if a.package.exemptions %}
+    · exempt under {{ a.package.exemptions | join("; ") }}
+  {% else %}
+    · no exemption applies, all declarations required
+  {% endif %}
+  {% if a.package.gtin %} · GTIN <span class="mono">{{ a.package.gtin }}</span>{% endif %}
+</p>
+
+<h3>Stage 4 · Every rule evaluated</h3>
+{% for f in a.findings %}
+{% set cls = verdict_class(f.verdict) %}
+<div class="finding {{ cls }}">
+  <div class="finding-hd">
+    <span class="chip {{ cls }}">{{ verdict_label[f.verdict] }}</span>
+    <span class="cite">{{ f.citation.clause }}</span>
+    <strong>{{ f.message }}</strong>
+  </div>
+  {% if f.detail %}<p class="small muted" style="margin:.2rem 0 0">{{ f.detail }}</p>{% endif %}
+  {% if f.measured or f.threshold is not none %}
+  <dl>
+    {% if f.measured %}<dt>Measured</dt><dd>{{ f.measured.render() }}</dd>{% endif %}
+    {% if f.threshold is not none %}<dt>Minimum</dt><dd>{{ "%.2f"|format(f.threshold) }} mm</dd>{% endif %}
+    {% if f.threshold_basis %}<dt>Basis</dt><dd>{{ f.threshold_basis }}</dd>{% endif %}
+  </dl>
+  {% endif %}
+</div>
+{% endfor %}
+
+{% if a.warnings %}
+<h3>Notes</h3>
+<ul class="small muted">{% for w in a.warnings %}<li>{{ w }}</li>{% endfor %}</ul>
+{% endif %}
+
+<div class="row" style="margin-top:1.2rem">
+  <a class="button-link secondary" href="/inspections/{{ a.scan.scan_id }}">Full record</a>
+  <a class="button-link secondary" href="/inspections/{{ a.scan.scan_id }}/report.pdf">Report (PDF)</a>
+  <a href="/inspections/{{ a.scan.scan_id }}/report.json" class="small mono">JSON</a>
+</div>

@@ -1,0 +1,143 @@
+{
+  "schema_version": 1,
+  "dataset_id": "existing-upload-photos-single-annotator-v1",
+  "annotation_date": "2026-09-07",
+  "annotator": "Codex visual inspection; one agent, no independent adjudication",
+  "protocol": "Every distinct JPG in data/uploads was visually inspected before this evaluation run. Repeated byte-identical uploads count once. These are agent-created annotations, not externally validated ground truth. The annotator had previously worked on this pipeline and its unlabelled smoke benchmark: this is unblinded development evaluation, not a held-out accuracy claim.",
+  "scope": "Visible printed text and field extraction only. No package-completeness, legal compliance, medical, allergen-safety, expiry-safety or barcode-registration verdict is annotated. Filenames and barcode databases must not supply unseen text. Front prices are visible rupee amounts; their annotation does not certify a legally complete MRP declaration.",
+  "coordinate_system": "Approximate manually drawn axis-aligned boxes [left, top, right, bottom], original decoded image pixels. Bounds enclose readable target text, not precise glyph segmentation. No EXIF rotations were required by these ten originals.",
+  "target_fields": ["brand", "generic_name", "retail_sale_price", "net_quantity", "unit_sale_price", "manufacturing_date", "packing_date", "expiry_date", "best_before", "batch_number", "ingredients", "manufacturer", "consumer_care", "country_of_origin", "gtin"],
+  "matching_policy": {
+    "structured": "Exact equality of the specified structured value after Unicode NFKC, case and whitespace normalization, with source-box overlap. Numeric price amounts compare exactly as decimal numbers; no fuzzy matching. Brand and sub-brand are both acceptable only when explicitly transcribed as alternatives before the run. Generic-name targets are explicitly printed commodity tokens, not inferred product categories.",
+    "ocr": "An exact case-insensitive printed target span in a spatially overlapping OCR box, either selected text or any retained processing candidate. Token boundaries prevent 20 matching 200; decimal/date punctuation is significant. Whitespace and case alone are ignored. This measures text recovery, not correct field assignment.",
+    "unknown": "Unannotated target fields inherit unknown_default, optionally overridden below. They are excluded from the accuracy denominator. An output in an unknown region is reported without assigning correctness. Missing-side, occluded, illegible and absent-from-this-view never mean absent from the entire package."
+  },
+  "images": [
+    {
+      "id": "IN-front-8901063139329",
+      "path": "data/uploads/09a598844389/IN-front-8901063139329.jpg",
+      "sha256": "5444be16a2aeb3310a54bdc3a1d292a7d282c4958147bee0820404176189df7b",
+      "size": [1768, 1401],
+      "panel": "pdp",
+      "visual_notes": "Front of Britannia Bourbon packet held in hand. Other packets in the background are excluded. Branding and biscuit token readable; bottom fine print soft. Nutrition is per approximately 10 g serving, not pack net content.",
+      "unknown_default": {"status": "not_visible", "reason": "Only the front is captured; no unseen side or back declaration is inferred."},
+      "fields": [
+        {"field": "brand", "status": "readable", "value_path": "name", "expected_values": ["BRITANNIA", "BOURBON"], "regions": [{"text": "BRITANNIA", "bbox": [420, 425, 730, 498]}, {"text": "BOURBON", "bbox": [320, 525, 1285, 703]}], "note": "Corporate brand and visible sub-brand are accepted identities; no unseen product catalogue lookup."},
+        {"field": "generic_name", "status": "readable", "value_path": "name", "expected_values": ["biscuit"], "regions": [{"text": "BISCUIT", "bbox": [446, 980, 657, 1030]}, {"text": "Biscuit", "bbox": [262, 479, 352, 514]}], "note": "Commodity token in CREME BISCUIT WITH CHOCOLATE and Flavoured Sandwich Biscuit; no ingredients inferred from the flavour description."}
+      ]
+    },
+    {
+      "id": "IN-packaging-8901491100519",
+      "path": "data/uploads/0b4b9ac2a6b9/IN-packaging-8901491100519.jpg",
+      "sha256": "ca2e71fba8114beb15a2c4776ff9beb26370caea29acbb25a74608c2bc8c0fe0",
+      "size": [3072, 4080],
+      "panel": "unknown",
+      "visual_notes": "Very defocused white/orange back-panel close-up, partly covered by fingers; barcode digits extend outside left frame. No target declaration is reliably readable. Recycling artwork is not evidence of product identity.",
+      "unknown_default": {"status": "illegible_or_outside_frame", "reason": "Severe defocus plus tight crop: cannot distinguish an unreadable declaration from one outside the photograph."},
+      "fields": [{"field": "gtin", "status": "occluded_or_cropped", "note": "Do not reconstruct the barcode digits from this image filename."}]
+    },
+    {
+      "id": "IN-packaging-8901764042911",
+      "path": "data/uploads/1360db9c85d2/IN-packaging-8901764042911.jpg",
+      "sha256": "6a01bdb53c3059a96f74589333fd5a1f12e372560f414ca30726276dbaa5cd1e",
+      "size": [1655, 3056],
+      "panel": "unknown",
+      "visual_notes": "Wet reflective bottle close-up with glare and dark curvature. No readable printed declaration or brand; no characters assigned to faint texture.",
+      "unknown_default": {"status": "illegible_or_outside_frame", "reason": "No target text can be read reliably through this close-up, glare and surface texture."},
+      "fields": []
+    },
+    {
+      "id": "IN-packaging-8901719134845",
+      "path": "data/uploads/173fb6c0d02e/IN-packaging-8901719134845.jpg",
+      "sha256": "03ba8d79a23e6de1696410c1a7de5b05ec17d4213d8d8e1bbfcc1ab4235764fd",
+      "size": [3120, 4160],
+      "panel": "unknown",
+      "visual_notes": "Cropped back: partial barcode, disposal instruction and rotated partial ingredients/allergen/storage text. The initial barcode digit is outside the left edge. No complete ingredient declaration is visible. Readable disposal instruction Do not LITTER / Dispose as DRY WASTE is non-target text, not a brand.",
+      "unknown_default": {"status": "not_visible", "reason": "This cropped back fragment omits other sides and declarations."},
+      "fields": [
+        {"field": "gtin", "status": "occluded_or_cropped", "note": "Barcode leading digit is outside the image; do not fill it from the filename or check digit."},
+        {"field": "ingredients", "status": "occluded_or_cropped", "note": "Only a partial rotated food text strip is visible; wheat and milk words do not establish the complete ingredients or allergen statement."}
+      ]
+    },
+    {
+      "id": "IN-front-8901719134852",
+      "path": "data/uploads/1cfd866ae90e/IN-front-8901719134852.jpg",
+      "sha256": "9a8dd28071eb5d09fd894b88b568d2c90e2f8b212cd8b5c082af92758a68999f",
+      "size": [2538, 1292],
+      "panel": "pdp",
+      "visual_notes": "Front of Parle-G packet. Price rupees 10/- and Original Gluco Biscuits are clear. The 12.5% EXTRA marking is a promotional percentage, not net contents. Do not combine with a differently named barcode photograph as the same exact package.",
+      "unknown_default": {"status": "not_visible", "reason": "Only the front is shown; reverse-side declarations are unknown."},
+      "fields": [
+        {"field": "brand", "status": "readable", "value_path": "name", "expected_values": ["PARLE", "Parle-G"], "regions": [{"text": "PARLE", "bbox": [1220, 357, 1660, 453]}, {"text": "Parle-G", "bbox": [992, 533, 2047, 842]}]},
+        {"field": "generic_name", "status": "readable", "value_path": "name", "expected_values": ["biscuits"], "regions": [{"text": "Biscuits", "bbox": [1694, 750, 2010, 873]}]},
+        {"field": "retail_sale_price", "status": "readable", "value_path": "value", "expected_values": [10], "regions": [{"text": "10", "bbox": [1830, 131, 2130, 321]}], "note": "Printed rupee price only; the visible face does not show a complete MRP/tax clause."}
+      ]
+    },
+    {
+      "id": "IN-front-8901491366052",
+      "path": "data/uploads/1ec337be56d7/IN-front-8901491366052.jpg",
+      "sha256": "5b9b64d380c07eb278947fda41b2f66526b370c6cc411d2face2491715d7eac0",
+      "size": [1145, 1807],
+      "panel": "pdp",
+      "visual_notes": "Kurkure PLAYZ PUFFCORN front. Rupees 20 at upper left. YUMMY CHEESE describes the flavour; food pictures and flavour text are not ingredients. Small nutrition text at bottom right is cropped.",
+      "unknown_default": {"status": "not_visible", "reason": "Front only; back and side declarations are not available."},
+      "fields": [
+        {"field": "brand", "status": "readable", "value_path": "name", "expected_values": ["Kurkure", "PLAYZ"], "regions": [{"text": "Kurkure", "bbox": [231, 88, 917, 353]}, {"text": "PLAYZ", "bbox": [451, 380, 831, 518]}], "note": "Corporate/front brand and visible range name are both allowed; generic PUFFCORN is evaluated separately."},
+        {"field": "generic_name", "status": "readable", "value_path": "name", "expected_values": ["puffcorn"], "regions": [{"text": "PUFFCORN", "bbox": [146, 563, 936, 736]}], "note": "Explicit printed commodity token; do not replace with an inferred nutrition category."},
+        {"field": "retail_sale_price", "status": "readable", "value_path": "value", "expected_values": [20], "regions": [{"text": "20", "bbox": [26, 41, 217, 142]}], "note": "Visible rupee amount; no legal completeness claim for the price declaration."}
+      ]
+    },
+    {
+      "id": "IN-front-8901058017687",
+      "path": "data/uploads/230be0216704/IN-front-8901058017687.jpg",
+      "sha256": "4df1bb06597c9a3e4e46009f4a136de172cd00a6e114b99ab1237c2e873daa12",
+      "size": [1275, 1698],
+      "panel": "pdp",
+      "visual_notes": "Maggi front on stone surface. Brand and 2-Minute noodles legible despite local glare. Nutrition says a serve is 70 g: that is not annotated as pack net quantity. Lower folded fine print and side fragment are not reconstructed.",
+      "unknown_default": {"status": "not_visible", "reason": "Only front and a folded sliver are shown; complete declaration sides are unknown."},
+      "fields": [
+        {"field": "brand", "status": "readable", "value_path": "name", "expected_values": ["Maggi"], "regions": [{"text": "Maggi", "bbox": [484, 468, 779, 524]}]},
+        {"field": "generic_name", "status": "readable", "value_path": "name", "expected_values": ["noodles"], "regions": [{"text": "noodles", "bbox": [515, 720, 864, 785]}], "note": "Two letters contain face artwork, but the printed word can be read visually."}
+      ]
+    },
+    {
+      "id": "IN-front-8901063093522",
+      "path": "data/uploads/2f8f8e1985ab/IN-front-8901063093522.jpg",
+      "sha256": "cbdd83cf9ac1f030f655c5050503847c7a225eff0fab2386dd9e59eb11ac1741",
+      "size": [1282, 2579],
+      "panel": "pdp",
+      "visual_notes": "Britannia Good Day cashew cookies front rotated approximately 90 degrees. Foreground brand and COOKIES word legible. Nutrition is per approximately 15 g serve / 2 biscuits, not net pack contents. Narrow curved top print is not transcribed.",
+      "unknown_default": {"status": "not_visible", "reason": "Front is visible in rotation; side/back declarations are not shown."},
+      "fields": [
+        {"field": "brand", "status": "readable", "value_path": "name", "expected_values": ["BRITANNIA", "Good Day"], "regions": [{"text": "BRITANNIA", "bbox": [920, 798, 1008, 1185]}, {"text": "BRITANNIA", "bbox": [490, 461, 750, 535]}, {"text": "Good Day", "bbox": [450, 687, 1020, 1342]}]},
+        {"field": "generic_name", "status": "readable", "value_path": "name", "expected_values": ["cookies", "biscuits"], "regions": [{"text": "COOKIES", "bbox": [351, 1220, 427, 1454]}, {"text": "BISCUITS", "bbox": [170, 1230, 214, 1414]}], "note": "Both commodity tokens are visibly printed: COOKIES in CASHEW COOKIES, and BISCUITS beside the vegetarian mark."}
+      ]
+    },
+    {
+      "id": "IN-front-8906010500245",
+      "path": "data/uploads/63cebd8b7d88/IN-front-8906010500245.jpg",
+      "sha256": "ac96864937ad6032e8043f43ff66ed26760c95a6bf4b5814fbf4bb48bf8bb8a6",
+      "size": [906, 1200],
+      "panel": "pdp",
+      "visual_notes": "Balaji Namkeen Masala Sev Murmura front, creased and reflective. Logo and NAMKEEN word legible. No back-panel composition or other declarations visible.",
+      "unknown_default": {"status": "not_visible", "reason": "Front only; declarations on other sides are unknown."},
+      "fields": [
+        {"field": "brand", "status": "readable", "value_path": "name", "expected_values": ["BALAJI"], "regions": [{"text": "BALAJI", "bbox": [276, 248, 621, 324]}, {"text": "BALAJI", "bbox": [394, 168, 497, 200]}]},
+        {"field": "generic_name", "status": "readable", "value_path": "name", "expected_values": ["namkeen"], "regions": [{"text": "NAMKEEN", "bbox": [344, 332, 547, 391]}]}
+      ]
+    },
+    {
+      "id": "IN-front-8906010502119",
+      "path": "data/uploads/6dd227081479/IN-front-8906010502119.jpg",
+      "sha256": "baef9cbab5ce07ea727d0615164415d9fd26b812739434699ddb2e38f22438d5",
+      "size": [2264, 2770],
+      "panel": "pdp",
+      "visual_notes": "Balaji Wafers Chataka Pataka front. BALAJI corporate brand and Chataka Pataka range title clear. NAMKEEN at bottom right is readable. WAFERS also appears in the company lockup but is not used to infer this product's commodity. Flamin' Hot is flavour text.",
+      "unknown_default": {"status": "not_visible", "reason": "Front only; unseen package declarations remain unknown."},
+      "fields": [
+        {"field": "brand", "status": "readable", "value_path": "name", "expected_values": ["BALAJI", "Chataka Pataka"], "regions": [{"text": "BALAJI", "bbox": [649, 390, 1210, 526]}, {"text": "BALAJI", "bbox": [852, 244, 1023, 302]}, {"text": "Chataka Pataka", "bbox": [428, 556, 1647, 1233]}]},
+        {"field": "generic_name", "status": "readable", "value_path": "name", "expected_values": ["namkeen"], "regions": [{"text": "NAMKEEN", "bbox": [1957, 2679, 2215, 2766]}]}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+{% block title %}Bench · Tula{% endblock %}
+{% block content %}
+
+<p class="eyebrow">Test bench</p>
+<h1>Synthesise a label and watch it be judged</h1>
+<p class="lede">The bench draws a real label at true millimetre geometry, so the measurement
+coming out of the pipeline can be checked against what actually went in. Change one control,
+re-run, and see which clause moves.</p>
+
+<div class="row" style="margin:.6rem 0 0">
+  <a class="button-link secondary" href="/bench/scenarios">Run the acceptance matrix →</a>
+  <span class="small muted">{{ scenarios|length }} scenarios, each isolating one behaviour.</span>
+</div>
+
+<hr class="tickrule">
+
+<div class="grid split">
+  <div>
+    <form class="card upload" hx-post="/bench/run" hx-target="#bench-result" hx-swap="innerHTML"
+          method="post" action="/bench/run">
+
+      <p class="eyebrow" style="margin:0">Presets</p>
+      <div class="row" style="gap:.4rem">
+        {% for s in scenarios %}
+        <button type="button" class="ghost preset" data-key="{{ s.key }}"
+                style="font-size:.72rem;padding:.3rem .55rem" title="{{ s.proves }}">{{ s.key }}</button>
+        {% endfor %}
+      </div>
+
+      <hr class="tickrule" style="margin:.6rem 0">
+
+      <div class="grid two" style="gap:.7rem">
+        <div>
+          <label for="brand">Brand</label>
+          <input type="text" id="brand" name="brand" value="{{ spec.brand }}">
+        </div>
+        <div>
+          <label for="generic">Generic name</label>
+          <input type="text" id="generic" name="generic" value="{{ spec.generic }}">
+        </div>
+      </div>
+
+      <p class="eyebrow" style="margin:.4rem 0 0">Net quantity · Rules 6(1)(c) and 7</p>
+      <div class="grid two">
+        <label>Known scenario category<select name="package_category" id="package_category">{% for category in ['food','general','cosmetic','alcohol','tobacco','pan_masala','medical_device','seed'] %}<option value="{{ category }}" {{ 'selected' if spec.package_category==category }}>{{ category|replace('_',' ')|title }}</option>{% endfor %}</select></label>
+        <label>Simulated assessment date<input type="date" id="assessment_date" name="assessment_date" value="{{ spec.assessment_date }}" required></label>
+      </div>
+      <label class="row"><input type="checkbox" id="is_imported" name="is_imported" value="1" {{ 'checked' if spec.is_imported }}>Imported commodity in this scenario</label>
+      <p class="small muted">Generated scenarios have a known rectangular single-package layout. Category and assessment date are explicit test facts. Ordinary uploaded photographs require officer confirmation.</p>
+      <div class="grid three" style="gap:.7rem">
+        <div>
+          <label for="net_qty_value">Value</label>
+          <input type="text" id="net_qty_value" name="net_qty_value" value="{{ spec.net_qty_value }}">
+        </div>
+        <div>
+          <label for="net_qty_unit">Unit symbol</label>
+          <input type="text" id="net_qty_unit" name="net_qty_unit" value="{{ spec.net_qty_unit }}"
+                 placeholder="g · gms · Kg · ML">
+        </div>
+        <div>
+          <label for="net_qty_mm">Cap height (mm)</label>
+          <input type="text" id="net_qty_mm" name="net_qty_mm" value="{{ spec.net_qty_mm }}">
+        </div>
+      </div>
+
+      <p class="eyebrow" style="margin:.4rem 0 0">Price · Rules 6(1)(e) and 6(11)</p>
+      <div class="grid three" style="gap:.7rem">
+        <div>
+          <label for="mrp">MRP (₹)</label>
+          <input type="text" id="mrp" name="mrp" value="{{ spec.mrp }}">
+        </div>
+        <div>
+          <label for="second_mrp">Second MRP</label>
+          <input type="text" id="second_mrp" name="second_mrp" placeholder="blank = none">
+        </div>
+        <div>
+          <label for="unit_price">Unit price (₹)</label>
+          <input type="text" id="unit_price" name="unit_price" value="{{ spec.unit_price }}">
+        </div>
+      </div>
+      <div>
+        <label for="unit_price_per">Unit price basis</label>
+        <input type="text" id="unit_price_per" name="unit_price_per" value="{{ spec.unit_price_per }}">
+      </div>
+
+      <p class="eyebrow" style="margin:.4rem 0 0">Panel geometry · selects the Rule 7 band</p>
+      <div class="grid two" style="gap:.7rem">
+        <div>
+          <label for="panel_w_mm">Panel width (mm)</label>
+          <input type="text" id="panel_w_mm" name="panel_w_mm" value="{{ spec.panel_w_mm }}">
+        </div>
+        <div>
+          <label for="panel_h_mm">Panel height (mm)</label>
+          <input type="text" id="panel_h_mm" name="panel_h_mm" value="{{ spec.panel_h_mm }}">
+        </div>
+      </div>
+
+      <p class="eyebrow" style="margin:.4rem 0 0">Rest of the mandatory block</p>
+      <div class="grid two" style="gap:.7rem">
+        <div>
+          <label for="packing_date">Packing date</label>
+          <input type="text" id="packing_date" name="packing_date"
+                 value="{{ spec.packing_date }}" placeholder="YYYY-MM-DD">
+        </div>
+        <div>
+          <label for="gtin">GTIN</label>
+          <input type="text" id="gtin" name="gtin" value="{{ spec.gtin or '' }}">
+        </div>
+      </div>
+      <div class="grid two" style="gap:.7rem">
+        <div>
+          <label for="origin">Country of origin</label>
+          <input type="text" id="origin" name="origin" value="{{ spec.origin or '' }}">
+        </div>
+        <div>
+          <label for="consumer_care">Consumer care</label>
+          <input type="text" id="consumer_care" name="consumer_care" value="{{ spec.consumer_care or '' }}">
+        </div>
+      </div>
+
+      <p class="eyebrow" style="margin:.4rem 0 0">Capture and evidence</p>
+      <div class="grid two" style="gap:.7rem">
+        <div>
+          <label for="scale_source">Scale source</label>
+          <select id="scale_source" name="scale_source">
+            <option value="device_depth">device_depth — Tier B</option>
+            <option value="aruco_card">aruco_card — Tier B, tightest</option>
+            <option value="mono_metric">mono_metric — Tier C, advisory only</option>
+          </select>
+        </div>
+        <div>
+          <label for="engine">Recognition engine</label>
+          <select id="engine" name="engine">
+            <option value="fixture">fixture — perfect OCR</option>
+            <option value="rapidocr">rapidocr — real OCR, ~8 s</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label for="lane">Lane</label>
+        <select id="lane" name="lane">
+          <option value="field">field — inspector screening</option>
+          <option value="premarket">premarket — proof screening</option>
+          <option value="citizen">citizen — advisory only</option>
+          <option value="marketplace">marketplace — advisory only</option>
+        </select>
+      </div>
+
+      <div class="row" style="margin-top:.3rem">
+        <label style="display:flex;align-items:center;gap:.4rem;text-transform:none;letter-spacing:0;font-family:var(--f-body);font-size:.88rem;color:var(--ink)">
+          <input type="checkbox" name="tax_clause" value="on" checked style="width:auto">
+          “inclusive of all taxes”
+        </label>
+        <label style="display:flex;align-items:center;gap:.4rem;text-transform:none;letter-spacing:0;font-family:var(--f-body);font-size:.88rem;color:var(--ink)">
+          <input type="checkbox" name="hindi_net_qty" value="on" checked style="width:auto">
+          Devanagari net quantity
+        </label>
+      </div>
+
+      <p class="eyebrow" style="margin:.6rem 0 0">Evidence coverage</p>
+      <p class="small muted" style="margin:0 0 .3rem">
+        What the capture is entitled to prove a <em>negative</em> about. Clear the MRP
+        field above, then switch these, to see the same missing declaration read as a
+        violation or as undetermined.
+      </p>
+      <div class="row">
+        <label style="display:flex;align-items:center;gap:.4rem;text-transform:none;letter-spacing:0;font-family:var(--f-body);font-size:.88rem;color:var(--ink)">
+          <input type="checkbox" name="covers_all_declarations" value="on" checked style="width:auto">
+          Whole package captured
+        </label>
+        <label style="display:flex;align-items:center;gap:.4rem;text-transform:none;letter-spacing:0;font-family:var(--f-body);font-size:.88rem;color:var(--ink)">
+          <input type="checkbox" name="blank_panel" value="on" style="width:auto">
+          Unreadable frame — draw nothing
+        </label>
+      </div>
+
+      <div class="row" style="margin-top:.5rem">
+        <button type="submit">Render and analyse</button>
+        <span class="htmx-indicator mono muted">running…</span>
+      </div>
+    </form>
+  </div>
+
+  <aside>
+    <div class="card">
+      <p class="eyebrow">What to try first</p>
+      <ol class="small" style="margin:0;padding-left:1.1rem">
+        <li>Set <b>cap height</b> to 1.4 mm → Rule 7(2) screening finding.</li>
+        <li>Set it to 2.5 mm → <b>inconclusive</b>: the interval straddles the limit.</li>
+        <li>Keep 1.4 mm, switch scale source to <b>mono_metric</b> → the same
+            measurement can no longer sustain a violation.</li>
+        <li>Set panel to 200×300 mm → the threshold jumps to 4 mm and 3 mm now fails.</li>
+        <li>Set unit symbol to <b>gms</b>, or clear the tax clause.</li>
+        <li>Set packing date to <b>2020-06-01</b> → the unit-price rules vanish.</li>
+      </ol>
+    </div>
+    <div class="card" style="margin-top:1rem">
+      <p class="eyebrow">Reading the result</p>
+      <p class="small muted" style="margin:0">Every run compares the measurement against
+      what the renderer actually drew. If <span class="mono">within interval</span> is ever
+      false, the metrology is wrong — that is the check that makes the millimetre claim
+      falsifiable.</p>
+    </div>
+  </aside>
+</div>
+
+<div id="bench-result" style="margin-top:1.5rem">
+  <p class="muted small">Choose a preset or adjust the controls, then run.</p>
+</div>
+
+<script>
+// Presets fill the form from the same scenario definitions the acceptance
+// matrix runs, so a preset and its matrix row can never drift apart.
+var PRESETS = {{ presets | tojson }};
+document.querySelectorAll('.preset').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var preset = PRESETS[btn.dataset.key];
+    if (!preset) return;
+    Object.keys(preset).forEach(function (name) {
+      var field = document.querySelector('[name="' + name + '"]');
+      if (!field) return;
+      if (field.type === 'checkbox') field.checked = !!preset[name];
+      else field.value = preset[name];
+    });
+    document.querySelectorAll('.preset').forEach(function (b) {
+      b.style.borderColor = ''; b.style.fontWeight = '';
+    });
+    btn.style.borderColor = 'var(--brass)';
+    btn.style.fontWeight = '700';
+  });
+});
+</script>
+
+{% endblock %}

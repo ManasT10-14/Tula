@@ -1,0 +1,125 @@
+{
+  "id": "LMPCR.R6.1.F.UNIT_PRICE_ARITHMETIC",
+  "title": "Declared unit sale price is arithmetically correct",
+  "citation": {
+    "clause": "Rule 6(11), including its provisos",
+    "text": "Screening paraphrase: declare the applicable unit price using the prescribed gram/kilogram, centimetre/metre, millilitre/litre or count basis, subject to the equal-price, State-excise and package-structure exceptions."
+  },
+  "effective_from": "2024-01-01",
+  "declaration": "unit_sale_price",
+  "applies_when": {
+    "all": [
+      {
+        "present": "$decl.unit_sale_price.norm.value"
+      },
+      {
+        "present": "$decl.retail_sale_price.norm.value"
+      },
+      {
+        "present": "$decl.net_quantity.norm.value_base"
+      }
+    ]
+  },
+  "assert": {
+    "legal_screen": {
+      "kind": "unit_price",
+      "exempt_bundles": [
+        "combination",
+        "group",
+        "multipiece"
+      ],
+      "bases": {
+        "g": {
+          "boundary": 1000,
+          "small": 1,
+          "large": 1000
+        },
+        "ml": {
+          "boundary": 1000,
+          "small": 1,
+          "large": 1000
+        },
+        "cm": {
+          "boundary": 100,
+          "small": 1,
+          "large": 100
+        },
+        "N": {
+          "small": 1
+        }
+      }
+    }
+  },
+  "severity": "major",
+  "min_assurance_tier": "C",
+  "penalty_ref": "LM Act 2009 s.36(1)",
+  "messages": {
+    "pass": "The printed unit price uses the prescribed denominator and matches Decimal arithmetic rounded to two places.",
+    "violation": "The declared unit price uses an incorrect statutory denominator or does not match the declared MRP and net quantity.",
+    "inconclusive": "Unit-price applicability, units or arithmetic require review."
+  },
+  "evidence": [
+    "unit_sale_price",
+    "net_quantity",
+    "retail_sale_price"
+  ],
+  "tests": "tests/test_rules_engine.py",
+  "sources": [
+    {
+      "url": "https://consumeraffairs.gov.in/public/upload/files/230946_1732871433.pdf",
+      "notification": "G.S.R.779(E)",
+      "publication_date": "2021-11-02",
+      "clause": "Amendment 3; deferred commencement",
+      "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+    },
+    {
+      "url": "https://consumeraffairs.gov.in/public/upload/files/GSR226_1732871458.pdf",
+      "notification": "G.S.R.226(E)",
+      "publication_date": "2022-03-28",
+      "clause": "PCR 6(11) replacement",
+      "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+    },
+    {
+      "url": "https://consumeraffairs.gov.in/public/upload/files/Amendment%20of%20PCR%20ext%20till%2031.12.2023%20(1)_1732871950.pdf",
+      "notification": "G.S.R.714(E)",
+      "publication_date": "2023-09-30",
+      "clause": "Commencement deferred to 2024-01-01",
+      "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+    },
+    {
+      "url": "https://consumeraffairs.gov.in/public/upload/files/2023.10.6%20amendment%20in%20PCR_1732871982.pdf",
+      "notification": "G.S.R.722(E)",
+      "publication_date": "2023-10-06",
+      "clause": "Amendments 3(b), 3(c), 4",
+      "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+    }
+  ],
+  "legal_check": {
+    "kind": "unit_price",
+    "exempt_bundles": [
+      "combination",
+      "group",
+      "multipiece"
+    ],
+    "bases": {
+      "g": {
+        "boundary": 1000,
+        "small": 1,
+        "large": 1000
+      },
+      "ml": {
+        "boundary": 1000,
+        "small": 1,
+        "large": 1000
+      },
+      "cm": {
+        "boundary": 100,
+        "small": 1,
+        "large": 100
+      },
+      "N": {
+        "small": 1
+      }
+    }
+  }
+}

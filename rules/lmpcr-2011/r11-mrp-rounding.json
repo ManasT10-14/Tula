@@ -1,0 +1,66 @@
+{
+  "id": "LMPCR.R11.MRP_ROUNDING",
+  "title": "Historical MRP rounding, with amendment-transition review",
+  "citation": {
+    "clause": "Historical Rule 6(1)(e); not Rule 11",
+    "text": "Screening paraphrase: the 2017 amendment introduced rupee/50-paise rounding; a later amendment replaced it. This check is inactive for current assessments."
+  },
+  "effective_from": "2018-01-01",
+  "declaration": "retail_sale_price",
+  "applies_when": {
+    "present": "$decl.retail_sale_price.norm.value"
+  },
+  "assert": {
+    "rounded_to": [
+      "$decl.retail_sale_price.norm.value",
+      0.5
+    ]
+  },
+  "severity": "minor",
+  "min_assurance_tier": "C",
+  "penalty_ref": null,
+  "messages": {
+    "pass": "The price satisfies the historical rounding increment.",
+    "violation": "The price does not satisfy the applicable historical rounding increment.",
+    "inconclusive": "Historical rounding transition requires legal review."
+  },
+  "evidence": [
+    "retail_sale_price"
+  ],
+  "tests": "tests/test_rules_engine.py",
+  "sources": [
+    {
+      "url": "https://consumeraffairs.gov.in/public/upload/files/8(xii)_0_1732871346.pdf",
+      "notification": "G.S.R.629(E)",
+      "publication_date": "2017-06-23",
+      "clause": "Amendments 3-9 and 13",
+      "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+    },
+    {
+      "url": "https://consumeraffairs.gov.in/public/upload/files/230946_1732871433.pdf",
+      "notification": "G.S.R.779(E)",
+      "publication_date": "2021-11-02",
+      "clause": "Amendment 3; deferred commencement",
+      "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+    },
+    {
+      "url": "https://consumeraffairs.gov.in/public/upload/files/GSR226_1732871458.pdf",
+      "notification": "G.S.R.226(E)",
+      "publication_date": "2022-03-28",
+      "clause": "PCR 6(11) replacement",
+      "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+    },
+    {
+      "url": "https://consumeraffairs.gov.in/public/upload/files/Amendment%20of%20PCR%20ext%20till%2031.12.2023%20(1)_1732871950.pdf",
+      "notification": "G.S.R.714(E)",
+      "publication_date": "2023-09-30",
+      "clause": "Commencement deferred to 2024-01-01",
+      "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+    }
+  ],
+  "legal_check": {
+    "kind": "rounding_history",
+    "deterministic_to": "2022-03-31"
+  },
+  "effective_to": "2023-12-31"
+}

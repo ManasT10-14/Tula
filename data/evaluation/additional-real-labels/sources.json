@@ -1,0 +1,81 @@
+{
+  "dataset_id": "additional-real-labels-2026-09-07",
+  "scope": "Single-agent QA photographs; not independent human or legal benchmark",
+  "selection": "Direct photographer uploads on Wikimedia Commons; Open Food Facts web search was blocked by robots.txt",
+  "images": [
+    {
+      "id": "commons-best-before",
+      "filename": "best-before.png",
+      "original_url": "https://upload.wikimedia.org/wikipedia/commons/b/bb/BestBeforeDate.png",
+      "source_page": "https://commons.wikimedia.org/wiki/File:BestBeforeDate.png",
+      "source_revision": "https://commons.wikimedia.org/w/index.php?title=File:BestBeforeDate.png&oldid=822349237",
+      "author": "MasterOfHisOwnDomain",
+      "license": "Public domain dedication by photographer",
+      "license_url": "https://commons.wikimedia.org/wiki/File:BestBeforeDate.png#Licensing",
+      "source_note": "Uploader identifies this as their own photograph of commercial packaging.",
+      "accessed_at": "2026-09-07T00:38:16.087225+00:00",
+      "modifications": "None; original downloaded bytes retained",
+      "status": "failed",
+      "error": "HTTPError: HTTP Error 429: Too many requests (f061ab2)"
+    },
+    {
+      "id": "commons-best-before-canada",
+      "filename": "best-before-canada.jpg",
+      "original_url": "https://upload.wikimedia.org/wikipedia/commons/6/65/Best_before_Canada.JPG",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Best_before_Canada.JPG",
+      "author": "CambridgeBayWeather",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0/",
+      "source_note": "Uploader identifies this as their own photograph of a box bottom.",
+      "accessed_at": "2026-09-07T00:38:16.088731+00:00",
+      "modifications": "None; original downloaded bytes retained",
+      "final_url": "https://upload.wikimedia.org/wikipedia/commons/6/65/Best_before_Canada.JPG",
+      "size": [
+        3703,
+        496
+      ],
+      "format": "JPEG",
+      "sha256": "1197be6040c20437bff3033177f883891a7d378208edbbe90ca7e8767ff560aa",
+      "bytes": 313099,
+      "status": "downloaded"
+    },
+    {
+      "id": "commons-batch-mfg-exp",
+      "filename": "batch-mfg-exp.jpg",
+      "original_url": "https://upload.wikimedia.org/wikipedia/commons/0/0f/Batch_no%2C_MFG_Date_and_EXP_Date.jpg",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Batch_no,_MFG_Date_and_EXP_Date.jpg",
+      "source_revision": "https://commons.wikimedia.org/w/index.php?title=File:Batch_no,_MFG_Date_and_EXP_Date.jpg&oldid=1116061359",
+      "author": "Corn cheese",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_note": "Uploader identifies this as their own photograph of a petroleum jelly container bottom.",
+      "accessed_at": "2026-09-07T00:38:16.091450+00:00",
+      "modifications": "None; original downloaded bytes retained",
+      "status": "failed",
+      "error": "HTTPError: HTTP Error 429: Too many requests (f061ab2)"
+    },
+    {
+      "id": "commons-manufacture-expiration",
+      "filename": "manufacture-expiration.jpg",
+      "original_url": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Manufacture_Date_and_Expiration_Date.jpg",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Manufacture_Date_and_Expiration_Date.jpg",
+      "source_revision": "https://commons.wikimedia.org/w/index.php?title=File:Manufacture_Date_and_Expiration_Date.jpg&oldid=1110151628",
+      "author": "Gaurav Dhwaj Khadka",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "source_note": "Uploader identifies this as their own photograph of a real product date marking.",
+      "accessed_at": "2026-09-07T00:38:16.092465+00:00",
+      "modifications": "None; original downloaded bytes retained",
+      "final_url": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Manufacture_Date_and_Expiration_Date.jpg",
+      "size": [
+        4032,
+        3024
+      ],
+      "format": "JPEG",
+      "sha256": "bf518265b38bc89aeb97b652934a9c1bf7059dab8cc5d06ef75cd7ca184fbd9e",
+      "bytes": 4615472,
+      "status": "downloaded"
+    }
+  ],
+  "ocr_run_before_annotation": false
+}

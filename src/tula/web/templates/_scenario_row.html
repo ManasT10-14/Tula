@@ -1,0 +1,40 @@
+{# One acceptance-matrix row, loaded on demand so no request carries all 14 runs. #}
+<tr id="{{ s.key }}">
+  <td>
+    <div class="row" style="gap:.5rem;flex-wrap:nowrap;align-items:baseline">
+      {% if r.ok %}<span class="chip ok">pass</span>{% else %}<span class="chip bad">fail</span>{% endif %}
+      <div>
+        <strong style="font-family:var(--f-display);font-size:.95rem">{{ s.title }}</strong>
+        <div class="mono small muted">{{ s.key }} · {{ r.elapsed_ms }} ms</div>
+      </div>
+    </div>
+    <p class="small muted" style="margin:.35rem 0 0;max-width:46ch">{{ s.proves }}</p>
+  </td>
+  <td>
+    {% for c in r.checks %}
+    <div class="row small" style="gap:.4rem;flex-wrap:nowrap;margin-bottom:.2rem">
+      {% if c.ok %}<span class="chip ok">✓</span>{% else %}<span class="chip bad">✗</span>{% endif %}
+      <span class="mono" style="font-size:.72rem">{{ c.rule_id.split(".")[-1] }}</span>
+      <span class="mono muted" style="font-size:.72rem">
+        {{ c.actual }}{% if not c.ok %} <span style="color:var(--bad)">(want {{ c.expected }})</span>{% endif %}
+      </span>
+    </div>
+    {% endfor %}
+  </td>
+  <td>
+    {% for t in r.truth_checks %}
+      {% if t.measured and t.unit == "mm" %}
+      <div class="mono small" style="margin-bottom:.2rem">
+        drawn {{ "%.2f"|format(t.drawn) }} → {{ "%.2f"|format(t.measured.value) }} ± {{ "%.2f"|format(t.measured.uncertainty) }} mm
+        {% if t.within_interval %}<span class="chip ok">in</span>
+        {% else %}<span class="chip bad">OUT</span>{% endif %}
+      </div>
+      {% endif %}
+    {% endfor %}
+    <div class="mono small muted">Tier {{ r.analysis.scan.tier.value }}</div>
+  </td>
+  <td>
+    <a class="mono small" href="/inspections/{{ r.analysis.scan.scan_id }}">record</a><br>
+    <a class="mono small" href="/bench/image/{{ r.image.stem }}.png">label</a>
+  </td>
+</tr>

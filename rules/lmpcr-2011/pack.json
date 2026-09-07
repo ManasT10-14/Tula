@@ -1,0 +1,43 @@
+{
+  "version": "2026.09.07-legal-review-1",
+  "title": "Legal Metrology (Packaged Commodities) Rules, 2011",
+  "source": "https://consumeraffairs.gov.in/pages/legal-metrology-act",
+  "notes": "REVIEWED SCREENING DRAFT: primary Gazette sources and contextual gates added; not a complete legal consolidation or approved enforcement instrument. Stable IDs retained; citation text is a screening paraphrase. See docs/LEGAL_SOURCE_MATRIX.md. Original pack archived as 2026.09.07-draft.",
+  "legal_policy": {
+    "medical_devices": {
+      "from": "2025-10-24",
+      "reason": "Medical-device declaration/height requirements are referred to the Medical Devices Rules 2017 by G.S.R.778(E). Verify the regulated category and applicable MDR provision; this general PCR screen cannot decide it."
+    },
+    "exemptions": {
+      "small_limit": 10,
+      "tobacco_from": "2016-01-01",
+      "pan_masala_from": "2026-02-01",
+      "ordinary_large_limit": 25000,
+      "large_from": "2018-01-01",
+      "institutional_terms": [
+        "not for retail sale",
+        "for institutional use",
+        "institutional pack",
+        "for industrial use",
+        "industrial pack",
+        "for catering purpose"
+      ],
+      "tobacco_terms": [
+        "tobacco",
+        "gutkha",
+        "gutka",
+        "cigarette",
+        "bidi",
+        "beedi",
+        "khaini",
+        "zarda",
+        "snuff"
+      ]
+    },
+    "enforcement": {
+      "from": "2026-05-01",
+      "reference": "LM Act section 36(1), as substituted by Jan Vishwas Act 2026 Schedule 66(N); S.O.2103(E)",
+      "reason": "Officer must establish identity, authority and offence history. First-offence improvement notice and later sanctions are not automatic photo outcomes."
+    }
+  }
+}

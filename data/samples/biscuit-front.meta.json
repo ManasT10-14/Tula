@@ -1,0 +1,10 @@
+{
+  "panel": "pdp",
+  "mm_per_px": 0.0412,
+  "mm_per_px_source": "device_depth",
+  "pdp_width_mm": 120,
+  "pdp_height_mm": 180,
+  "packing_date": "2026-03-01",
+  "tilt_deg": 0,
+  "notes": "ARCore depth 24 cm, intrinsics from CameraCharacteristics; panel sides measured on site"
+}

@@ -1,0 +1,210 @@
+{% macro evidence(sources) -%}
+{% for source in sources %}
+  {% set pos = namespace(index=source.get('image_index')) %}
+  {% for frame in a.scan.frames %}{% if frame == source.get('frame') %}{% set pos.index = loop.index0 %}{% endif %}{% endfor %}
+  {% if pos.index is not none and pos.index >= 0 and pos.index < a.scan.frames|length %}
+    <div style="margin:.5rem 0">
+      <a class="small" href="/inspections/{{ a.scan.scan_id }}/frames/{{ pos.index }}" target="_blank" rel="noopener">Open evidence image {{ pos.index + 1 }} · {{ source.get('panel', 'unknown') }}</a>
+      {% set box = source.get('bbox') %}
+      {% if box and source.get('image_width', 0) > 0 and source.get('image_height', 0) > 0 %}
+        {% set left = [0, box[0] - 12]|max %}{% set top = [0, box[1] - 12]|max %}
+        <svg viewBox="{{ left }} {{ top }} {{ box[2] - left + 12 }} {{ box[3] - top + 12 }}" role="img" aria-label="Highlighted evidence: {{ source.get('text', '') }}" style="display:block;max-width:100%;width:32rem;max-height:10rem;margin:.35rem 0;border:1px solid var(--line);background:var(--sunk)">
+          <image href="/inspections/{{ a.scan.scan_id }}/frames/{{ pos.index }}" width="{{ source.image_width }}" height="{{ source.image_height }}"/>
+          <rect x="{{ box[0] }}" y="{{ box[1] }}" width="{{ box[2] - box[0] }}" height="{{ box[3] - box[1] }}" fill="none" stroke="#ffb000" stroke-width="2" vector-effect="non-scaling-stroke"/>
+        </svg>
+      {% endif %}
+      <blockquote class="small" style="margin:.3rem 0;padding-left:.75rem;border-left:2px solid var(--line);white-space:pre-wrap">{{ source.get('text', '') }}</blockquote>
+    </div>
+  {% endif %}
+{% endfor %}
+{%- endmacro %}
+
+{% if a.intelligence or a.scan.frames %}
+<section aria-labelledby="intelligence-heading" id="label-intelligence">
+  {% set review_user = request.state.user if request is defined and request.state is defined and request.state.user is defined else none %}
+  {% set can_rescan = review_user is not none and (review_user.role in ['admin','supervisor'] or a.scan.inspector_id == review_user.id) %}
+  {% set can_correct = can_rescan and a.review.status != 'approved' %}
+  {% set editable_fields = intelligence_field_labels|default({}) %}
+  <h2 id="intelligence-heading">Label intelligence</h2>
+  <p class="muted small">Review printed dates, batch markings and ingredient statements alongside their original evidence. These observations supplement the compliance findings.</p>
+  {% for warning in a.intelligence.get('warnings', []) %}<p class="card warn" role="status">{{ warning }}</p>{% endfor %}
+
+  {% set product = a.intelligence.get('product', {}) %}
+  {% if product %}
+  <div class="card">
+    <p class="eyebrow">Product context · officer confirmation required</p>
+    <div class="grid two">
+      <p><strong>Category</strong><br>{{ product.get('category', 'unknown')|replace('_', ' ')|title }} · {{ product.get('food_nonfood', 'unknown')|replace('_', ' ') }}</p>
+      <p><strong>Origin signal</strong><br>{{ product.get('origin', 'unknown')|replace('_', ' ')|title }}</p>
+    </div>
+    <details><summary>Why these categories were suggested</summary>
+      {% for item in product.get('category_evidence', []) + product.get('origin_evidence', []) %}
+        {{ evidence(item.get('sources', [])) }}
+      {% else %}<p class="muted small">No reliable product or origin declaration was identified.</p>{% endfor %}
+      {% for item in product.get('package_type_evidence', []) %}
+        <p class="small">Printed package reference: {{ item.value }} (verify the physical package).</p>{{ evidence(item.get('sources', [])) }}
+      {% endfor %}
+      <p class="muted small">{{ product.get('note', '') }}</p>
+    </details>
+  </div>
+  {% endif %}
+
+  {% set fields = a.intelligence.get('fields', {}) %}
+  <div class="grid two">
+  {% for name, observations in fields.items() %}
+    <div class="card">
+      <h3 style="margin-top:0">{{ name|replace('_', ' ')|title }}</h3>
+      {% if can_rescan and name in ['manufacturing_date','packing_date','expiry_date','best_before','use_by','batch_number','ingredients'] %}<p class="small"><a href="/?rescan={{ a.scan.scan_id }}&amp;target={{ name }}">Capture a close-up of {{ name|replace('_', ' ') }} →</a></p>{% endif %}
+      {% for item in observations %}
+        <span class="chip {{ 'warn' if item.status == 'needs_review' else '' }}">{{ 'Manual verification required' if item.status == 'needs_review' else item.status|replace('_', ' ')|title }}</span>
+        {% if item.value is mapping %}
+          {% if item.value.get('duration') is not none %}
+            <p><strong>{{ item.value.duration }} {{ item.value.unit }}{{ 's' if item.value.duration != 1 else '' }}</strong>{% if item.value.reference %} from {{ item.value.reference|replace('_', ' ') }}{% endif %}</p>
+            <p class="small muted">Relative shelf-life statement; an absolute expiry date has not been inferred.</p>
+          {% elif item.value.get('value') is not none %}
+            <p><strong>{{ item.value.value }} {{ item.value.get('currency') or item.value.get('unit_raw') or item.value.get('unit') or '' }}</strong>{% if item.value.get('per_unit') %} per {{ item.value.get('per_value', 1) }} {{ item.value.per_unit }}{% endif %}</p>
+          {% else %}<p class="small">{{ item.raw }}</p>{% endif %}
+        {% elif item.value is not none %}
+          <p style="white-space:pre-wrap;overflow-wrap:anywhere">{{ item.value }}</p>
+        {% else %}<p class="small muted">A cue was detected; the value could not be resolved reliably.</p>{% endif %}
+        {% if item.method == 'pixel_currency_context_candidate' %}
+          <p class="small warn"><strong>Currency is unverified.</strong> INR is a visual hypothesis requiring comparison with the original marking.</p>
+          <p class="small">To record a verified price, use <a href="#review">Correct a declaration</a> and select <strong>Retail sale price</strong>. Enter only the wording printed on the package, including the observed currency and amount.</p>
+        {% endif %}
+        {% if item.get('review_reason') %}<p class="small warn">{{ item.review_reason }}</p>{% endif %}
+        {% if item.get('temporal_status') %}<p class="small {{ 'warn' if item.temporal_status == 'printed_date_passed' else 'muted' }}">{{ item.temporal_status|replace('_', ' ')|capitalize }} as of {{ item.as_of }}. This describes the printed date.</p>{% endif %}
+        {% if item.get('warning') %}<p class="small warn">{{ item.warning }}</p>{% endif %}
+        {% if item.get('candidates') %}
+          <p class="small"><strong>Candidate interpretations</strong></p>
+          <ul class="small">
+          {% for candidate in item.candidates %}
+            <li>{% if candidate.get('iso') %}{{ candidate.iso }} · {{ candidate.get('interpretation', '')|replace('_', ' ') }}{% else %}{{ candidate.get('raw', '') }}{% if candidate.get('variant') %} · {{ candidate.variant|replace('_', ' ') }}{% endif %}{% endif %}</li>
+          {% endfor %}
+          </ul>
+        {% endif %}
+        <details><summary>Source and extraction details</summary>
+          <p class="small muted">Method: {{ item.method|replace('_', ' ') }}.{% if item.ocr_confidence is not none %} {{ 'Original OCR' if item.method=='inspector_correction' else 'OCR' }} confidence {{ '%.2f'|format(item.ocr_confidence) }} on a 0–1 model scale.{% if item.method=='pixel_currency_context_candidate' %} This score concerns the amount reading; it does not verify the currency.{% endif %}{% else %} No {{ 'original ' if item.method=='inspector_correction' else '' }}OCR score is recorded for this observation.{% endif %}{% if item.extraction_confidence is not none %} Extraction score {{ '%.2f'|format(item.extraction_confidence) }} is a heuristic, not an accuracy probability.{% elif item.method=='inspector_correction' %} The inspector supplied this correction; no automated extraction score is assigned.{% else %} No automated extraction score was recorded for this observation.{% endif %}</p>
+          {{ evidence(item.get('sources', [])) }}
+          {% if item.get('corrected_by_name') %}<p class="small">Corrected by {{ item.corrected_by_name }} · {{ item.corrected_at }}<br>{{ item.correction_reason }}</p>{% endif %}
+          {% if item.get('original_transcription') is not none %}<p class="small"><strong>Original transcription</strong></p><blockquote class="small" style="white-space:pre-wrap">{{ item.original_transcription }}</blockquote>{% endif %}
+          {% if item.get('ocr_alternatives') %}
+            <p class="small"><strong>Other OCR readings</strong></p>
+            <ul class="small">{% for alternative in item.ocr_alternatives %}<li>{{ alternative.get('text', '') }} · {{ alternative.get('variant', 'alternate pass') }}</li>{% endfor %}</ul>
+          {% endif %}
+        </details>
+        {% if can_correct and name in editable_fields %}<button type="button" class="ghost compact" data-intelligence-edit data-field="{{ name }}" data-index="{{ loop.index0 }}" style="margin-top:10px">Correct this observation</button>{% endif %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="muted">No supplementary fields could be extracted. Add a clear close-up of the ingredient list and date or batch markings.</p>
+  {% endfor %}
+  </div>
+
+  {% if can_correct and editable_fields and a.scan.frames %}
+  <details class="card" id="intelligence-editor" style="margin:18px 0">
+    <summary>Correct or add a supplementary observation</summary>
+    <p class="small muted">Keep the text exactly as observed and locate it in the source image. This creates an audited revision and returns a submitted inspection to review. It does not change primary statutory declarations or their rule findings. To change the packing-date declaration or manufacturer/importer declaration used by rules, use <a href="#review">Correct a declaration</a> as well.</p>
+    <form action="/inspections/{{ a.scan.scan_id }}/intelligence/correct" method="post" data-review-form id="intelligence-correction-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="revision" value="{{ a.review.revision }}">
+      <input type="hidden" name="observation_index" id="intelligence-observation-index" value="-1"><input type="hidden" name="bbox" id="intelligence-bbox" value="[]">
+      <p class="small" id="intelligence-edit-mode" role="status">Adding a new observation</p>
+      <div class="grid two"><label>Observation<select name="field" id="intelligence-field">{% for key,label in editable_fields.items() %}<option value="{{ key }}">{{ label }}</option>{% endfor %}</select></label><label>Source image<select name="frame_index" id="intelligence-frame">{% for frame in a.scan.frames %}<option value="{{ loop.index0 }}">Image {{ loop.index }}</option>{% endfor %}</select></label></div>
+      <label style="margin-top:10px">Verified printed text<textarea name="raw" id="intelligence-raw" maxlength="4000" required placeholder="Include the printed cue, for example EXP 08/09/26 or Ingredients: ..."></textarea></label>
+      <div id="intelligence-date-choice"><label>Explicit date interpretation (optional)<input name="date_interpretation" id="intelligence-date-interpretation" list="intelligence-date-candidates" placeholder="YYYY-MM-DD or YYYY-MM" maxlength="10"></label><datalist id="intelligence-date-candidates"></datalist><p class="small muted">Leave blank to retain date ambiguity. To resolve it, enter one candidate supported by the corrected marking and explain your evidence in the reason. Relative shelf life never becomes an invented expiry date.</p></div>
+      <p class="small muted">Drag a rectangle around the complete marking. Keyboard alternative: enter its pixel bounds below.</p>
+      <div class="canvas-viewport" tabindex="0" role="region" aria-label="Supplementary correction image"><canvas id="intelligence-canvas" aria-label="Supplementary source image: drag to select the marking" style="touch-action:none"></canvas></div>
+      <p class="small muted" id="intelligence-image-size" role="status"></p>
+      <button type="button" id="intelligence-retry-image" class="ghost compact" hidden>Retry source image</button>
+      <div class="grid" style="grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0">{% for coordinate in ['left','top','right','bottom'] %}<label>{{ coordinate|title }}<input type="number" min="0" step="1" name="{{ coordinate }}" id="intelligence-bbox-{{ loop.index0 }}" required></label>{% endfor %}</div>
+      <p class="error-box small" id="intelligence-geometry-error" role="alert"></p>
+      <label>Correction reason<input name="reason" id="intelligence-reason" minlength="5" maxlength="3000" required placeholder="Describe what you checked and any date interpretation."></label>
+      <div class="row" style="margin-top:12px"><button class="compact">Save supplementary correction</button><button type="button" id="intelligence-add-new" class="ghost compact">Add another observation</button></div>
+      <p class="error-box" role="alert"></p>
+    </form>
+  </details>
+  <script type="application/json" id="intelligence-editor-data">{{ {'fields':fields,'frames':a.scan.frames}|tojson }}</script>
+  <script>
+  (() => {
+    const form=document.getElementById('intelligence-correction-form');if(!form)return;
+    const $=name=>document.getElementById('intelligence-'+name), data=JSON.parse($('editor-data').textContent);
+    const canvas=$('canvas'), context=canvas.getContext('2d'), coordinates=[0,1,2,3].map(i=>$('bbox-'+i));
+    let image=null, selected=null, start=null, sourceReady=false;
+    const pending=()=>form.getAttribute('data-review-pending')==='true';
+    function validate(){
+      const valid=sourceReady&&selected?.length===4&&selected.every(Number.isInteger)&&selected[0]>=0&&selected[1]>=0&&selected[2]>selected[0]&&selected[3]>selected[1]&&selected[2]<=image.naturalWidth&&selected[3]<=image.naturalHeight;
+      const message=!sourceReady?'Load the selected source image before saving.':valid?'':'Select a non-empty rectangle using whole-pixel bounds inside the source image.';
+      coordinates.forEach(input=>input.setCustomValidity(message));
+      $('bbox').value=JSON.stringify(valid?selected:[]);
+      $('geometry-error').textContent=sourceReady&&!valid?message:'';
+      return valid;
+    }
+    function draw(){if(!sourceReady)return;canvas.width=image.naturalWidth;canvas.height=image.naturalHeight;context.drawImage(image,0,0);if(validate()){context.strokeStyle='#b53613';context.lineWidth=Math.max(3,canvas.width/250);context.strokeRect(selected[0],selected[1],selected[2]-selected[0],selected[3]-selected[1]);}}
+    function update(){coordinates.forEach((input,i)=>input.value=selected?.[i]??'');validate();draw();}
+    function load(){
+      start=null;sourceReady=false;canvas.width=0;canvas.height=0;$('retry-image').hidden=true;
+      $('image-size').textContent='Loading source image…';validate();
+      const next=new Image();image=next;
+      next.onload=()=>{if(image!==next)return;sourceReady=next.naturalWidth>0&&next.naturalHeight>0;
+        if(!sourceReady){next.onerror();return;}
+        $('image-size').textContent=`Source dimensions: ${next.naturalWidth} × ${next.naturalHeight} pixels.`;
+        coordinates.forEach((input,i)=>input.max=i%2?next.naturalHeight:next.naturalWidth);validate();draw();};
+      next.onerror=()=>{if(image!==next)return;sourceReady=false;canvas.width=0;canvas.height=0;validate();$('image-size').textContent='Source image could not be loaded. Check your connection and retry. If evidence verification fails, restore the matching original.';$('retry-image').hidden=false;};
+      next.src=form.action.replace(/\/intelligence\/correct$/,'')+'/frames/'+$('frame').value;
+    }
+    $('retry-image').onclick=()=>{if(!pending())load();};
+    function dateField(){const isDate=['manufacturing_date','packing_date','expiry_date','best_before','use_by'].includes($('field').value);$('date-choice').hidden=!isDate;$('date-interpretation').disabled=!isDate;if(!isDate)$('date-interpretation').value='';}
+    function reset(){if(pending())return;form.reset();$('observation-index').value='-1';$('edit-mode').textContent='Adding a new observation';$('date-candidates').replaceChildren();selected=null;update();dateField();load();}
+    $('add-new').onclick=reset;
+    $('field').onchange=()=>{$('observation-index').value='-1';$('edit-mode').textContent='Adding a new observation';$('raw').value='';$('date-interpretation').value='';$('date-candidates').replaceChildren();selected=null;update();dateField();};
+    $('frame').onchange=()=>{selected=null;update();load();};
+    document.querySelectorAll('[data-intelligence-edit]').forEach(button=>button.onclick=()=>{
+      if(pending())return;reset();const name=button.dataset.field,index=Number(button.dataset.index),item=data.fields[name]?.[index];if(!item)return;
+      $('editor').open=true;$('field').value=name;$('observation-index').value=String(index);$('edit-mode').textContent=`Correcting ${name.replaceAll('_',' ')} observation ${index+1}`;$('raw').value=item.raw||'';$('date-interpretation').value=item.date_interpretation||'';
+      const source=(item.sources||[]).find(s=>data.frames.includes(s.frame));if(source){$('frame').value=String(data.frames.indexOf(source.frame));selected=source.bbox||null;}
+      (item.candidates||[]).filter(c=>c.iso).forEach(c=>{const option=document.createElement('option');option.value=c.iso;$('date-candidates').append(option);});
+      update();dateField();load();$('editor').scrollIntoView({block:'start'});$('raw').focus();
+    });
+    const point=event=>{const box=canvas.getBoundingClientRect();return[Math.round(Math.max(0,Math.min(canvas.width,(event.clientX-box.left)*canvas.width/box.width))),Math.round(Math.max(0,Math.min(canvas.height,(event.clientY-box.top)*canvas.height/box.height)))];};
+    canvas.onpointerdown=event=>{if(pending()||!sourceReady||event.button!==0)return;const box=canvas.getBoundingClientRect();if(!box.width||!box.height)return;start=point(event);canvas.setPointerCapture(event.pointerId);};canvas.onpointermove=event=>{if(pending()){start=null;return;}if(!start)return;const p=point(event);selected=[Math.min(start[0],p[0]),Math.min(start[1],p[1]),Math.max(start[0],p[0]),Math.max(start[1],p[1])];update();};canvas.onpointerup=()=>start=null;canvas.onpointercancel=()=>start=null;
+    coordinates.forEach(input=>input.oninput=()=>{if(pending())return;selected=coordinates.every(c=>c.value!=='')?coordinates.map(c=>Number(c.value)):null;validate();draw();});
+    form.addEventListener('submit',event=>{if(!validate()){event.preventDefault();event.stopImmediatePropagation();form.reportValidity();}});
+    dateField();load();
+  })();
+  </script>
+  {% elif a.review.status == 'approved' %}<p class="small muted">A supervisor must reopen this approved inspection before supplementary observations can be corrected.</p>{% endif %}
+
+  {% if a.intelligence.get('dietary') or a.intelligence.get('additives') %}
+  <details class="card"><summary>Printed dietary claims and additive identifiers</summary>
+    {% for item in a.intelligence.get('dietary', []) %}<p>{{ item.raw }}</p>{{ evidence(item.get('sources', [])) }}{% endfor %}
+    {% for item in a.intelligence.get('additives', []) %}<p><strong>{{ item.code }}</strong> · printed identifier; ingredient identity has not been inferred from the code.</p>{{ evidence(item.get('sources', [])) }}{% endfor %}
+    <p class="small muted">Printed claims have not been independently certified. Package symbols require visual verification.</p>
+  </details>
+  {% endif %}
+
+  {% set allergens = a.intelligence.get('allergens', {}) %}
+  <div class="card" id="allergen-analysis">
+    <p class="eyebrow">Supplementary information</p>
+    <h3 style="margin-top:0">Ingredient and allergen review</h3>
+    {% if can_correct %}<form method="post" action="/inspections/{{ a.scan.scan_id }}/allergens" data-review-form>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="revision" value="{{ a.review.revision }}">
+      <label for="allergen-concerns">Allergens or ingredients to look for</label>
+      <input id="allergen-concerns" name="concerns" value="{{ allergens.get('concerns', [])|join(', ') }}" placeholder="Milk, peanuts, soy, gluten" maxlength="600" aria-describedby="allergen-help">
+      <p class="small muted" id="allergen-help">Enter comma-separated concerns. Standard terms: {{ allergens.get('available_concerns', [])|join(', ') }}. Custom ingredient names are matched literally.</p>
+      <button type="submit">Check ingredient statements</button>
+    </form>{% else %}<p class="small muted">Concerns checked: {{ allergens.get('concerns', [])|join(', ') or 'None recorded' }}. Reopen an approved record or ask its assigned inspector to change concerns.</p>{% endif %}
+    {% for match in allergens.get('matches', []) %}
+      <div style="padding:.8rem 0;border-bottom:1px solid var(--line)">
+        <span class="chip warn">{{ {'explicit':'Explicit ingredient match', 'possible':'Possible related ingredient', 'cross_contact':'Cross-contact statement'}.get(match.kind, match.kind) }}</span>
+        <p><strong>{{ match.concern|title }}</strong> · “{{ match.matched_text }}”</p>
+        <p class="small">{{ match.context }}</p>
+        <details><summary>View ingredient evidence</summary>{{ evidence(match.get('sources', [])) }}</details>
+      </div>
+    {% else %}
+      <p class="small muted" style="margin-top:1rem">{{ 'No matching text was found in the extracted statements. This does not establish absence.' if allergens.get('concerns') else 'Add concerns to check the statements that were actually read from this package.' }}</p>
+    {% endfor %}
+    {% if allergens.get('unmatched') %}<p class="small muted">No text match: {{ allergens.unmatched|join(', ') }}.</p>{% endif %}
+    <p class="small muted" style="margin-top:1rem">{{ allergens.get('disclaimer', '') }}</p>
+  </div>
+</section>
+{% endif %}

@@ -1,0 +1,59 @@
+{
+  "id": "LMPCR.R9.2.NOT_ON_BOTTOM",
+  "title": "WITHDRAWN: Declarations not to be affixed to the bottom of the package",
+  "citation": {
+    "clause": "Rule 9(2)",
+    "text": "The cited Rule 9(2) concerns reading through liquid, not bottom placement."
+  },
+  "effective_from": "2011-04-01",
+  "applies_when": false,
+  "assert": {
+    "all": [
+      {
+        "panel_is": [
+          "retail_sale_price",
+          [
+            "pdp",
+            "back",
+            "left",
+            "right",
+            "top"
+          ]
+        ]
+      },
+      {
+        "panel_is": [
+          "net_quantity",
+          [
+            "pdp",
+            "back",
+            "left",
+            "right",
+            "top"
+          ]
+        ]
+      }
+    ]
+  },
+  "severity": "major",
+  "min_assurance_tier": "C",
+  "penalty_ref": null,
+  "messages": {
+    "inconclusive": "The cited Rule 9(2) concerns reading through liquid, not bottom placement."
+  },
+  "evidence": [
+    "retail_sale_price",
+    "net_quantity"
+  ],
+  "tests": "tests/test_rules_engine.py",
+  "sources": [
+    {
+      "url": "https://consumeraffairs.gov.in/public/upload/files/8_1732871406.pdf",
+      "notification": "G.S.R.202(E)",
+      "publication_date": "2011-03-07",
+      "clause": "PCR 2011; read with subsequent amendments",
+      "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+    }
+  ],
+  "legal_check": {}
+}

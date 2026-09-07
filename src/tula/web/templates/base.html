@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Tula{% endblock %}</title>
+<meta name="csrf-token" content="{{ request.state.csrf_token }}">
+<link rel="stylesheet" href="{{ asset_url('console.css') }}">
+<style>
+:root{
+  --paper:#F0F3F2; --card:#FBFCFC; --sunk:#E7ECEA; --ink:#0C1716; --ink2:#22322F;
+  --muted:#56635F; --faint:#8A9793; --line:#D5DEDB;
+  --accent:#0A6669; --accent-soft:#DCECEB; --brass:#856019; --brass-soft:#F0E7D4;
+  --bad:#A31D14; --bad-soft:#F7E2E0; --warn:#84590A; --warn-soft:#F7EBD2;
+  --ok:#186540; --ok-soft:#DEEEE5;
+  --f-display:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --paper:#0B1211; --card:#131B1A; --sunk:#0F1817; --ink:#E3EBE9; --ink2:#C3D0CD;
+    --muted:#8CA09B; --faint:#6B7C78; --line:#243130;
+    --accent:#41B2AE; --accent-soft:#122E2E; --brass:#CA9E51; --brass-soft:#2B2313;
+    --bad:#EF8B81; --bad-soft:#331714; --warn:#DFB142; --warn-soft:#2C2210;
+    --ok:#55BD85; --ok-soft:#0F2A1E;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--f-body);
+     font-size:15.5px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-underline-offset:3px}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+header.top{background:var(--card);border-bottom:1px solid var(--line)}
+.top-in{max-width:1180px;margin:0 auto;padding:.9rem 1.25rem;display:flex;
+        align-items:center;gap:1.5rem;flex-wrap:wrap}
+.brand{font-family:var(--f-display);font-weight:700;font-size:1.35rem;letter-spacing:-.03em;
+       text-decoration:none;color:var(--ink)}
+.brand span{color:var(--accent);font-weight:500;font-size:.62em;vertical-align:.35em;margin-left:.25em}
+nav.top-nav{display:flex;gap:1.1rem;font-family:var(--f-mono);font-size:.76rem;
+            letter-spacing:.05em;text-transform:uppercase}
+nav.top-nav a{color:var(--muted);text-decoration:none;padding-bottom:2px;border-bottom:2px solid transparent}
+nav.top-nav a:hover,nav.top-nav a.on{color:var(--ink);border-bottom-color:var(--accent)}
+.top-meta{margin-left:auto;font-family:var(--f-mono);font-size:.7rem;color:var(--faint);text-align:right}
+
+main{max-width:1180px;margin:0 auto;padding:1.75rem 1.25rem 5rem}
+h1{font-family:var(--f-display);font-weight:600;letter-spacing:-.025em;font-size:1.9rem;
+   line-height:1.14;margin:0 0 .5rem;text-wrap:balance}
+h2{font-family:var(--f-display);font-weight:600;letter-spacing:-.015em;font-size:1.18rem;
+   margin:2rem 0 .7rem}
+h3{font-family:var(--f-display);font-weight:600;font-size:1rem;margin:1.2rem 0 .4rem}
+p{margin:0 0 .8rem;max-width:70ch}
+.lede{color:var(--ink2);font-size:1.02rem;max-width:66ch}
+.eyebrow{font-family:var(--f-mono);font-size:.66rem;letter-spacing:.15em;text-transform:uppercase;
+         color:var(--brass);margin:0 0 .3rem}
+
+.tickrule{height:12px;border:0;border-bottom:1px solid var(--line);margin:0 0 1.2rem;
+  background-repeat:repeat-x;background-position:left bottom;
+  background-image:repeating-linear-gradient(to right,var(--line) 0 1px,transparent 1px 7.6px),
+                   repeating-linear-gradient(to right,var(--faint) 0 1px,transparent 1px 38px);
+  background-size:100% 5px,100% 10px}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:3px;padding:1.15rem}
+.grid{display:grid;gap:1rem}
+@media(min-width:760px){.grid.two{grid-template-columns:1fr 1fr}.grid.three{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:980px){.grid.split{grid-template-columns:minmax(0,1.15fr) minmax(280px,.85fr)}}
+
+.mono{font-family:var(--f-mono);font-size:.8rem;font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.small{font-size:.82rem}
+
+.chip{font-family:var(--f-mono);font-size:.62rem;font-weight:600;letter-spacing:.08em;
+      text-transform:uppercase;padding:.2em .5em;border-radius:2px;white-space:nowrap;display:inline-block}
+.chip.ok{color:var(--ok);background:var(--ok-soft)}
+.chip.bad{color:var(--bad);background:var(--bad-soft)}
+.chip.warn{color:var(--warn);background:var(--warn-soft)}
+.chip.info{color:var(--accent);background:var(--accent-soft)}
+.chip.muted{color:var(--muted);background:var(--sunk)}
+.cite{font-family:var(--f-mono);font-size:.7rem;color:var(--brass);background:var(--brass-soft);
+      padding:.12em .42em;border-radius:2px;white-space:nowrap}
+
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:3px;background:var(--card);margin:.8rem 0}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:.86rem}
+th,td{padding:.55rem .8rem;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+thead th{font-family:var(--f-display);font-size:.7rem;font-weight:600;letter-spacing:.05em;
+         text-transform:uppercase;color:var(--muted);background:var(--sunk);white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--sunk)}
+td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:.8rem}
+
+.finding{border:1px solid var(--line);border-left:3px solid var(--line);border-radius:3px;
+         background:var(--card);padding:.9rem 1rem;margin-bottom:.7rem}
+.finding.bad{border-left-color:var(--bad)}
+.finding.warn{border-left-color:var(--warn)}
+.finding.ok{border-left-color:var(--ok)}
+.finding.info{border-left-color:var(--accent)}
+.finding-hd{display:flex;gap:.6rem;align-items:baseline;flex-wrap:wrap;margin-bottom:.3rem}
+.finding-hd strong{font-family:var(--f-display);font-size:.98rem;font-weight:600}
+.finding dl{display:grid;grid-template-columns:auto 1fr;gap:.2rem .9rem;margin:.5rem 0 0;
+            font-size:.82rem}
+.finding dt{font-family:var(--f-mono);font-size:.72rem;color:var(--faint);white-space:nowrap}
+.finding dd{margin:0;color:var(--ink2)}
+
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:1px;
+       background:var(--line);border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.tile{background:var(--card);padding:.75rem .9rem}
+.tile b{font-family:var(--f-display);font-size:1.5rem;font-weight:700;display:block;line-height:1.1;
+        font-variant-numeric:tabular-nums}
+.tile span{font-family:var(--f-mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;
+           color:var(--muted)}
+
+form.upload{display:flex;flex-direction:column;gap:.7rem}
+label{font-family:var(--f-mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;
+      color:var(--muted);display:block;margin-bottom:.25rem}
+input[type=text],input[type=file],select{width:100%;padding:.5rem .6rem;border:1px solid var(--line);
+  border-radius:3px;background:var(--paper);color:var(--ink);font-family:var(--f-mono);font-size:.82rem}
+button{font-family:var(--f-display);font-weight:600;font-size:.9rem;padding:.55rem 1.1rem;
+  background:var(--accent);color:var(--card);border:0;border-radius:3px;cursor:pointer}
+button:hover{filter:brightness(1.08)}
+button.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+
+.row{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+.htmx-indicator{display:none}
+.htmx-request .htmx-indicator{display:inline}
+.htmx-request button{opacity:.6}
+.bar{height:6px;background:var(--sunk);border-radius:3px;overflow:hidden;min-width:70px}
+.bar i{display:block;height:100%;background:var(--bad)}
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<header class="top">
+  <div class="top-in">
+    <a class="brand" href="/">Tula<span>तुला</span></a>
+    <nav class="top-nav" aria-label="Main navigation">
+      <a href="/" class="{{ 'on' if request.url.path == '/' else '' }}">Inspect</a>
+      <a href="/processing" class="{{ 'on' if request.url.path == '/processing' else '' }}">Processing</a>
+      <a href="/bench" class="{{ 'on' if request.url.path == '/bench' else '' }}">Bench</a>
+      <a href="/bench/scenarios" class="{{ 'on' if '/scenarios' in request.url.path else '' }}">Scenarios</a>
+      <a href="/repository" class="{{ 'on' if '/repository' in request.url.path else '' }}">Repository</a>
+      <a href="/dashboard" class="{{ 'on' if '/dashboard' in request.url.path else '' }}">Dashboard</a>
+      <a href="/rules" class="{{ 'on' if request.url.path == '/rules' else '' }}">Rules</a>
+    </nav>
+    <div class="top-meta account-menu">
+      {% if request.state.user %}
+      <a href="/account/password">{{ request.state.user.display_name }}</a>
+      <span class="chip info">{{ request.state.user.role }}</span>
+      {% if request.state.user.role == 'admin' %}<a href="/admin/users">Administration</a> · <a href="/admin/rules">Rule versions</a>{% endif %}
+      <form method="post" action="/logout"><input type="hidden" name="csrf_token" value="{{ request.state.csrf_token }}"><button class="ghost compact">Sign out</button></form>
+      {% endif %}
+    </div>
+  </div>
+</header>
+<main id="main-content" tabindex="-1">
+<p class="small" style="padding:.6rem .8rem;border-left:3px solid var(--warn);background:var(--warn-soft)">AI-assisted inspection · Machine findings require officer verification. Draft legal rules require legal review.</p>
+{% block content %}{% endblock %}
+</main>
+<script src="/static/htmx.min.js"></script>
+<script src="{{ asset_url('console.js') }}" defer></script>
+<script>
+document.body.addEventListener('htmx:responseError', function (event) {
+  var target = event.detail.target;
+  var message = 'Analysis failed. Please retry.';
+  try { message = JSON.parse(event.detail.xhr.responseText).detail || message; } catch (_) {}
+  target.textContent = typeof message === 'string' ? message : 'Please check the form values.';
+  target.setAttribute('role', 'alert');
+});
+// Demo-day insurance: if the CDN is unreachable, hx-post still has to work.
+// Twenty lines of fetch beats a blank panel in front of a judging table.
+if (!window.htmx) {
+  // hx-get + hx-trigger="load": each acceptance-matrix row fetches itself.
+  document.querySelectorAll('[hx-get][hx-trigger~="load"]').forEach(function (el) {
+    fetch(el.getAttribute('hx-get'))
+      .then(function (r) { return r.text(); })
+      .then(function (html) {
+        var frag = document.createElement('tbody');
+        frag.innerHTML = html.trim();
+        var replacement = frag.firstElementChild;
+        if (replacement && el.parentNode) el.parentNode.replaceChild(replacement, el);
+      })
+      .catch(function () {
+        el.innerHTML = '<td colspan="4" class="chip bad">could not run</td>';
+      });
+  });
+
+  document.addEventListener('submit', function (event) {
+    var form = event.target;
+    var url = form.getAttribute('hx-post');
+    if (!url) return;
+    event.preventDefault();
+    var target = document.querySelector(form.getAttribute('hx-target') || 'body');
+    target.innerHTML = '<p class="muted">Analysing…</p>';
+    fetch(url, { method: 'POST', headers: {'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content}, body: new FormData(form) })
+      .then(function (r) { return r.text(); })
+      .then(function (html) { target.innerHTML = html; })
+      .catch(function (err) {
+        target.innerHTML = '<p class="chip bad">Analysis failed: ' + err.message + '</p>';
+      });
+  });
+}
+</script>
+</body>
+</html>

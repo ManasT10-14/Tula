@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tula"
+version = "0.1.0"
+description = "Compliance engine for the Legal Metrology (Packaged Commodities) Rules, 2011"
+requires-python = ">=3.11"
+dynamic = ["dependencies"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<10", "httpx>=0.27,<1", "build>=1", "ruff>=0.11"]
+
+[project.scripts]
+tula = "tula.cli:main"
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+[tool.setuptools.package-data]
+"tula.web" = ["templates/*.html", "static/*.js", "static/*.css", "static/*.txt"]
+
+[tool.setuptools.data-files]
+"share/tula/rules/lmpcr-2011" = ["rules/lmpcr-2011/*.json"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+# the default temp root under AppData is not writable on this machine
+addopts = "--basetemp=.pytest-tmp"
+
+[tool.ruff]
+line-length = 100
+src = ["src"]

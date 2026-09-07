@@ -1,0 +1,56 @@
+{
+  "id": "LMPCR.R6.1.E.MRP_SINGLE",
+  "title": "Competing retail-price declarations and revisions",
+  "citation": {
+    "clause": "Rule 6(3), Rule 18(2A)/(3), applicable Rule 33 orders",
+    "text": "Screening paraphrase: price revisions and competing prices require contextual review; multiple printed prices alone do not establish an offence."
+  },
+  "effective_from": "2011-04-01",
+  "declaration": "retail_sale_price",
+  "applies_when": {
+    "present": "$decl.retail_sale_price"
+  },
+  "assert": {
+    "legal_screen": {
+      "kind": "price_uniqueness"
+    }
+  },
+  "severity": "critical",
+  "min_assurance_tier": "C",
+  "penalty_ref": "LM Act 2009 s.36(1)",
+  "messages": {
+    "pass": "One retail-price interpretation was located; this does not certify price compliance.",
+    "violation": "Competing retail-price declarations require review.",
+    "inconclusive": "Review the original and revised prices, sticker layers, dates and applicable permission."
+  },
+  "evidence": [
+    "retail_sale_price"
+  ],
+  "tests": "tests/test_rules_engine.py",
+  "sources": [
+    {
+      "url": "https://consumeraffairs.gov.in/public/upload/files/8_1732871406.pdf",
+      "notification": "G.S.R.202(E)",
+      "publication_date": "2011-03-07",
+      "clause": "PCR 2011; read with subsequent amendments",
+      "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+    },
+    {
+      "url": "https://consumeraffairs.gov.in/public/upload/files/8(xii)_0_1732871346.pdf",
+      "notification": "G.S.R.629(E)",
+      "publication_date": "2017-06-23",
+      "clause": "Amendments 3-9 and 13",
+      "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+    },
+    {
+      "url": "https://consumeraffairs.gov.in/public/upload/admin/cmsfiles/whatsnews/GST_revision_-_Permission_by_Central_Govtunder_Rules_33_of_the_Legal_Metrology_Packaged_Commodities_Rules2011to_relax_provisions_contained_in_Rule_183_whatsnews.pdf",
+      "notification": "DoCA GST revision order",
+      "publication_date": "2025-09-18",
+      "clause": "Rule 33 relaxation of Rule 18(3)",
+      "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+    }
+  ],
+  "legal_check": {
+    "kind": "price_uniqueness"
+  }
+}

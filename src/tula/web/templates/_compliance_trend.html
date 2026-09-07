@@ -1,0 +1,26 @@
+<section class="card" style="margin:20px 0" aria-labelledby="compliance-trend-heading">
+  <div class="section-label"><h2 id="compliance-trend-heading">Approved compliance by capture date</h2><span class="small muted">UTC · up to 30 activity dates</span></div>
+  <p class="small muted">Current approved outcomes for inspections captured on each date. The rate is approved compliant ÷ (approved compliant + approved non-compliant). Pending, exempt and not-applicable records are excluded. Past points can change after review; this is not a historical approval snapshot or market prevalence.</p>
+  {% set days=stats.compliance_trend %}
+  {% set chart=namespace(previous_x=none,previous_y=none) %}
+  {% if days|selectattr('percentage','ne',none)|list %}
+  <div class="tw" tabindex="0" role="region" aria-label="Approved compliance chart"><svg class="compliance-trend" viewBox="0 0 720 196" role="img" aria-labelledby="compliance-trend-title compliance-trend-desc">
+    <title id="compliance-trend-title">Approved compliance percentage by capture date</title>
+    <desc id="compliance-trend-desc">Each point links to inspections captured that day. Dates with no approved compliant or non-compliant record have no percentage and break the line. The full counts and denominator are in the table below.</desc>
+    {% for y,label in [(20,'100%'),(90,'50%'),(160,'0%')] %}<line x1="44" x2="680" y1="{{ y }}" y2="{{ y }}" stroke="var(--line)"/><text x="36" y="{{ y+4 }}" text-anchor="end">{{ label }}</text>{% endfor %}
+    {% for day in days %}
+      {% set x=44 + 636*(day.day_number-days[0].day_number)/(days[-1].day_number-days[0].day_number) if days[-1].day_number != days[0].day_number else 362 %}
+      {% if day.percentage is not none %}
+        {% set y=160-1.4*day.percentage %}
+        {% if chart.previous_x is not none %}<line x1="{{ chart.previous_x }}" y1="{{ chart.previous_y }}" x2="{{ x }}" y2="{{ y }}" stroke="var(--accent)" stroke-width="2"/>{% endif %}
+        <a href="/repository?source={{ source }}&date_from={{ day.day }}&date_to={{ day.day }}" aria-label="{{ day.day }}: {{ day.percentage }} percent, {{ day.compliant }} compliant of {{ day.assessed }} assessed; open inspections"><circle cx="{{ x }}" cy="{{ y }}" r="5" fill="var(--accent)"><title>{{ day.day }} · {{ day.percentage }}% · {{ day.compliant }}/{{ day.assessed }} assessed</title></circle></a>
+        {% set chart.previous_x=x %}{% set chart.previous_y=y %}
+      {% else %}{% set chart.previous_x=none %}{% set chart.previous_y=none %}{% endif %}
+    {% endfor %}
+    <text x="44" y="186">{{ days[0].day }}</text><text x="680" y="186" text-anchor="end">{{ days[-1].day }}</text>
+  </svg></div>
+  {% else %}<p class="empty-state">No approved compliant or non-compliant inspections in this range. The percentage will appear after independent approval.</p>{% endif %}
+  <details><summary>View compliance counts and rate denominator</summary><div class="tw" tabindex="0" role="region" aria-label="Approved compliance counts"><table><thead><tr><th>Captured (UTC)</th><th>Inspections</th><th>Approved compliant</th><th>Approved non-compliant</th><th>Excluded from rate</th><th>Compliance rate</th></tr></thead><tbody>
+    {% for day in days %}<tr><td><a href="/repository?source={{ source }}&date_from={{ day.day }}&date_to={{ day.day }}">{{ day.day }}</a></td><td>{{ day.total }}</td><td>{{ day.compliant }}</td><td>{{ day.non_compliant }}</td><td>{{ day.excluded }}</td><td>{{ day.percentage|string+'%' if day.percentage is not none else 'Not available' }}</td></tr>{% else %}<tr><td colspan="6">No inspections in this range.</td></tr>{% endfor %}
+  </tbody></table></div></details>
+</section>

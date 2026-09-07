@@ -1,0 +1,37 @@
+{
+  "id": "LMPCR.R6.1.C.UNIT_SYMBOL",
+  "title": "Net quantity expressed in a correct standard unit symbol",
+  "citation": {
+    "clause": "Rule 6(1)(c) read with the Legal Metrology (General) Rules, 2011",
+    "text": "The net quantity shall be expressed in terms of the standard unit of weight or measure, using the unit symbol prescribed for that unit."
+  },
+  "effective_from": "2011-04-01",
+  "declaration": "net_quantity",
+  "applies_when": {
+    "present": "$decl.net_quantity"
+  },
+  "assert": {
+    "truthy": "$decl.net_quantity.norm.is_canonical"
+  },
+  "severity": "minor",
+  "min_assurance_tier": "C",
+  "penalty_ref": "LM Act 2009 s.36(1)",
+  "messages": {
+    "pass": "The net quantity uses a prescribed unit symbol.",
+    "violation": "The net quantity is expressed using a non-standard unit symbol. Prescribed symbols are case-sensitive, are not pluralised, and do not take a full stop."
+  },
+  "evidence": [
+    "net_quantity"
+  ],
+  "tests": "tests/test_rules_engine.py",
+  "sources": [
+    {
+      "url": "https://consumeraffairs.gov.in/public/upload/files/8_1732871406.pdf",
+      "notification": "G.S.R.202(E)",
+      "publication_date": "2011-03-07",
+      "clause": "PCR 2011; read with subsequent amendments",
+      "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+    }
+  ],
+  "legal_check": {}
+}

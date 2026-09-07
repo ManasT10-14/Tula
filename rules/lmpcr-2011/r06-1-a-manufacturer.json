@@ -1,0 +1,56 @@
+{
+  "id": "LMPCR.R6.1.A.MANUFACTURER",
+  "title": "Name and complete address of the manufacturer, packer or importer",
+  "citation": {
+    "clause": "Rule 6(1)(a)",
+    "text": "Screening paraphrase: identify the manufacturer, different packer and importer as applicable, with required addresses; category-specific provisions may govern."
+  },
+  "effective_from": "2011-04-01",
+  "declaration": "manufacturer",
+  "assert": {
+    "all": [
+      {
+        "present": "$decl.manufacturer"
+      },
+      {
+        "truthy": "$decl.manufacturer.norm.has_address"
+      }
+    ]
+  },
+  "severity": "major",
+  "min_assurance_tier": "C",
+  "penalty_ref": "LM Act 2009 s.36(1)",
+  "messages": {
+    "pass": "A manufacturer/packer address candidate was located; party roles and postal completeness require review.",
+    "violation": "The package does not carry the name and complete address of the manufacturer, packer or importer. A brand name alone does not satisfy Rule 6(1)(a).",
+    "inconclusive": "A manufacturer declaration was located but the address could not be read with confidence."
+  },
+  "evidence": [
+    "manufacturer"
+  ],
+  "tests": "tests/test_rules_engine.py",
+  "sources": [
+    {
+      "url": "https://consumeraffairs.gov.in/public/upload/files/8_1732871406.pdf",
+      "notification": "G.S.R.202(E)",
+      "publication_date": "2011-03-07",
+      "clause": "PCR 2011; read with subsequent amendments",
+      "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+    },
+    {
+      "url": "https://consumeraffairs.gov.in/public/upload/files/8(xii)_0_1732871346.pdf",
+      "notification": "G.S.R.629(E)",
+      "publication_date": "2017-06-23",
+      "clause": "Amendments 3-9 and 13",
+      "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+    }
+  ],
+  "legal_check": {
+    "kind": "manufacturer",
+    "review_categories": [
+      "food",
+      "medical_device",
+      "drug"
+    ]
+  }
+}

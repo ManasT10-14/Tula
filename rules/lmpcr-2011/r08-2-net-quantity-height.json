@@ -1,0 +1,100 @@
+{
+  "id": "LMPCR.R8.2.NETQTY_HEIGHT",
+  "title": "Minimum height of the net quantity numerals",
+  "citation": {
+    "clause": "Rule 7(2), Table I",
+    "text": "Screening of numeral height against the PDP area table; see the official Rule 7(2) text and applicable exceptions."
+  },
+  "effective_from": "2018-01-01",
+  "declaration": "net_quantity",
+  "applies_when": {
+    "present": "$decl.net_quantity"
+  },
+  "assert": {
+    "gte_measured": [
+      "$meas.net_quantity_cap_height",
+      {
+        "table_lookup": {
+          "key": "$pkg.pdp_area_cm2",
+          "rows": [
+            {
+              "max": 50,
+              "normal": 1,
+              "blown_formed": 2
+            },
+            {
+              "max": 100,
+              "normal": 1.5,
+              "blown_formed": 3
+            },
+            {
+              "max": 500,
+              "normal": 2.5,
+              "blown_formed": 4
+            },
+            {
+              "max": 2500,
+              "normal": 4,
+              "blown_formed": 6
+            },
+            {
+              "max": null,
+              "normal": 6,
+              "blown_formed": 6
+            }
+          ],
+          "select": {
+            "if": "$pkg.is_blown_formed",
+            "then": "blown_formed",
+            "else": "normal"
+          },
+          "boundary_policy": "favour_subject"
+        }
+      }
+    ]
+  },
+  "severity": "major",
+  "min_assurance_tier": "B",
+  "penalty_ref": "LM Act 2009 s.36(1)",
+  "messages": {
+    "pass": "The net quantity numerals meet the minimum height for this panel size.",
+    "violation": "The numerals declaring net quantity are smaller than the minimum height prescribed for a principal display panel of this area.",
+    "inconclusive": "The measured numeral height cannot be distinguished from the prescribed minimum within the measurement uncertainty. Re-capture with a scale reference."
+  },
+  "evidence": [
+    "net_quantity",
+    "scale_source",
+    "pdp_area_derivation"
+  ],
+  "tests": "tests/test_rules_engine.py",
+  "sources": [
+    {
+      "url": "https://consumeraffairs.gov.in/public/upload/files/8(xii)_0_1732871346.pdf",
+      "notification": "G.S.R.629(E)",
+      "publication_date": "2017-06-23",
+      "clause": "Amendments 3-9 and 13",
+      "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+    },
+    {
+      "url": "https://consumeraffairs.gov.in/public/upload/files/8(xiii)_0_1732871373.pdf",
+      "notification": "G.S.R.1373(E)",
+      "publication_date": "2017-11-07",
+      "clause": "Table I corrigendum, English p.2",
+      "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+    },
+    {
+      "url": "https://consumeraffairs.gov.in/public/upload/files/267107_1761404707.pdf",
+      "notification": "G.S.R.778(E)",
+      "publication_date": "2025-10-24",
+      "clause": "Medical Devices Rules referrals",
+      "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+    }
+  ],
+  "legal_check": {
+    "kind": "height",
+    "review_categories": [
+      "medical_device",
+      "drug"
+    ]
+  }
+}

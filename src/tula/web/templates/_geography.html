@@ -1,0 +1,22 @@
+<section class="card geography-card" style="margin-top:20px" aria-labelledby="geography-heading">
+  <div class="section-label"><h2 id="geography-heading">Recorded inspection coordinates</h2><span class="small muted">Optional, consented capture · rounded to 0.001°</span></div>
+  <p class="small muted">Each point comes from a saved inspection coordinate. Point size represents inspection count; orange marks one or more machine-potential findings. Select a point or table location to open the matching inspections. This is an operational coordinate plot, not a boundary or market-prevalence map.</p>
+  {% set geo_source=source|default('inspection') %}{% set geo_from=date_from|default('') %}{% set geo_to=date_to|default('') %}
+  {% set mapped=stats.mapped_geo_points %}
+  {% if mapped %}
+  <div class="geo-layout">
+    <div class="tw" tabindex="0" role="region" aria-label="India coordinate plot"><svg class="geo-plot" viewBox="0 0 720 500" role="img" aria-labelledby="geo-title geo-desc">
+      <title id="geo-title">Inspection coordinates within the India plotting extent</title>
+      <desc id="geo-desc">Latitude six to thirty-eight degrees north and longitude sixty-eight to ninety-eight degrees east. Point size represents inspections. Orange points have machine-potential findings. Exact counts are in the table below.</desc>
+      <rect x="70" y="50" width="600" height="400" class="geo-frame"/>
+      {% for longitude in [68,73,78,83,88,93,98] %}{% set x=70+(longitude-68)/30*600 %}<line x1="{{ x }}" x2="{{ x }}" y1="50" y2="450" class="geo-grid"/><text x="{{ x }}" y="474" text-anchor="middle">{{ longitude }}°E</text>{% endfor %}
+      {% for latitude in [6,14,22,30,38] %}{% set y=450-(latitude-6)/32*400 %}<line x1="70" x2="670" y1="{{ y }}" y2="{{ y }}" class="geo-grid"/><text x="60" y="{{ y+4 }}" text-anchor="end">{{ latitude }}°N</text>{% endfor %}
+      {% for point in mapped %}<a class="geo-point-link" href="/repository?source={{ geo_source }}&date_from={{ geo_from }}&date_to={{ geo_to }}&geo_lat={{ point.latitude }}&geo_lon={{ point.longitude }}" aria-label="Open {{ point.n }} inspection{{ '' if point.n == 1 else 's' }} near {{ point.latitude }}, {{ point.longitude }}"><circle cx="{{ point.x }}" cy="{{ point.y }}" r="{{ point.radius }}" class="geo-point {{ 'flagged' if point.potential else 'clear' }}"><title>{{ point.label }} · {{ point.latitude }}, {{ point.longitude }} · {{ point.n }} inspection(s) · {{ point.potential }} machine-potential finding(s)</title></circle></a>{% endfor %}
+    </svg></div>
+    <div class="geo-legend small"><span><i class="geo-key clear"></i>No machine-potential finding</span><span><i class="geo-key flagged"></i>One or more machine-potential findings</span><strong>{{ stats.mapped_geo_record_count }} mapped inspection{{ '' if stats.mapped_geo_record_count == 1 else 's' }}</strong></div>
+  </div>
+  {% else %}<p class="empty-state">No saved coordinates fall within the India plotting extent for this dataset and date range. Record device location during capture to populate this view.</p>{% endif %}
+  {% if stats.geo_points %}
+  <details><summary>View accessible coordinate data{% if stats.geo_record_count != stats.mapped_geo_record_count %} · {{ stats.geo_record_count-stats.mapped_geo_record_count }} outside plot extent{% endif %}</summary>{% if stats.geo_groups_limited %}<p class="notice small">Showing the 200 most frequent rounded coordinate groups. The summary count includes every matching inspection.</p>{% endif %}<div class="tw" tabindex="0" role="region" aria-label="Recorded inspection coordinate data"><table><thead><tr><th>Location</th><th>Latitude</th><th>Longitude</th><th>Inspections</th><th>Potential findings</th><th>Plotted</th></tr></thead><tbody>{% for point in stats.geo_points %}<tr><td><a href="/repository?source={{ geo_source }}&date_from={{ geo_from }}&date_to={{ geo_to }}&geo_lat={{ point.latitude }}&geo_lon={{ point.longitude }}">{{ point.label }}</a></td><td>{{ point.latitude }}</td><td>{{ point.longitude }}</td><td>{{ point.n }}</td><td>{{ point.potential }}</td><td>{{ 'Yes' if point.within_india_extent else 'Outside India extent' }}</td></tr>{% endfor %}</tbody></table></div></details>
+  {% endif %}
+</section>

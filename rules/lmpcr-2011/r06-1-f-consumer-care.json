@@ -1,0 +1,70 @@
+{
+  "id": "LMPCR.R6.1.F.CONSUMER_CARE",
+  "title": "Consumer care contact details",
+  "citation": {
+    "clause": "Rule 6(2)",
+    "text": "Screening paraphrase: from 1 January 2016, the complaints contact must identify a person or office with name, address, telephone number and e-mail address."
+  },
+  "effective_from": "2011-04-01",
+  "declaration": "consumer_care",
+  "assert": {
+    "legal_screen": {
+      "kind": "consumer_care",
+      "current_from": "2016-01-01",
+      "current_fields": [
+        "name",
+        "address",
+        "phone",
+        "email"
+      ],
+      "historical_fields": [
+        "name",
+        "address",
+        "phone"
+      ]
+    }
+  },
+  "severity": "major",
+  "min_assurance_tier": "C",
+  "penalty_ref": "LM Act 2009 s.36(1)",
+  "messages": {
+    "pass": "The complaints-contact block contains the required component types; address completeness and reachability are not certified.",
+    "violation": "Required consumer-care contact components are absent from verified evidence.",
+    "inconclusive": "Verify missing or unreadable consumer-care name, address, telephone and e-mail components."
+  },
+  "evidence": [
+    "consumer_care"
+  ],
+  "tests": "tests/test_rules_engine.py",
+  "sources": [
+    {
+      "url": "https://consumeraffairs.gov.in/public/upload/files/8_1732871406.pdf",
+      "notification": "G.S.R.202(E)",
+      "publication_date": "2011-03-07",
+      "clause": "PCR 2011; read with subsequent amendments",
+      "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+    },
+    {
+      "url": "https://consumeraffairs.gov.in/public/upload/files/8(x)_0_1732870750.pdf",
+      "notification": "G.S.R.385(E)",
+      "publication_date": "2015-05-14",
+      "clause": "Amendments 1(2), 3(i), 5",
+      "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+    }
+  ],
+  "legal_check": {
+    "kind": "consumer_care",
+    "current_from": "2016-01-01",
+    "current_fields": [
+      "name",
+      "address",
+      "phone",
+      "email"
+    ],
+    "historical_fields": [
+      "name",
+      "address",
+      "phone"
+    ]
+  }
+}

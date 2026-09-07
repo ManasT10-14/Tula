@@ -1,0 +1,121 @@
+{# HTMX fragment: the findings panel, swapped in after an upload. #}
+<p class="eyebrow">Determination</p>
+<h2 style="margin-top:0">{{ headline }}</h2>
+
+<p class="mono muted">
+  {{ a.scan.scan_id }} · rules {{ a.rules_version }} · evidence Tier {{ a.scan.tier.value }}
+  · engine {{ a.engine }} · {{ a.elapsed_ms }} ms
+</p>
+
+{% set counts = a.counts() %}
+<div class="tiles" style="margin:.9rem 0 1.2rem">
+  <div class="tile"><b style="color:var(--bad)">{{ counts['VIOLATION'] }}</b><span>Violation</span></div>
+  {% if counts['ADVISORY'] %}
+  <div class="tile"><b style="color:var(--warn)">{{ counts['ADVISORY'] }}</b><span>Advisory</span></div>
+  {% endif %}
+  <div class="tile"><b style="color:var(--warn)">{{ counts['INCONCLUSIVE'] + counts['UNVERIFIED'] }}</b><span>Inconclusive</span></div>
+  <div class="tile"><b style="color:var(--accent)">{{ counts['EXEMPT'] }}</b><span>Exempt</span></div>
+  <div class="tile"><b style="color:var(--ok)">{{ counts['PASS'] }}</b><span>Checks passed</span></div>
+</div>
+
+{# What this capture is allowed to prove. Shown before the findings, because it
+   is the frame every "not declared" verdict below has to be read through. #}
+{% set cov = a.scan.coverage %}
+<div class="card" style="border-left:3px solid {{ 'var(--ok)' if cov.is_legible and cov.is_complete else 'var(--warn)' }};margin-bottom:1.1rem">
+  <p class="eyebrow" style="color:{{ 'var(--ok)' if cov.is_legible and cov.is_complete else 'var(--warn)' }}">Evidence coverage</p>
+  <p class="small" style="margin:0 0 .35rem">
+    {{ cov.frames }} frame(s) ·
+    {{ cov.panels_captured | map(attribute='value') | join(', ') or 'no panel identified' }} ·
+    capture <strong>{{ cov.completeness.value }}</strong>{% if cov.attested_complete %} (attested){% endif %} ·
+    {{ cov.legible_lines }}/{{ cov.lines_read }} lines legible
+  </p>
+  <p class="small muted" style="margin:0">
+    {% if not cov.is_legible %}
+    Too little was read to establish that any declaration is <em>absent</em>. Presence
+    checks report as inconclusive — the system will not accuse a package on the strength
+    of a photograph it could not read.
+    {% elif not cov.is_complete %}
+    Only part of the package is in evidence. A declaration that was not found may sit on a
+    face that was never photographed, so presence checks stop at inconclusive. Capture the
+    remaining faces, or tick “whole package captured”, to let them decide.
+    {% else %}
+    The whole package is in evidence and legible, so a declaration that is not found here
+    is a declaration the package does not carry.
+    {% endif %}
+  </p>
+</div>
+
+{% if a.scan.lane.advisory_only %}
+<div class="card" style="border-left:3px solid var(--warn);margin-bottom:1.1rem">
+  <p class="eyebrow" style="color:var(--warn)">{{ a.scan.lane.value }} lane — advisory only</p>
+  <p class="small" style="margin:0">{{ a.scan.lane.why_advisory }}
+  Non-conformities below are recorded as advisories and cannot support a notice until an
+  inspector capture confirms them.</p>
+</div>
+{% endif %}
+
+{% if a.measurements or a.package.pdp_area_cm2 %}
+<h3>Measurements</h3>
+<div class="tw" tabindex="0" role="region" aria-label="Declaration results">
+  <table>
+    <thead><tr><th>Quantity</th><th>Value</th><th>Uncertainty (k=2)</th><th>Tier</th><th>Method</th></tr></thead>
+    <tbody>
+      {% for key, m in a.measurements.items() %}
+      <tr>
+        <td class="mono">{{ key }}</td>
+        <td class="num">{{ "%.2f"|format(m.value) }} {{ m.unit }}</td>
+        <td class="num">± {{ "%.2f"|format(m.uncertainty) }}</td>
+        <td><span class="chip info">{{ m.tier.value }}</span></td>
+        <td class="small muted">{{ m.method or "—" }}</td>
+      </tr>
+      {% endfor %}
+      {% if a.package.pdp_area_cm2 %}
+      {% set p = a.package.pdp_area_cm2 %}
+      <tr>
+        <td class="mono">pdp_area</td>
+        <td class="num">{{ "%.1f"|format(p.value) }} {{ p.unit }}</td>
+        <td class="num">± {{ "%.1f"|format(p.uncertainty) }}</td>
+        <td><span class="chip info">{{ p.tier.value }}</span></td>
+        <td class="small muted">{{ p.method or "—" }}</td>
+      </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<h3>Findings</h3>
+{% for f in a.findings %}
+{% set cls = verdict_class(f.verdict) %}
+<div class="finding {{ cls }}">
+  <div class="finding-hd">
+    <span class="chip {{ cls }}">{{ verdict_label[f.verdict] }}</span>
+    <span class="cite">{{ f.citation.clause }}</span>
+    <strong>{{ finding_message(f) }}</strong>
+  </div>
+  {% if f.detail %}<p class="small muted" style="margin:.2rem 0 0">{{ f.detail }}</p>{% endif %}
+  {% if f.measured or f.extracted %}
+  <dl>
+    {% if f.extracted %}<dt>As printed</dt><dd>{{ f.extracted|replace("\n", "  /  ") }}</dd>{% endif %}
+    {% if f.measured %}<dt>Measured</dt><dd>{{ f.measured.render() }}</dd>{% endif %}
+    {% if f.threshold is not none %}<dt>Minimum</dt><dd>{{ "%.2f"|format(f.threshold) }} mm</dd>{% endif %}
+    {% if f.penalty_ref %}<dt>Penalty</dt><dd>{{ f.penalty_ref }}</dd>{% endif %}
+  </dl>
+  {% endif %}
+</div>
+{% endfor %}
+
+{% if a.warnings %}
+<h3>Notes and limitations</h3>
+<ul class="small muted">
+  {% for w in a.warnings %}<li>{{ w }}</li>{% endfor %}
+</ul>
+{% endif %}
+
+<div class="row" style="margin-top:1.2rem">
+  <a class="button-link secondary" href="/inspections/{{ a.scan.scan_id }}">Open full record</a>
+  <a class="button-link secondary" href="/inspections/{{ a.scan.scan_id }}/report.pdf">Report (PDF)</a>
+  <a class="button-link secondary" href="/inspections/{{ a.scan.scan_id }}/report.docx">Report (DOCX)</a>
+  <a class="button-link secondary" href="/inspections/{{ a.scan.scan_id }}/notice.docx">Draft notice</a>
+  <a href="/inspections/{{ a.scan.scan_id }}/report.json" class="small mono">JSON record</a>
+</div>

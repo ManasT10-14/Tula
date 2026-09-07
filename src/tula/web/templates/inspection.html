@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block title %}{{ a.scan.scan_id }} · Tula{% endblock %}
+{% block content %}
+{% set can_review = request is defined and request.state.user is defined and (request.state.user.role in ['admin','supervisor'] or a.scan.inspector_id == request.state.user.id) %}
+
+<p class="eyebrow">Inspection record · {{ a.scan.scan_id }}</p>
+{% set identity_brand = a.declarations.get('brand') %}
+{% set identity_generic = a.declarations.get('generic_name') %}
+{% set title_declaration = identity_brand if identity_brand and identity_brand.norm.get('name') and not identity_brand.norm.get('requires_review') else identity_generic if identity_generic and identity_generic.norm.get('name') and not identity_generic.norm.get('requires_review') else none %}
+<div class="page-heading"><div><h1>{{ title_declaration.raw if title_declaration else 'Package inspection' }}</h1><p class="lede">{{ headline }}</p>{% if not title_declaration and (identity_brand or identity_generic) %}<p class="small muted">Package identity needs verification. Review the candidate readings under Declarations extracted.</p>{% endif %}</div><span class="chip status-{{ a.product_status }}">{{ a.product_status|replace('_',' ')|title }}</span></div>
+<div class="metric-row"><div class="metric"><b>{{ a.violations|length }}</b><span>Potential machine violations</span></div><div class="metric"><b>{{ a.verified_violations|length }}</b><span>Officer-verified violations</span></div><div class="metric"><b>{{ a.pending_review|length }}</b><span>Findings awaiting resolution</span></div><div class="metric"><b style="font-size:19px">{{ a.review.status|replace('_',' ')|title }}</b><span>Review workflow · revision {{ a.review.revision }}</span></div></div>
+<p class="mono muted">
+  captured {{ a.scan.captured_at.strftime("%d %b %Y %H:%M UTC") }} ·
+  officer {{ a.scan.operator or "not recorded" }} ·
+  rules {{ a.rules_version }} · evidence Tier {{ a.scan.tier.value }} · engine {{ a.engine }}
+</p>
+
+<div class="row" style="margin:1rem 0">
+  <a class="button-link" href="/inspections/{{ a.scan.scan_id }}/report.pdf">Report (PDF)</a>
+  <a class="button-link secondary" href="/inspections/{{ a.scan.scan_id }}/report.docx">Editable report</a>
+  <a class="button-link secondary" href="/inspections/{{ a.scan.scan_id }}/notice.docx">Draft notice</a>
+  <a href="/inspections/{{ a.scan.scan_id }}/report.json" class="mono small">JSON record</a>
+</div>
+
+<p class="small muted">Reports preserve the machine findings and recorded officer decisions. Approval applies to the checked scope only.</p>
+{% include "_rescan_history.html" %}
+{% if a.scan.image_diagnostics %}<h2>Capture quality & OCR evidence</h2><div class="grid two">{% for d in a.scan.image_diagnostics %}<div class="card"><h3>Image {{ loop.index }} · {{ d.panel }}</h3>{% for issue in d.quality.get('issues',[]) %}<p class="small"><strong>{{ issue.message }}</strong><br>{{ issue.action }}</p>{% endfor %}{% if not d.quality.get('issues') %}<p class="small muted">No quality issue flagged by the available image checks.</p>{% endif %}{% if d.conflicts %}<div class="notice">Some OCR readings need verification. Review the original marking or capture a close-up.</div>{% endif %}<details><summary class="small">OCR passes & candidate comparison</summary><ul class="small">{% for p in d.passes %}<li>{{ p.get('variant',p.get('name','OCR pass')) }} · {{ p.get('status','completed') }}</li>{% endfor %}</ul>{% for c in d.conflicts %}<pre class="small" style="white-space:pre-wrap">{{ c|tojson(indent=2) }}</pre>{% endfor %}</details>{% if can_review %}<a class="small" href="/?rescan={{ a.scan.scan_id }}">Add a targeted close-up →</a>{% endif %}</div>{% endfor %}</div>{% endif %}
+<hr class="tickrule">
+<h2>Evidence images</h2>
+<div class="grid two">
+{% for frame in a.scan.frames %}
+<div><img src="/inspections/{{ a.scan.scan_id }}/frames/{{ loop.index0 }}" alt="Evidence frame {{ loop.index }}" style="max-width:100%;max-height:420px;object-fit:contain">
+<p class="small">Frame {{ loop.index }} · {{ integrity[loop.index0].status }}</p></div>
+{% endfor %}
+</div>
+
+{% if shrinkflation %}
+<div class="card" style="border-left:3px solid var(--warn)">
+  <p class="eyebrow" style="color:var(--warn)">Shrinkflation watch · GTIN {{ a.package.gtin }}</p>
+  <p class="small" style="margin:0 0 .4rem">This product's history shows an adverse step that no
+  single scan could reveal.</p>
+  <ul class="small" style="margin:0">
+    {% for note in shrinkflation %}<li>{{ note }}</li>{% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+{% include "_review.html" %}
+{% include "_intelligence.html" %}
+{% for section in sections %}
+<h2>{{ section.title }}</h2>
+
+{% if section.kind == "kv" %}
+<div class="tw" tabindex="0" role="region" aria-label="{{ section.title }} table">
+  <table>
+    <tbody>
+      {% for k, v in section.rows %}
+      <tr><th style="width:16rem">{{ k }}</th><td>{{ v }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% elif section.kind == "table" %}
+<div class="tw" tabindex="0" role="region" aria-label="{{ section.title }} table">
+  <table>
+    <thead><tr>{% for c in section.columns %}<th>{{ c }}</th>{% endfor %}</tr></thead>
+    <tbody>
+      {% for row in section.rows %}
+      {% if section.title == 'Declarations extracted' and section.evidence %}
+      {% set field = section.evidence[loop.index0] %}
+      <tr><td>{{ row[0] }}</td><td>
+        <p style="white-space:pre-wrap">{{ field.raw }}</p>
+        <details><summary>View field evidence and confidence</summary>
+          <p class="small">Method: {{ field.method }} · {{ field.status }}<br>{{ field.scores }}</p>
+          {% if not field.manual %}<p class="small muted">{{ field.score_basis }}</p>{% endif %}
+          {% for source in field.sources %}
+            <p class="small">{{ source.reference }}</p>
+            {% if source.image_index is not none %}
+              <a class="small" href="/inspections/{{ a.scan.scan_id }}/frames/{{ source.image_index }}" target="_blank" rel="noopener">Open field evidence image {{ source.image_index + 1 }} ↗</a>
+              {% if source.bbox and source.image_width and source.image_height %}
+              <svg class="evidence-svg" viewBox="{{ [0,source.bbox[0]-12]|max }} {{ [0,source.bbox[1]-12]|max }} {{ source.bbox[2]-source.bbox[0]+24 }} {{ source.bbox[3]-source.bbox[1]+24 }}" role="img" aria-label="Source for {{ row[0] }}">
+                <image href="/inspections/{{ a.scan.scan_id }}/frames/{{ source.image_index }}" width="{{ source.image_width }}" height="{{ source.image_height }}"/>
+                <rect x="{{ source.bbox[0] }}" y="{{ source.bbox[1] }}" width="{{ source.bbox[2]-source.bbox[0] }}" height="{{ source.bbox[3]-source.bbox[1] }}"/>
+              </svg>
+              {% endif %}
+            {% endif %}
+            <blockquote class="small" style="white-space:pre-wrap">{{ source.text }}</blockquote>
+          {% else %}<p class="small muted">No source location recorded; manual verification required.</p>{% endfor %}
+          {% if field.original_transcription is not none %}
+            <p class="small"><strong>Original OCR transcription</strong></p><blockquote class="small" style="white-space:pre-wrap">{{ field.original_transcription }}</blockquote>
+            {% for source in field.original_sources %}<p class="small">Original evidence: {{ source.reference }}{% if source.image_index is not none %} · <a href="/inspections/{{ a.scan.scan_id }}/frames/{{ source.image_index }}" target="_blank" rel="noopener">Open original OCR source image {{ source.image_index + 1 }} ↗</a>{% endif %}</p>{% endfor %}
+          {% endif %}
+        </details>
+      </td><td>{{ row[2] }}</td><td>{{ row[3] }}</td></tr>
+      {% else %}
+      <tr>{% for cell in row %}<td class="{{ 'mono' if loop.index0 > 0 else '' }}">{{ cell }}</td>{% endfor %}</tr>
+      {% endif %}
+      {% else %}
+      <tr><td colspan="{{ section.columns|length }}" class="muted">Nothing recorded.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% elif section.kind == "text" %}
+<ul class="small muted">{% for line in section.rows %}<li>{{ line }}</li>{% endfor %}</ul>
+
+{% elif section.kind == "findings" %}
+{% for f in section.rows %}
+{% set cls = verdict_class(f.verdict) %}
+<div class="finding {{ cls }}" id="finding-{{ f.finding_id }}"><details>
+  <summary class="finding-hd">
+    <span class="chip {{ cls }}">{{ verdict_label[f.verdict] }}</span>
+    <span class="cite">{{ f.citation.clause }}</span>
+    <strong>{{ finding_message(f) }}</strong>
+  </summary>
+  <dl>
+    {% for k, v in finding_rows(f) %}
+    <dt>{{ k }}</dt><dd>{{ v }}</dd>
+    {% endfor %}
+  </dl>
+  {% set decl = a.declarations.get(f.declaration) %}
+  {% if decl and decl.bbox and decl.frame in a.scan.frames %}
+  {% set frame_index = a.scan.frames.index(decl.frame) %}
+  <p class="evidence-meta">Image {{ frame_index + 1 }} · {% if decl.path.value == 'manual' or decl.norm.get('verified_transcription') %}Officer-verified transcription; no automated score assigned to corrected text.{% if decl.provenance and decl.provenance.original_ocr_confidence is not none %} Original OCR model score {{ '%.2f'|format(decl.provenance.original_ocr_confidence) }} (not calibrated).{% endif %}{% elif decl.provenance %}{{ decl.provenance.method|replace('_',' ') }} · {% if decl.provenance.ocr_confidence is not none %}OCR model score {{ '%.2f'|format(decl.provenance.ocr_confidence) }} (not calibrated){% else %}OCR model score not recorded{% endif %}{% else %}Legacy extraction; available provenance is listed above.{% endif %}</p>
+  {% set box=decl.bbox %}{% set dim=namespace(w=0,h=0) %}
+  {% for d in a.scan.image_diagnostics %}{% if d.frame==decl.frame %}{% set dim.w=d.width %}{% set dim.h=d.height %}{% endif %}{% endfor %}
+  {% if dim.w and dim.h %}<svg class="evidence-svg" viewBox="{{ [0,box[0]-20]|max }} {{ [0,box[1]-20]|max }} {{ box[2]-box[0]+40 }} {{ box[3]-box[1]+40 }}" role="img" aria-label="Highlighted source for {{ finding_message(f) }}"><image href="/inspections/{{ a.scan.scan_id }}/frames/{{ frame_index }}" width="{{ dim.w }}" height="{{ dim.h }}"/><rect x="{{ box[0] }}" y="{{ box[1] }}" width="{{ box[2]-box[0] }}" height="{{ box[3]-box[1] }}"/></svg>{% endif %}
+  <p class="small"><a href="/inspections/{{ a.scan.scan_id }}/frames/{{ frame_index }}" target="_blank" rel="noopener">Open complete evidence image ↗</a></p>
+  {% else %}<p class="notice">No located declaration supports this finding. Review capture coverage and all package faces before deciding absence.</p>{% endif %}
+  {% if f.finding_id in a.review.decisions %}{% set decision=a.review.decisions[f.finding_id] %}<p class="notice">Officer decision: <strong>{{ decision.verdict.value|replace('_',' ') }}</strong> · {{ decision.actor_name }}<br>{{ decision.reason }}</p>{% endif %}
+  {% if can_review and f.declaration %}<p class="small"><a href="/?rescan={{ a.scan.scan_id }}&amp;target={{ f.declaration.value }}">Capture a close-up of {{ declaration_labels.get(f.declaration, f.declaration.value)|lower }} →</a></p>{% endif %}
+  {% if can_review and a.review.status!='approved' %}
+  <form action="/inspections/{{ a.scan.scan_id }}/review" method="post" class="review-form" data-review-form><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="revision" value="{{ a.review.revision }}"><input type="hidden" name="action" value="decide"><input type="hidden" name="finding_id" value="{{ f.finding_id }}"><div class="grid two"><div><label>Inspector decision<select name="verdict"><option value="INCONCLUSIVE">Needs another scan / review</option><option value="VIOLATION">Verify violation</option><option value="PASS">Requirement satisfied / reject flag</option><option value="NOT_APPLICABLE">Rule does not apply</option></select></label></div><div><label>Reason & observed evidence<input name="reason" required minlength="5" maxlength="3000" placeholder="Explain your decision"></label></div></div><button class="compact" style="margin-top:12px">Save finding decision</button></form>
+  {% endif %}
+</details></div>
+{% endfor %}
+{% endif %}
+
+{% if section.note %}<p class="small muted">{{ section.note }}</p>{% endif %}
+{% endfor %}
+
+{% if history|length > 1 %}
+<h2>Product history · GTIN {{ a.package.gtin }}</h2><p class="small muted">{{ 'Generated Bench records' if a.scan.source=='bench' else 'Operational inspections' }} only. Matching identifiers do not independently prove product authenticity. Machine screening and approved results are shown separately.</p>
+<div class="tw" tabindex="0" role="region" aria-label="Product inspection history">
+  <table>
+    <thead><tr><th>Reference</th><th>Captured</th><th>Net quantity</th><th>MRP</th>
+               <th>Unit price</th><th>Machine screening</th><th>Review / approved result</th></tr></thead>
+    <tbody>
+      {% for h in history %}
+      <tr>
+        <td class="mono"><a href="/inspections/{{ h.scan_id }}">{{ h.scan_id }}</a></td>
+        <td class="num">{{ h.captured_at[:10] }}</td>
+        <td class="num">{{ "%g"|format(h.net_quantity) if h.net_quantity is not none else "—" }} {{ h.net_unit or "" }}</td>
+        <td class="num">{{ "%g"|format(h.mrp) if h.mrp else "—" }}</td>
+        <td class="num">{{ "%g"|format(h.unit_price) if h.unit_price else "—" }}</td>
+        <td><span class="chip {{ {'VIOLATION':'bad','PASS':'ok','INCONCLUSIVE':'warn','UNVERIFIED':'warn','ADVISORY':'warn'}.get(h.overall,'muted') }}">{{ h.overall|replace('_',' ')|lower }}</span></td><td>{{ h.review_status|replace('_',' ')|title }}<br><span class="chip status-{{ h.product_status }}">{{ h.product_status|replace('_',' ')|title }}</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+{% endblock %}
+

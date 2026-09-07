@@ -1,0 +1,44 @@
+{
+  "id": "LMPCR.R7.GROUPED",
+  "title": "Mandatory declarations grouped together on one panel",
+  "citation": {
+    "clause": "Rule 2(h) and Rule 8(1) (panel screening)",
+    "text": "Panel screening only. The PDP may include pre-printed information in one place and on-line information in another; physical panel differences alone do not establish an offence."
+  },
+  "effective_from": "2011-04-01",
+  "applies_when": {
+    "all": [
+      {
+        "present": "$decl.net_quantity"
+      },
+      {
+        "present": "$decl.retail_sale_price"
+      }
+    ]
+  },
+  "assert": null,
+  "severity": "minor",
+  "min_assurance_tier": "C",
+  "penalty_ref": "LM Act 2009 s.36(1)",
+  "messages": {
+    "pass": "The mandatory declarations are grouped on a single panel.",
+    "violation": "The mandatory declarations are scattered across different panels rather than grouped together at one place as Rule 7 requires.",
+    "inconclusive": "Panel assignment requires review: pre-printed and on-line declarations may occupy separate places."
+  },
+  "evidence": [
+    "net_quantity",
+    "retail_sale_price",
+    "date_of_packing"
+  ],
+  "tests": "tests/test_rules_engine.py",
+  "sources": [
+    {
+      "url": "https://consumeraffairs.gov.in/public/upload/files/8_1732871406.pdf",
+      "notification": "G.S.R.202(E)",
+      "publication_date": "2011-03-07",
+      "clause": "PCR 2011; read with subsequent amendments",
+      "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+    }
+  ],
+  "legal_check": {}
+}

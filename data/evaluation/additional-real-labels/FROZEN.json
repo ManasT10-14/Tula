@@ -1,0 +1,8 @@
+{
+  "frozen_at": "2026-09-07T01:08:10.280345+00:00",
+  "annotation_file": "data/evaluation/additional-real-labels/annotations.v1.json",
+  "annotation_sha256": "3d8047ca20bbf2d1f1f58e6d999da559a59dd666d0e5944dd4ada31a024ce0f8",
+  "ocr_has_run": false,
+  "literal_targets": 14,
+  "structured_targets": 5
+}

@@ -1,0 +1,34 @@
+{
+  "id": "LMPCR.R6.1.B.GENERIC_NAME",
+  "title": "Common or generic name of the commodity",
+  "citation": {
+    "clause": "Rule 6(1)(b)",
+    "text": "Every package shall bear the common or generic name of the commodity contained in the package."
+  },
+  "effective_from": "2011-04-01",
+  "declaration": "generic_name",
+  "assert": {
+    "present": "$decl.generic_name"
+  },
+  "severity": "major",
+  "min_assurance_tier": "C",
+  "penalty_ref": "LM Act 2009 s.36(1)",
+  "messages": {
+    "pass": "A commodity-name declaration was located; this presence screen does not establish every category or combination-package requirement.",
+    "violation": "No common or generic name is declared, or the brand name has been used in its place. Rule 6(1)(b) requires a description of what the commodity actually is."
+  },
+  "evidence": [
+    "generic_name"
+  ],
+  "tests": "tests/test_rules_engine.py",
+  "sources": [
+    {
+      "url": "https://consumeraffairs.gov.in/public/upload/files/8_1732871406.pdf",
+      "notification": "G.S.R.202(E)",
+      "publication_date": "2011-03-07",
+      "clause": "PCR 2011; read with subsequent amendments",
+      "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+    }
+  ],
+  "legal_check": {}
+}

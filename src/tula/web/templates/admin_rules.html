@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Rule versions · Tula{% endblock %}
+{% block content %}
+<p class="eyebrow">Administration · Rules and accountability</p>
+<h1>Rule versions</h1>
+<p class="lede">Import a draft, inspect its source and review notes, then select the version used for new inspections. Every retained version remains available for rollback and historical evidence.</p>
+<p class="small"><a href="/admin/audit">View the administrator audit log</a> · <a href="/rules">Read the selected rules</a></p>
+<section class="card" id="active-version" aria-labelledby="active-heading">
+  <p class="eyebrow">Currently selected</p>
+  <h2 id="active-heading" style="margin-top:0">{{ active.version }} <span class="chip info">Active configuration</span></h2>
+  <p>{{ active.title }} · {{ active.rules|length }} rules</p>
+  <p class="small muted">Activation records an administrator’s operational choice. It does not certify that a draft is legally complete or approved for enforcement. Existing inspections retain their original rules and findings.</p>
+  <p>{{ active.notes }}</p>
+  <a href="/v1/admin/rules/{{ active.version }}">Download selected rule pack</a>
+</section>
+<h2 id="imported">Retained versions</h2>
+<div class="tw" tabindex="0" role="region" aria-label="Retained rule versions"><table>
+  <thead><tr><th>Version and source</th><th>Import record</th><th>Selection</th></tr></thead>
+  <tbody>{% for item in versions %}<tr>
+    <td><strong>{{ item.version }}</strong><br>{{ item.rule_count }} rules · {{ item.title }}
+      <details><summary>Source and review notes</summary><p>{{ item.source }}</p><p>{{ item.notes }}</p><p class="mono">SHA-256 {{ item.sha256 }}</p></details>
+      <a href="/v1/admin/rules/{{ item.version }}">Download JSON</a>
+    </td>
+    <td><time>{{ item.created_at }}</time><br><span class="small">{{ item.actor_id or "Bundled source pack" }}</span><p>{{ item.note }}</p></td>
+    <td>{% if item.active %}<span class="chip ok">Selected</span>{% else %}
+      <form method="post" action="/admin/rules/activate" data-review-form>
+        <input type="hidden" name="csrf_token" value="{{ request.state.csrf_token }}">
+        <input type="hidden" name="version" value="{{ item.version }}">
+        <input type="hidden" name="expected_active" value="{{ active.version }}">
+        <label for="reason-{{ loop.index }}">Activation or rollback reason</label>
+        <input id="reason-{{ loop.index }}" name="reason" minlength="5" maxlength="3000" required placeholder="Source reviewed and reason for selection">
+        <button type="submit">Select this version</button>
+        <p role="alert" class="error-box" aria-live="polite"></p>
+      </form>{% endif %}
+    </td></tr>{% endfor %}</tbody>
+</table></div>
+<section class="card" aria-labelledby="draft-heading">
+  <h2 id="draft-heading" style="margin-top:0">Import a draft version</h2>
+  <p class="small muted">Use a unique version identifier, source URL and review notes. The server validates the complete schema, supported rule expressions, dates and threshold tables. Importing a draft leaves the selected version unchanged.</p>
+  <form method="post" action="/admin/rules/import" enctype="multipart/form-data" data-review-form>
+    <input type="hidden" name="csrf_token" value="{{ request.state.csrf_token }}">
+    <label for="rule-file">Upload JSON file (up to 512 KB)</label>
+    <input id="rule-file" type="file" name="rule_file" accept=".json,application/json">
+    <label for="rule-json">Or paste the complete rule-pack JSON</label>
+    <textarea id="rule-json" name="rule_json" rows="10" maxlength="524288" spellcheck="false" class="mono" style="width:100%" placeholder="Download a retained pack to use its schema. Give changes a new version identifier."></textarea>
+    <label for="draft-reason">Source review and purpose of this draft</label>
+    <textarea id="draft-reason" name="reason" rows="3" minlength="5" maxlength="3000" required style="width:100%"></textarea>
+    <button type="submit">Validate and retain draft</button>
+    <p role="alert" class="error-box" aria-live="polite"></p>
+  </form>
+</section>
+{% endblock %}
