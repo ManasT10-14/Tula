@@ -353,7 +353,13 @@ input[type=checkbox], input[type=radio] { width: auto; padding: 0; margin: 0 6px
    SIDEBAR CHROME & APP LAYOUT
    ========================================================================== */
 .app { display: grid; grid-template-columns: 246px minmax(0,1fr); min-height: 100vh; background-color: var(--canvas-bg); }
-.rail { background-color: rgba(248, 250, 252, 0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); color: var(--chrome-text); display: flex; flex-direction: column; border-right: 1px solid rgba(226, 232, 240, 0.6); position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 12px; }
+.rail { background-color: rgba(248, 250, 252, 0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); color: var(--chrome-text); display: flex; flex-direction: column; border-right: 1px solid rgba(226, 232, 240, 0.6); position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 12px; scrollbar-width: thin; scrollbar-color: transparent transparent; }
+.rail:hover { scrollbar-color: rgba(100, 116, 139, 0.4) transparent; }
+.rail::-webkit-scrollbar { width: 5px; background: transparent; }
+.rail::-webkit-scrollbar-track { background: transparent; }
+.rail::-webkit-scrollbar-thumb { background: transparent; border-radius: 5px; }
+.rail:hover::-webkit-scrollbar-thumb { background: rgba(100, 116, 139, 0.4); }
+.rail::-webkit-scrollbar-thumb:hover { background: rgba(100, 116, 139, 0.7); }
 .rail-brand { display: flex; align-items: center; gap: 10px; padding: 12px 14px 18px; border-bottom: 1px solid var(--chrome-border); text-decoration: none; color: var(--chrome-text-hover); margin-bottom: 10px; }
 .rail-mark { width: 34px; height: 34px; flex: 0 0 34px; border-radius: var(--radius-md); background: var(--amber-600); color: #fff; display: grid; place-items: center; font-size: 17px; font-weight: 700; line-height: 1; box-shadow: var(--shadow-sm); }
 .rail-brand b { font-family: var(--font-sans); font-size: 17px; font-weight: 700; letter-spacing: -0.2px; display: block; color: var(--text-primary); }
