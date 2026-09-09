@@ -359,7 +359,8 @@ input:focus::placeholder, textarea:focus::placeholder { opacity: 0.5; }
 .app { display: grid; grid-template-columns: 246px minmax(0,1fr); min-height: 100vh; background-color: var(--canvas-bg); }
 .rail { background-color: rgba(248, 250, 252, 0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); color: var(--chrome-text); display: flex; flex-direction: column; border-right: 1px solid rgba(226, 232, 240, 0.6); position: sticky; top: 0; height: 100vh; overflow-y: hidden; padding: 10px 12px 26px; scrollbar-width: none; }
 .rail::-webkit-scrollbar { display: none; }
-.rail-brand { display: flex; align-items: center; gap: 10px; padding: 8px 14px 14px; border-bottom: 1px solid var(--chrome-border); text-decoration: none; color: var(--chrome-text-hover); margin-bottom: 8px; }
+.rail-brand { display: flex; align-items: center; justify-content: center; padding: 4px 14px 8px; border-bottom: 1px solid var(--chrome-border); text-decoration: none; margin-bottom: 10px; }
+.brand-logo { width: 100%; height: 50px; object-fit: contain; transform: scale(1.45); }
 .rail-mark { width: 34px; height: 34px; flex: 0 0 34px; border-radius: var(--radius-md); background: var(--amber-600); color: #fff; display: grid; place-items: center; font-size: 17px; font-weight: 700; line-height: 1; box-shadow: var(--shadow-sm); }
 .rail-brand b { font-family: var(--font-sans); font-size: 17px; font-weight: 700; letter-spacing: -0.2px; display: block; color: var(--text-primary); }
 .rail-brand small { display: block; font-size: 11px; color: var(--chrome-section-label); letter-spacing: 0.2px; }
@@ -622,7 +623,8 @@ pre { overflow-x: auto; background: var(--surface-muted); padding: 10px 12px; bo
 @media (max-width: 1000px) {
   .app { grid-template-columns: 1fr; }
   .rail { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--chrome-border); flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px; padding: 0 16px 12px; }
-  .rail-brand { flex: 1 1 auto; border-bottom: 0; padding: 14px 0 10px; }
+  .rail-brand { flex: 1 1 auto; border-bottom: 0; padding: 14px 0 10px; justify-content: flex-start; margin-bottom: 0; }
+  .brand-logo { width: auto; max-width: 130px; height: 32px; transform: scale(1); }
   .rail-primary { flex: 0 0 auto; padding: 0; }
   .navgroup { padding: 0; }
   .navgroup h2 { display: none; }
