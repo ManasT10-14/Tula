@@ -34,6 +34,37 @@ It provisions `demo.admin`, `demo.inspector` and `demo.supervisor` (password `Tu
 
 These accounts exist for a loopback walkthrough. **Delete them or change their passwords before exposing the application to anything but localhost**, and re-run with `--reset` to discard seeded records.
 
+### On a phone
+
+The console is responsive and the capture page is built for a handset, but a phone
+cannot reach a loopback bind, and pointing it at `http://<laptop-ip>:8000` does not
+work either: every page except `/healthz` answers **426** with "Use HTTPS to sign in
+or access inspection data". That is `SecurityMiddleware` refusing plain HTTP from a
+non-loopback address, and it is the intended behaviour. The camera needs the same
+fix for its own reason — `getUserMedia` is undefined outside a secure context, so
+"Use camera" cannot work over LAN HTTP whatever the server allows.
+
+HTTPS settles both. Serve the console with a self-signed certificate named for this
+machine's network address:
+
+```powershell
+python scripts/serve_phone.py
+```
+
+It prints the URL to open on a phone joined to the same Wi-Fi. The certificate is
+self-signed, so the browser warns once and you accept it; the connection is then
+encrypted but unauthenticated, which is why this is for trying the console on a
+network you trust and not a deployment. Certificates are written under `out/`, which
+is git-ignored. The warning about the demonstration accounts above applies with more
+force here, because this port is reachable by every device on the network.
+
+Verified on a 412 x 839 handset viewport: sign-in, capture with staged uploads and
+per-image panel/rotate/crop controls, live camera preview, a full analysis through
+real RapidOCR, the five record tabs, evidence images, and PDF/DOCX/JSON export. Wide
+tables scroll inside their own containers rather than the page. Physical-device
+testing across real iOS and Android browsers remains outstanding; the checks above
+were made under mobile emulation.
+
 Tula emits privacy-bounded JSON operational events for HTTP requests, inspection stages and report generation. Each response carries `X-Request-ID`; background inspection events retain the originating upload request ID. Use it to correlate a user's error with service logs. Raw URLs, query strings, OCR text, filenames, evidence paths, cookies and passwords are excluded. The application suppresses Uvicorn's duplicate raw access line; keep `--no-access-log` explicit and apply the same query-string policy to any reverse proxy.
 
 `TULA_DATA_DIR` selects a separate runtime directory for the web app and default bootstrap database. Source checkouts default to the repository; installed wheels default to `~/.tula`. Set this variable consistently before provisioning and starting the server. Bootstrap also accepts an explicit `--database` path. Keep the database, originals and working images together. See [authentication and deployment](docs/SECURITY.md) for roles, password management and HTTPS requirements outside loopback.
