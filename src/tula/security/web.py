@@ -224,8 +224,8 @@ def _page(title: str, body: str, user: User | None = None) -> HTMLResponse:
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>''' + escape(title) + ''' · TATVA</title>
 <link rel="manifest" href="/static/manifest.webmanifest">
 <meta name="theme-color" content="#f8fafc">
-<link rel="icon" href="/static/icons/icon-192.png" sizes="192x192" type="image/png">
-<link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
+<link rel="icon" href="/static/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="/static/favicon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="TATVA">
 <link rel="preconnect" href="https://fonts.googleapis.com">
