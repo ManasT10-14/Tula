@@ -1,0 +1,20 @@
+{
+  "protocol": "Declarations read by eye from the original photographs and written down before any extraction run was scored. One annotator, unblinded. Two packages is far too small for an accuracy claim; this set exists to characterise one specific layout failure -- a label column joined to its value column by printed arrows, with the inkjet value block out of vertical register with the pre-printed labels.",
+  "packages": [
+    {
+      "id": "nakoda-ratlami-sev",
+      "note": "Nakoda Foods Ratlami Sev 400 g. The value column is printed roughly one row above the labels it belongs to, so following an arrow from a label lands on the next field's value. MRP 135 over 400 g gives 0.3375/g, which the pack prints as 0.34 per g -- the label's own arithmetic identifies which number is the net quantity.",
+      "declarations_frame": "nakoda-4.png",
+      "all_frames": ["nakoda-2.png", "nakoda-3.png", "nakoda-4.png"],
+      "truth": {
+        "net_quantity": {"value": 400.0, "unit": "g"},
+        "retail_sale_price": {"value": 135.0},
+        "unit_sale_price": {"value": 0.34, "per_unit": "g"},
+        "date_of_packing": {"year": 2026, "month": 7},
+        "generic_name": {"contains": "namkeen"},
+        "country_of_origin": {"country": "india"},
+        "gtin": "8906049060086"
+      }
+    }
+  ]
+}

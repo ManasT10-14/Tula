@@ -103,3 +103,75 @@ def test_geometry_prior_is_deliberately_imprecise():
 
 def test_no_sources_means_no_answer():
     assert metrology.fuse([]) is None
+
+
+# ---------------------------------------------------------------------------
+# Panel extent
+# ---------------------------------------------------------------------------
+
+
+def _photo(tmp_path, width, height, box=None):
+    """A plain frame, optionally with a lighter package rectangle drawn on it."""
+    from PIL import Image, ImageDraw
+
+    image = Image.new("RGB", (width, height), (20, 20, 24))
+    if box is not None:
+        ImageDraw.Draw(image).rectangle(box, fill=(238, 238, 232))
+    path = tmp_path / "frame.png"
+    image.save(path)
+    return str(path)
+
+
+def test_panel_extent_brackets_the_panel_between_text_and_frame(tmp_path):
+    path = _photo(tmp_path, 1000, 800)
+    extent = metrology.panel_extent_px(path, [(200, 150, 700, 600)])
+    assert extent is not None
+    # The hull of the printed text is the floor, the frame the ceiling, and the
+    # point estimate lives strictly between them.
+    assert extent.min_width_px == 500 and extent.min_height_px == 450
+    assert extent.max_width_px == 1000 and extent.max_height_px == 800
+    assert 500 < extent.width_px < 1000
+    assert extent.rel_sigma > 0
+
+
+def test_panel_extent_narrows_when_the_package_separates_from_its_background(tmp_path):
+    path = _photo(tmp_path, 1000, 800, box=(120, 100, 820, 700))
+    extent = metrology.panel_extent_px(path, [(200, 150, 700, 600)])
+    assert extent is not None and extent.segmented
+    # Segmentation may only tighten the ceiling, never breach the floor.
+    assert extent.max_width_px < 1000
+    assert extent.max_width_px >= extent.min_width_px
+
+
+def test_panel_extent_needs_text_to_stand_on(tmp_path):
+    assert metrology.panel_extent_px(_photo(tmp_path, 400, 400), []) is None
+
+
+def test_bracketed_panel_area_reports_a_bound_not_an_estimate(tmp_path):
+    # Measured against rendered labels, a point estimate at the centre of the
+    # bracket under-read the area by a median of 31% and its interval missed
+    # the truth five times in eight. The interval must therefore be the
+    # bracket, so any panel between the printed text and the frame is inside it.
+    path = _photo(tmp_path, 1000, 800)
+    extent = metrology.panel_extent_px(path, [(200, 150, 700, 600)])
+    scale = _scale(sigma=0.0)
+    area = metrology.pdp_area_from_extent(extent, scale)
+    per_cm2 = (scale.mm_per_px**2) / 100.0
+    floor = extent.min_width_px * extent.min_height_px * per_cm2
+    ceiling = extent.max_width_px * extent.max_height_px * per_cm2
+    assert area.lower <= floor and ceiling <= area.upper
+    assert "bounded to" in area.method and "printed text spans" in area.method
+
+
+def test_a_tighter_bracket_gives_a_tighter_area(tmp_path):
+    path = _photo(tmp_path, 1000, 800)
+    scale = _scale()
+    loose = metrology.pdp_area_from_extent(
+        metrology.panel_extent_px(path, [(400, 320, 600, 480)]), scale
+    )
+    tight = metrology.pdp_area_from_extent(
+        metrology.panel_extent_px(path, [(20, 16, 980, 784)]), scale
+    )
+    # Text that nearly fills the frame leaves almost nowhere for the panel to
+    # hide; text in the middle of a large frame leaves a great deal.
+    assert tight.uncertainty / tight.value < loose.uncertainty / loose.value

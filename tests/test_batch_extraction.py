@@ -99,3 +99,50 @@ def test_identical_repeated_text_retains_the_weak_source_and_conflict():
     assert len(fields) == 1
     assert fields[0]["ocr_confidence"] == .40 and fields[0]["status"] == "needs_review"
     assert len(fields[0]["sources"]) == 2 and fields[0]["candidates"][0]["value"] == "R7Q9"
+
+
+# ---------------------------------------------------------------------------
+# The single-letter cue Indian packs actually print
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("raw,expected", [
+    ("B: 103A", "103A"), ("B:103A", "103A"), ("B # 7X2", "7X2"),
+    ("B.No: AB1234", "AB1234"), ("B No: AB1234", "AB1234"),
+    ("B: 103A EXP 09/2027", "103A"),
+])
+def test_single_letter_cue_recovers_a_stamped_code(raw, expected):
+    # A real evaluation photograph stamps its batch as "B: 103A"; before this
+    # the code survived only as an OCR alternative and never reached extraction.
+    assert parse_batch(raw) == expected
+
+
+@pytest.mark.parametrize("raw", [
+    # One letter is weak evidence, so a bare number after it is not a batch.
+    "B: 12", "B: 103", "B: 2026",
+    # ...nor is it a cue at all when a preceding word owns the letter.
+    "Vitamin B: 12A", "Vit B: 12A", "Vit. B: 12A", "Grade B: 12A", "Type B: 4X1",
+    "Class B: 9Z", "विटामिन B: 12A",
+    # ...nor when the letter is the tail of another word, or has no delimiter.
+    "SUB: 12A", "B 103A", "B - 7X2",
+    # ...and a date after the short cue stays a date.
+    "B: 09/2027", "EXP B: 09/2027",
+])
+def test_single_letter_cue_refuses_everything_it_should(raw):
+    assert parse_batch(raw) is None
+
+
+def test_spelt_out_cue_keeps_its_older_looser_rule():
+    # "Batch 7" was always accepted and must stay accepted: the extra evidence
+    # demanded of the short form is not retro-applied to the spelt-out word.
+    assert parse_batch("BATCH 7") == "7"
+    assert parse_batch("Lot no. 00124") == "00124"
+
+
+def test_officer_correction_contract_does_not_gain_the_short_cue():
+    # STANDARD_CUE is what an officer's typed correction is validated against.
+    # Machine inference may guess from one letter; a recorded correction may not.
+    from tula.extract.batch import STANDARD_CUE
+
+    assert STANDARD_CUE.match("Batch: 103A")
+    assert not STANDARD_CUE.match("B: 103A")

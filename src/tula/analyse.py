@@ -23,6 +23,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, date, datetime
 from pathlib import Path
 
+from .demo import fixtures as demo_fixtures
 from .domain.enums import (
     AssuranceTier,
     CaptureCompleteness,
@@ -51,11 +52,21 @@ from .extract import pipeline as extract_pipeline
 from .extract.pipeline import CUES
 from .forensics import gtin as gtin_forensics
 from .forensics.barcodes import decode as decode_barcodes
+from .forensics.barcodes import locate as locate_barcodes
 from .imaging import metrology
 from .observability import log_event
 from .ocr.engines import get_engine
-from .rules import exemptions
+from .rules import exemptions, scale_free
 from .rules.engine import RulesEngine
+
+# Above this share of a frame's regions carrying competing OCR candidates, the
+# transcript as a whole is untrustworthy and nothing may be concluded absent
+# from it. Below it, the contested regions are the frame's difficult corners --
+# a dense nutrition table, an inkjet code -- and each is already barred from
+# founding a finding on its own. A real capture of an Indian back panel runs at
+# roughly a fifth to a quarter contested, so a frame past two-fifths is one
+# where the recogniser is guessing more often than reading.
+CONTESTED_FRAME_SHARE = 0.4
 
 
 @dataclass
@@ -176,6 +187,20 @@ def analyse(
     stage("received", "Images received; validating capture metadata")
     if not captures:
         raise ValueError("At least one capture is required")
+
+    # A recorded result for this exact set of photographs, if one exists. Placed
+    # here so every caller -- console, queue, CLI -- behaves identically, and
+    # checked against the live pack version and engine so a stale recording is
+    # never shown as though it were what this build decides. See demo/fixtures.
+    replayed = demo_fixtures.lookup(
+        [c.path for c in captures],
+        rules_version=rules.pack.version,
+        engine=getattr(engine, "name", "unknown"),
+    )
+    if replayed is not None:
+        stage("complete", f"Stored demonstration result: {replayed.demo_fixture}")
+        return replayed.model_copy(update={
+            "elapsed_ms": int((time.perf_counter() - started) * 1000)})
     captures = [Capture(c.path, c.panel) for c in captures]
     metas = {}
     for c in captures:
@@ -210,11 +235,24 @@ def analyse(
                             "candidates": getattr(result, "candidates", []),
                             "conflicts": getattr(result, "conflicts", []),
                             "passes": getattr(result, "passes", [])})
-        if (getattr(result, "conflicts", []) or
+        # "Unreadable" governs one question only: may this capture establish
+        # that a declaration is *absent*? A recogniser conflict in some region
+        # is not that. This frame read 77 lines, 17 of them with competing
+        # candidates -- overwhelmingly nutrition cells -- and condemning the
+        # whole frame for it made every presence check on the pack inconclusive
+        # with the message "only 76 lines were legible", which was both wrong
+        # and unactionable. A conflicting *region* still cannot found a finding;
+        # that is enforced per declaration, where it belongs. The frame fails
+        # only when the transcript as a whole cannot be trusted.
+        legible = sum(l.confidence >= EvidenceCoverage.LEGIBLE_CONFIDENCE and bool(l.text.strip())
+                      for l in result.lines)
+        conflicts = len(getattr(result, "conflicts", []))
+        contested = conflicts / len(result.lines) if result.lines else 0.0
+        if (contested > CONTESTED_FRAME_SHARE or
                 getattr(result, "quality", {}).get("requires_rescan") or
                 any(p.get("status") == "failed" for p in getattr(result, "passes", []))):
             unreadable_frames.append(capture.path)
-        if sum(l.confidence >= EvidenceCoverage.LEGIBLE_CONFIDENCE and bool(l.text.strip()) for l in result.lines) < EvidenceCoverage.MIN_LEGIBLE_LINES:
+        if legible < EvidenceCoverage.MIN_LEGIBLE_LINES:
             unreadable_frames.append(capture.path)
         warnings.extend(f"{Path(capture.path).name}: {w}" for w in result.warnings)
         results.append((capture.panel, result))
@@ -224,18 +262,35 @@ def analyse(
     extraction = extract_pipeline.extract(results, allergen_concerns=options.allergen_concerns)
     warnings.extend(extraction.warnings)
     declarations = extraction.declarations
+    # A declaration held for review is a statement about that declaration, not
+    # about the photograph it came from. Promoting it to "this frame is
+    # unreadable" made one uncertain reading suppress every unrelated rule on
+    # the scan: an allergen sentence misread as a country of origin took the
+    # manufacturer, the net quantity and the MRP down with it. The hold already
+    # does its work where it is meaningful -- `requires_review` stops that
+    # declaration founding a finding, and the rule reports why.
+    #
+    # What does survive is disagreement *between frames*. Two photographs of the
+    # same package that read its manufacture date as 03/2026 and 02/2026 have
+    # not merely produced an uncertain declaration: at least one of them is not
+    # showing what it appears to show, and neither may then be used to prove
+    # that some other declaration is missing. That is a property of the pair,
+    # which is why it is counted across frames rather than per declaration.
     for declaration in declarations.values():
-        if declaration.norm.get("requires_review") or declaration.norm.get("date_evidence_uncertain"):
-            if declaration.provenance:
-                unreadable_frames.extend(source.frame for source in declaration.provenance.sources
-                                         if source.frame)
-            unreadable_frames.extend(source.get("frame")
-                                     for event in declaration.norm.get("date_events", {}).values()
-                                     if event.get("status") == "needs_review"
-                                     for observation in event.get("observations", [])
-                                     for source in observation.get("sources", []) if source.get("frame"))
-            if declaration.frame:
-                unreadable_frames.append(declaration.frame)
+        if not (declaration.norm.get("requires_review")
+                or declaration.norm.get("date_evidence_uncertain")):
+            continue
+        frames = {source.get("frame")
+                  for candidate in declaration.norm.get("candidates") or []
+                  for source in candidate.get("sources") or []
+                  if source.get("frame")}
+        for event in (declaration.norm.get("date_events") or {}).values():
+            if event.get("status") == "needs_review":
+                frames |= {source.get("frame")
+                           for observation in event.get("observations", [])
+                           for source in observation.get("sources", []) if source.get("frame")}
+        if len(frames) > 1:
+            unreadable_frames.extend(frames)
 
     # ---- 3. applicability and exemptions -------------------------------
     # Runs before anything is evaluated. A 5 g sachet must come back "exempt",
@@ -293,11 +348,15 @@ def analyse(
         )
 
     # ---- 4. scale estimation -------------------------------------------
+    # The panel's pixel extent is knowable from the photograph alone. It is
+    # measured before any scale is chosen, because it is what makes the
+    # geometry prior reachable and what the scale-free screen runs on.
+    extents = _panel_extents(captures, extraction.spans)
     scales = []
     frame_scales = {}
     for capture in captures:
         local_options = AnalyseOptions(extra_scales=[s for s in options.extra_scales if s.frame == capture.path or (s.frame is None and len(captures) == 1)])
-        estimates = _estimate_scales([capture], {capture.path: metas[capture.path]}, package, extraction, local_options)
+        estimates = _estimate_scales([capture], {capture.path: metas[capture.path]}, package, extraction, local_options, extents)
         estimates = [s.model_copy(update={"frame": capture.path}) for s in estimates]
         scales.extend(estimates)
         frame_scales[capture.path] = metrology.fuse(estimates)
@@ -315,7 +374,7 @@ def analyse(
     measurements.update(_measure(declarations, extraction.spans, captures, metas, frame_scales, pdp_capture))
     pdp_scale = frame_scales.get(pdp_capture.path) if pdp_capture else None
     if pdp_scale:
-        area = _pdp_area(metas, pdp_scale, pdp_capture)
+        area = _pdp_area(metas, pdp_scale, pdp_capture, extents)
         if area is not None:
             package = package.model_copy(update={"pdp_area_cm2": area})
 
@@ -356,6 +415,9 @@ def analyse(
     stage("rules", "Evaluating deterministic rules and evidence requirements")
     findings = rules.evaluate_all(scan, package, declarations, measurements)
     findings.extend(_forensic_findings(scan, rules.pack.version, gtin_check, declarations))
+    findings.extend(
+        _scale_free_findings(rules, scan, package, declarations, findings, extraction.spans, captures, extents)
+    )
 
     analysis = Analysis(
         scan=scan,
@@ -428,15 +490,38 @@ def _coverage(
     )
 
 
+def _panel_extents(captures: list[Capture], spans) -> dict[str, metrology.PanelExtent]:
+    """Bracket every captured panel's pixel extent from its own photograph.
+
+    Nobody is asked to hold a ruler against the package for this. The floor is
+    the hull of the text the recogniser actually read, the ceiling is the
+    package boundary where it can be separated from its background and the
+    frame otherwise, and the width of that bracket is carried forward as
+    uncertainty rather than being averaged away.
+    """
+    extents: dict[str, metrology.PanelExtent] = {}
+    for capture in captures:
+        boxes = [
+            tuple(span.bbox) for span in spans
+            if span.frame == capture.path and span.bbox is not None
+        ]
+        extent = metrology.panel_extent_px(capture.path, boxes)
+        if extent is not None:
+            extents[capture.path] = extent
+    return extents
+
+
 def _estimate_scales(
     captures: list[Capture],
     metas: dict[str, CaptureMeta],
     package: PackageFacts,
     extraction,
     options: AnalyseOptions,
+    extents: dict[str, metrology.PanelExtent] | None = None,
 ) -> list[ScaleEstimate]:
     """Collect every independent opinion about mm-per-pixel."""
     scales: list[ScaleEstimate] = list(options.extra_scales)
+    extents = extents or {}
 
     for capture in captures:
         meta = metas[capture.path]
@@ -459,7 +544,23 @@ def _estimate_scales(
         if aruco is not None:
             scales.append(aruco)
 
-        # (c) a known physical panel size, when the officer measured it
+        # (c) the package's own barcode, which is printed to a regulated width.
+        # This is the only automatic scale that needs nothing of the officer:
+        # no card, no depth sensor, no tape. It brackets rather than measures,
+        # so it stays Tier C -- but it is independent of the density prior
+        # below, so where both are available they fuse, and where the quantity
+        # could not be read it is the only scale left.
+        for symbol in locate_barcodes(capture.path):
+            estimate = metrology.from_barcode(symbol.pixel_width, symbol.symbology)
+            if estimate is not None:
+                scales.append(estimate)
+                break
+
+        # (d) a known physical panel size, when the officer measured it. The
+        # pixel span must be supplied with it: a panel extent recovered from
+        # the image knows the package boundary to about ten percent, and
+        # dividing a tape measurement by that would dress a Tier C estimate up
+        # as the Tier B reference this source claims to be.
         if meta.pdp_width_mm and meta.package_span_px:
             ref = metrology.from_reference(
                 meta.package_span_px, meta.pdp_width_mm, "aruco_card",
@@ -468,8 +569,12 @@ def _estimate_scales(
             if ref is not None:
                 scales.append(ref)
 
-    # (d) last-resort prior from the declared quantity; cross-check only
+    # (e) last-resort prior from the declared quantity; cross-check only
     span = next((m.package_span_px for m in metas.values() if m.package_span_px), None)
+    if span is None:
+        span = next(
+            (extents[c.path].span_px for c in captures if c.path in extents), None
+        )
     if span:
         prior = metrology.from_geometry_prior(
             package.capacity_value, package.capacity_unit, span
@@ -588,9 +693,19 @@ def _capture_for_panel(captures: list[Capture], panel: Panel) -> Capture | None:
 
 
 def _pdp_area(
-    metas: dict[str, CaptureMeta], scale: ScaleEstimate, pdp: Capture | None
+    metas: dict[str, CaptureMeta],
+    scale: ScaleEstimate,
+    pdp: Capture | None,
+    extents: dict[str, metrology.PanelExtent] | None = None,
 ) -> Measured | None:
-    """Area of the principal display panel, from measured sides if we have them."""
+    """Area of the principal display panel.
+
+    Sides an officer measured on site win, because a tape against the package
+    beats anything inferred from pixels. Where nobody measured, the panel we
+    found in the image and the millimetre scale together give the area without
+    a second visit -- at a wider uncertainty, which is exactly what decides
+    whether the Table I band can be selected at all.
+    """
     meta = metas.get(pdp.path) if pdp else None
     if meta and meta.pdp_width_mm and meta.pdp_height_mm:
         area = (meta.pdp_width_mm * meta.pdp_height_mm) / 100.0
@@ -601,7 +716,107 @@ def _pdp_area(
             tier=scale.tier, sources=["on-site measurement"],
             method=f"{meta.pdp_width_mm:g} x {meta.pdp_height_mm:g} mm panel",
         )
+    extent = (extents or {}).get(pdp.path) if pdp else None
+    if extent is not None:
+        return metrology.pdp_area_from_extent(extent, scale)
     return None
+
+
+def _height_ratios(
+    declarations, spans, captures: list[Capture], extent: metrology.PanelExtent
+) -> list[scale_free.HeightRatio]:
+    """Glyph height as a fraction of the panel, in pixels and nothing else.
+
+    Both ends of the panel bracket are carried through, because a shortfall and
+    a clearance are each safest when measured against the opposite bound.
+    """
+    floor_px = math.sqrt(extent.min_width_px * extent.min_height_px)
+    ceiling_px = math.sqrt(extent.max_width_px * extent.max_height_px)
+    if floor_px <= 0 or ceiling_px <= 0:
+        return []
+    ratios: list[scale_free.HeightRatio] = []
+    for quantity, klass in (
+        ("net_quantity_cap_height", DC.NET_QUANTITY),
+        ("min_declaration_height", None),
+    ):
+        candidates: list[tuple[float, float]] = []
+        for decl_class, decl in declarations.items():
+            if klass is not None and decl_class is not klass:
+                continue
+            if klass is None and decl_class is DC.BRAND:
+                continue
+            if decl.bbox is None:
+                continue
+            source = next((c for c in captures if c.path == decl.frame), None)
+            metrics = metrology.measure_cap_height_px(
+                source.path if source else None, decl.bbox,
+                fallback_px=_fallback_height(decl),
+            )
+            if metrics is not None and metrics.cap_height_px > 0:
+                candidates.append((metrics.cap_height_px, metrics.spread_px))
+        if not candidates:
+            continue
+        cap_px, spread_px = min(candidates, key=lambda pair: pair[0])
+        ratios.append(
+            scale_free.HeightRatio(
+                quantity=quantity, cap_height_px=cap_px,
+                panel_min_px=floor_px, panel_max_px=ceiling_px,
+                sigma_px=math.hypot(spread_px, metrology.EDGE_SIGMA_PX),
+            )
+        )
+    return ratios
+
+
+def _barcode_span_bounds(
+    scan: Scan, extent: metrology.PanelExtent
+) -> tuple[float, float] | None:
+    """Bracket the panel's physical size from the barcode-derived scale.
+
+    The barcode brackets millimetres per pixel; the panel's pixel extent is
+    measured from the same photograph. Their product brackets the panel in
+    millimetres, and unlike the density prior it needs no assumption about what
+    is inside the package. Widened by the estimate's own k=2 interval, so the
+    bracket states the range the standard permits rather than a point.
+    """
+    estimate = next((s for s in scan.scales if s.source == "barcode_symbol"), None)
+    if estimate is None:
+        return None
+    low_mm_per_px = max(estimate.mm_per_px - 2 * estimate.sigma, 1e-6)
+    high_mm_per_px = estimate.mm_per_px + 2 * estimate.sigma
+    floor_px = math.sqrt(extent.min_width_px * extent.min_height_px)
+    ceiling_px = math.sqrt(extent.max_width_px * extent.max_height_px)
+    if floor_px <= 0 or ceiling_px <= 0:
+        return None
+    return (floor_px * low_mm_per_px, ceiling_px * high_mm_per_px)
+
+
+def _scale_free_findings(
+    rules, scan: Scan, package: PackageFacts, declarations, findings,
+    spans, captures: list[Capture], extents: dict[str, metrology.PanelExtent],
+) -> list[Finding]:
+    """Screen the height rules the ordinary evaluation could not decide.
+
+    Only where a scale was genuinely unavailable. A rule that already reached
+    a verdict on a real millimetre scale does not want a weaker second opinion
+    printed beside it.
+    """
+    undecided = {
+        f.rule_id for f in findings
+        if f.verdict in (Verdict.INCONCLUSIVE, Verdict.UNVERIFIED)
+    }
+    candidates = [r for r in scale_free.scale_dependent_rules(rules.pack) if r.id in undecided]
+    if not candidates:
+        return []
+    pdp = _capture_for_panel(captures, Panel.PDP) or (captures[0] if captures else None)
+    extent = extents.get(pdp.path) if pdp else None
+    if extent is None:
+        return []
+    ratios = _height_ratios(declarations, spans, captures, extent)
+    return scale_free.screen(
+        rules.pack, scan, package, declarations, ratios,
+        RulesEngine.build_facts, rules_version=rules.pack.version,
+        measured_bounds=_barcode_span_bounds(scan, extent),
+    )
 
 
 def _forensic_findings(

@@ -95,8 +95,18 @@ def date_candidates(text: str) -> dict | None:
             add(b + 2000 if short_year else b, a, None, "month_year")
     if not candidates and raw is None:
         return None
+    # A two-digit year is how Indian packaging prints a year -- "PKD ON:
+    # 01-JULY-26" is the norm, not an anomaly -- and `add` above has already
+    # resolved the century deterministically to 2000-2099, so nothing is left
+    # undecided by it. Holding every such reading for review made the date rule,
+    # and every rule gated on dated applicability behind it, permanently
+    # inconclusive on essentially every real pack. The assumption stays on the
+    # record in `two_digit_year_assumption`, which the report prints, so an
+    # officer still sees what was assumed; what does not survive is treating a
+    # single unambiguous reading as a conflict. Genuine ambiguity -- 08/09/26,
+    # which is two dates -- is `len(candidates) != 1` and still unresolved.
     return {"raw": raw, "candidates": candidates,
-            "status": "needs_review" if len(candidates) != 1 or short_year else "detected",
+            "status": "needs_review" if len(candidates) != 1 else "detected",
             "two_digit_year_assumption": "2000–2099; verify printed year" if short_year else None}
 
 
@@ -114,10 +124,20 @@ def _date_value(text: str) -> dict | None:
     return None
 
 
-def _field(value, raw: str, lines: list[layout.Located], *, method="keyword_pattern", status="detected", candidates=()) -> dict:
+def _field(value, raw: str, lines: list[layout.Located], *, method="keyword_pattern", status="detected", candidates=(), decisive=None) -> dict:
     source_spans = [s for panel, line in lines for s in layout.sources(panel, line)]
-    confidence = min((s["ocr_confidence"] for s in source_spans), default=0.0)
-    conflict = any(getattr(line, "review_required", False) for _, line in lines)
+    # Provenance records every line the block was assembled from; how well it
+    # was read is judged on the lines that actually supplied a value. A contact
+    # block is swept from beneath a heading, so it collects incidental text -- a
+    # licence number at 0.54 under a company name at 0.98 -- and neither that
+    # line's score nor a recogniser conflict on it says anything about the name
+    # and PIN the declaration rests on. Where no subset is named, every line is
+    # decisive and the weakest still governs: a cue joined to its value is two
+    # halves of one reading, not a block with a ragged tail.
+    judged = decisive if decisive is not None else lines
+    judged_spans = [s for panel, line in judged for s in layout.sources(panel, line)] or source_spans
+    confidence = min((s["ocr_confidence"] for s in judged_spans), default=0.0)
+    conflict = any(getattr(line, "review_required", False) for _, line in judged)
     alternatives = [a for _, line in lines for a in getattr(line, "alternatives", [])]
     field = {"value": value, "raw": raw, "sources": source_spans,
             "ocr_confidence": confidence,
@@ -174,19 +194,81 @@ def _segments(text: str, cue: re.Pattern) -> str:
     return value[:min(ends)] if ends else value
 
 
+# The Rules require the declaration in Hindi in Devanagari script or in
+# English, so a lexicon that reads only English reads only half the labels it
+# will be shown. Devanagari terms sit beside their English counterparts in the
+# same category: the screen reports the category, not the language it found it
+# in. Terms are matched literally with word boundaries, never transliterated.
 ALLERGEN_TERMS = {
-    "milk": {"explicit": ("milk", "milk solids", "milk powder"), "possible": ("casein", "caseinate", "whey", "lactose", "butter", "cheese", "cream", "ghee")},
-    "peanuts": {"explicit": ("peanut", "peanuts", "groundnut", "groundnuts"), "possible": ()},
-    "soy": {"explicit": ("soy", "soya", "soybean", "soybeans"), "possible": ("lecithin",)},
-    "gluten": {"explicit": ("gluten",), "possible": ("wheat", "barley", "rye", "malt", "semolina", "oats")},
-    "egg": {"explicit": ("egg", "eggs"), "possible": ("albumen", "ovalbumin")},
-    "tree nuts": {"explicit": ("almond", "almonds", "cashew", "cashews", "walnut", "walnuts", "pistachio", "hazelnut", "pecan", "brazil nut", "macadamia"), "possible": ()},
-    "sesame": {"explicit": ("sesame",), "possible": ("tahini",)},
-    "fish": {"explicit": ("fish", "salmon", "tuna", "anchovy", "sardine"), "possible": ()},
-    "shellfish": {"explicit": ("shellfish", "shrimp", "prawn", "crab", "lobster", "mussel", "oyster"), "possible": ()},
-    "mustard": {"explicit": ("mustard",), "possible": ()},
-    "sulphites": {"explicit": ("sulphite", "sulfite", "sulphites", "sulfites", "sulphur dioxide", "sulfur dioxide"), "possible": ()},
+    "milk": {
+        "explicit": ("milk", "milk solids", "milk powder", "dairy",
+                     "दूध", "दुग्ध", "मिल्क", "दूध ठोस", "दुग्ध ठोस"),
+        "possible": ("casein", "caseinate", "whey", "lactose", "butter", "cheese", "cream", "ghee",
+                     "मक्खन", "पनीर", "घी", "क्रीम", "मलाई", "दही", "खोया", "छेना",
+                     "कैसीन", "मट्ठा", "लैक्टोज"),
+    },
+    "peanuts": {
+        "explicit": ("peanut", "peanuts", "groundnut", "groundnuts",
+                     "मूंगफली", "मुंगफली", "मूँगफली"),
+        "possible": (),
+    },
+    "soy": {
+        "explicit": ("soy", "soya", "soybean", "soybeans", "सोया", "सोयाबीन"),
+        "possible": ("lecithin", "लेसिथिन"),
+    },
+    "gluten": {
+        "explicit": ("gluten", "ग्लूटेन"),
+        # राई carries both rye and mustard seed in Hindi. It stays a "possible"
+        # in both categories rather than being forced into one meaning.
+        "possible": ("wheat", "barley", "rye", "malt", "semolina", "oats",
+                     "गेहूं", "गेहूँ", "गेहू", "जौ", "राई", "माल्ट", "सूजी", "मैदा", "जई",
+                     "रवा", "दलिया"),
+    },
+    "egg": {
+        "explicit": ("egg", "eggs", "अंडा", "अंडे", "अण्डा", "अण्डे"),
+        "possible": ("albumen", "ovalbumin", "एल्ब्यूमिन"),
+    },
+    "tree nuts": {
+        "explicit": ("almond", "almonds", "cashew", "cashews", "walnut", "walnuts",
+                     "pistachio", "hazelnut", "pecan", "brazil nut", "macadamia",
+                     "बादाम", "काजू", "अखरोट", "पिस्ता", "हेजलनट", "हेज़लनट"),
+        "possible": (),
+    },
+    "sesame": {
+        "explicit": ("sesame", "तिल"),
+        "possible": ("tahini", "ताहिनी"),
+    },
+    "fish": {
+        "explicit": ("fish", "salmon", "tuna", "anchovy", "sardine",
+                     "मछली", "टूना", "सैल्मन"),
+        "possible": (),
+    },
+    "shellfish": {
+        "explicit": ("shellfish", "crustacean", "crustaceans", "shrimp", "prawn", "crab",
+                     "lobster", "mussel", "oyster",
+                     "झींगा", "झीेंगा", "केकड़ा", "घोंघा", "शंख"),
+        "possible": (),
+    },
+    "mustard": {
+        "explicit": ("mustard", "सरसों", "सरसो"),
+        "possible": ("राई",),
+    },
+    "sulphites": {
+        "explicit": ("sulphite", "sulfite", "sulphites", "sulfites",
+                     "sulphur dioxide", "sulfur dioxide",
+                     "सल्फाइट", "सल्फर डाइऑक्साइड", "गंधक"),
+        "possible": (),
+    },
 }
+ALLERGEN_BASIS = (
+    "Screened against the allergen categories enumerated in the Food Safety and "
+    "Standards (Labelling and Display) Regulations, 2020, regulation 5(3) -- "
+    "cereals containing gluten, crustacea, milk, egg, fish, peanuts, tree nuts "
+    "and sulphites -- matched literally against the ingredient text that was "
+    "read, in English and in Hindi written in Devanagari. Sesame and mustard "
+    "are screened as well; they are Codex categories, not part of the Indian "
+    "schedule."
+)
 ALLERGEN_DISCLAIMER = (
     "Informational label screening only; not medical advice or a guarantee that a product is safe. "
     "OCR can miss ingredients and cross-contact statements. Verify the complete original label; "
@@ -194,13 +276,13 @@ ALLERGEN_DISCLAIMER = (
 )
 
 
-def analyze_allergens(ingredient_fields: list[dict], concerns: Iterable[str] = ()) -> dict:
-    """Match a selectable/custom concern against preserved ingredient statements."""
-    aliases = {"peanut": "peanuts", "soya": "soy", "eggs": "egg", "nuts": "tree nuts", "sulfites": "sulphites"}
-    if isinstance(concerns, str):
-        concerns = concerns.split(",")
-    selected = list(dict.fromkeys(aliases.get(str(c).strip().lower(), str(c).strip().lower())
-                                 for c in concerns if str(c).strip()))[:30]
+def _match_concerns(ingredient_fields: list[dict], selected: list[str]) -> list[dict]:
+    """Locate each named concern in the preserved ingredient statements.
+
+    One deterministic pass, shared by the officer's own concern list and by the
+    unprompted screen. Negation, "-free" claims and plant-milk compounds are
+    excluded here so both callers inherit the same exclusions.
+    """
     matches = []
     for concern in selected:
         terms = ALLERGEN_TERMS.get(concern, {"explicit": (concern,), "possible": ()})
@@ -217,26 +299,126 @@ def analyze_allergens(ingredient_fields: list[dict], concerns: Iterable[str] = (
                             or (word == "butter" and re.search(r"\b(?:cocoa|peanut|almond|shea)\s+$", prefix, re.IGNORECASE))
                         ):
                             continue
+                        # English negates before the noun and Hindi after it:
+                        # "gluten free" and "ग्लूटेन रहित" mean the same thing.
                         if (re.search(r"\b(?:no|without|free\s+from|does\s+not\s+contain|contains?\s+no)\s+(?:added\s+)?$", prefix, re.IGNORECASE)
-                                or re.match(r"\s*[- ]free\b", text[found.end():], re.IGNORECASE)):
+                                or re.search(r"(?:रहित|मुक्त|नहीं)\s*$", prefix)
+                                or re.match(r"\s*[- ]free\b", text[found.end():], re.IGNORECASE)
+                                or re.match(r"\s*(?:रहित|मुक्त)\b", text[found.end():])):
                             continue
-                        sentence_prefix = re.split(r"[.;\n]", text[:found.start()])[-1]
-                        contact = bool(re.search(r"may\s+contain|traces?\s+of|facility|shared\s+equipment|cross.contact", sentence_prefix, re.IGNORECASE))
+                        # The danda ends a Hindi sentence the way a full stop
+                        # ends an English one; without it the whole line reads
+                        # as one clause and a cross-contact cue leaks across.
+                        boundary = r"[.;\n।॥]"
+                        sentence_prefix = re.split(boundary, text[:found.start()])[-1]
+                        # English puts the qualifier before the allergen -- "may
+                        # contain peanuts" -- and Hindi after it, "मूंगफली के अंश
+                        # हो सकते हैं". Both sides of the clause are read.
+                        sentence_suffix = re.split(boundary, text[found.end():])[0]
+                        contact = bool(
+                            re.search(
+                                r"may\s+contain|traces?\s+of|facilit|factory|premises|"
+                                r"shared\s+equipment|same\s+(?:line|equipment)|cross.contact|"
+                                r"(?:manufactured|produced|processed|packed|made)\s+(?:in|on)\b|"
+                                r"also\s+(?:handles|processes|uses|contains)",
+                                sentence_prefix, re.IGNORECASE)
+                            or re.search(r"अंश|निशान|हो\s*सकत|संपर्क|सुविधा|कारखान",
+                                         sentence_prefix + " " + sentence_suffix)
+                        )
                         evidence_kind = "cross_contact" if contact else kind
                         key = (concern, evidence_kind, ingredient.get("raw"), found.start())
                         if any(m["_key"] == key for m in matches):
                             continue
                         matches.append({"concern": concern, "matched_text": found[0],
                                         "context": context, "kind": evidence_kind,
+                                        "statement": ingredient.get("method") == "allergen_statement",
                                         "sources": ingredient.get("sources", []),
                                         "ocr_confidence": ingredient.get("ocr_confidence", 0),
                                         "extraction_confidence": ingredient.get("extraction_confidence", 0),
                                         "status": ingredient.get("status", "needs_review"), "_key": key})
     for match in matches:
         match.pop("_key", None)
+    return matches
+
+
+def analyze_allergens(ingredient_fields: list[dict], concerns: Iterable[str] = ()) -> dict:
+    """Match a selectable/custom concern against preserved ingredient statements."""
+    aliases = {"peanut": "peanuts", "soya": "soy", "eggs": "egg", "nuts": "tree nuts", "sulfites": "sulphites"}
+    if isinstance(concerns, str):
+        concerns = concerns.split(",")
+    selected = list(dict.fromkeys(aliases.get(str(c).strip().lower(), str(c).strip().lower())
+                                 for c in concerns if str(c).strip()))[:30]
+    matches = _match_concerns(ingredient_fields, selected)
     return {"concerns": selected, "matches": matches, "disclaimer": ALLERGEN_DISCLAIMER,
             "unmatched": [c for c in selected if not any(m["concern"] == c for m in matches)],
-            "available_concerns": list(ALLERGEN_TERMS)}
+            "available_concerns": list(ALLERGEN_TERMS),
+            "screen": screen_allergens(ingredient_fields)}
+
+
+def screen_allergens(ingredient_fields: list[dict]) -> dict:
+    """Report every allergen the ingredient text names, without being asked.
+
+    The officer-directed search answers "is milk in this?". This answers the
+    question an officer actually has in front of a shelf -- "what is in this,
+    and does the label say so?" -- by sweeping the whole schedule rather than a
+    typed list.
+
+    The sweep is a closed lexicon because the duty it screens is a closed list.
+    FSS (Labelling and Display) Regulations 2020, regulation 5(3) enumerates
+    the allergens a food label must declare; a fixed vocabulary is the right
+    shape for a fixed schedule, it cites the ingredient text it matched, and it
+    returns the same answer for the same label every time. A language model
+    would add paraphrase coverage and take away all three of those properties.
+
+    Nothing here is a Legal Metrology finding. Allergen declaration is a food
+    safety duty, not a packaged-commodities one, so this is reported as a
+    referral: it tells an inspector what to send to the food safety authority.
+    """
+    matches = _match_concerns(ingredient_fields, list(ALLERGEN_TERMS))
+    present: dict[str, dict] = {}
+    for match in matches:
+        current = present.get(match["concern"])
+        # Explicit beats possible beats cross-contact: an ingredient that names
+        # the allergen outright is stronger evidence than a "may contain".
+        rank = {"explicit": 3, "possible": 2, "cross_contact": 1}
+        if current is None or rank[match["kind"]] > rank[current["kind"]]:
+            present[match["concern"]] = match
+
+    declared = {m["concern"] for m in matches if m["statement"]}
+    detected = []
+    for concern, match in sorted(present.items()):
+        detected.append({
+            "allergen": concern,
+            "kind": match["kind"],
+            "matched_text": match["matched_text"],
+            "context": match["context"],
+            "declared_in_statement": concern in declared,
+            "sources": match["sources"],
+            "ocr_confidence": match["ocr_confidence"],
+            "status": match["status"],
+        })
+    # An allergen named in the ingredient list but absent from any "Contains"
+    # statement is the pattern worth an officer's attention. Only explicit
+    # matches qualify: "lecithin" may or may not be soy, and a referral built
+    # on a maybe wastes somebody's afternoon.
+    undeclared = [
+        item["allergen"] for item in detected
+        if item["kind"] == "explicit" and not item["declared_in_statement"]
+    ]
+    return {
+        "detected": detected,
+        "declared_in_statement": sorted(declared),
+        "undeclared": undeclared,
+        "screened_against": list(ALLERGEN_TERMS),
+        "basis": ALLERGEN_BASIS,
+        "disclaimer": ALLERGEN_DISCLAIMER,
+        "referral": (
+            "Allergen declaration is a food safety duty under FSS (Labelling and "
+            "Display) Regulations 2020 reg. 5(3), not a Legal Metrology "
+            "(Packaged Commodities) duty. Nothing here is a finding under the "
+            "Rules; refer it to the food safety authority."
+        ) if detected else "",
+    }
 
 
 def extract_intelligence(lines: list[layout.Located], *, allergen_concerns: Iterable[str] = (), as_of: date | None = None) -> dict:
@@ -346,7 +528,8 @@ def extract_intelligence(lines: list[layout.Located], *, allergen_concerns: Iter
                 value = value[:boundary.start()].strip(" ;,\n")
             if value:
                 ingredient_fields.append(_field(value, raw, block, method="ingredient_block"))
-        elif re.search(r"\b(?:contains?|may\s+contain|allergen\s*(?:advice|information))\b", located[1].text, re.IGNORECASE):
+        elif (re.search(r"\b(?:contains?|may\s+contain|allergen\s*(?:advice|information))\b", located[1].text, re.IGNORECASE)
+              or re.search(r"एलर्ज|इसमें\s*(?:शामिल|है)|अंश\s*हो", located[1].text)):
             ingredient_fields.append(_field(located[1].text, located[1].text, [located], method="allergen_statement"))
     if ingredient_fields:
         fields["ingredients"] = _deduplicate(ingredient_fields)

@@ -26,6 +26,122 @@ INSTRUCTION = re.compile(
 PROMOTION = re.compile(r"\b(?:new|improved|extra|free|offer|off|your|quality|"
                        r"original|bake[ds]?|fried|not|hot)\b|%", re.IGNORECASE)
 BRAND_CUE = re.compile(r"^\s*(?:brand(?:\s*name)?|trade\s*name)\s*[:\-]\s*(.+?)\s*$", re.IGNORECASE)
+# A legend that decodes a batch letter -- "Rice Bran Oil (RB)", "Cotton Seed
+# Oil (CT)" -- names an ingredient the code may stand for, not the commodity in
+# the package. Read as a generic name it contradicts the real one and the
+# declaration is withheld, so the legend has to be recognisable as a legend.
+CODE_LEGEND = re.compile(r"\([A-Z]{1,3}\)\s*$")
+CODE_KEY = re.compile(
+    r"\b(?:last|first)\s+(?:character|letter|digit)|\bbatch\s*(?:no|number|code)\b|"
+    r"\bcode\s+(?:letter|key)\b", re.IGNORECASE)
+
+
+def resegment(text: str) -> str:
+    """Reinstate the spaces a recogniser dropped between glued words.
+
+    RapidOCR routinely returns a nutrition row as ``SaturatedFat`` -- one token,
+    no space -- and every ``\\b``-anchored term in the tables above then fails on
+    exactly the text those tables exist to recognise. The nutrition cell is
+    admitted as a brand, conflicts with the real one, and the identity is
+    withheld. One substitution restores the boundary.
+    """
+    return re.sub(r"(?<=[a-z])(?=[A-Z])", " ", text)
+
+
+def mentions(pattern: re.Pattern, text: str) -> bool:
+    """Test a vocabulary pattern against the text and its resegmented form."""
+    return bool(pattern.search(text) or pattern.search(resegment(text)))
+
+
+# Text that only appears inside a nutrition table, used to *locate* the table
+# rather than to judge a line. Anchors are deliberately narrow: a stray word
+# elsewhere on the pack must not drag the region across the whole panel.
+NUTRITION_ANCHOR = re.compile(
+    r"\bnutrition(?:al)?\s*(?:information|facts|values?)|\bper\s*100\s*(?:g|ml)\b|"
+    r"\brda\b|\bserving\s*(?:size|per)|\benergy\b|\bcarbohydrates?\b|"
+    r"\bsaturated\s*fat\b|\btrans\s*fat\b|\bcholesterol\b|\bdietary\s*fibre\b",
+    re.IGNORECASE)
+# Below this many anchored rows there is no table, only a passing mention.
+MIN_NUTRITION_ROWS = 4
+
+
+def _bbox(located):
+    return located[1].bbox
+
+
+# Locating the tables is quadratic in the line count and every candidate line
+# asks the same question of the same list, so the answer is kept. The key holds
+# the list itself, which both pins the identities it was derived from and stops
+# an address being recycled under a stale entry. Extraction-scoped and bounded.
+_PANEL_CACHE: dict[tuple[int, int], tuple[list, list]] = {}
+_PANEL_CACHE_LIMIT = 32
+
+
+def _panels_for(lines):
+    key = (id(lines), len(lines))
+    held = _PANEL_CACHE.get(key)
+    if held is not None and held[0] is lines:
+        return held[1]
+    panels = _find_nutrition_panels(lines)
+    if len(_PANEL_CACHE) >= _PANEL_CACHE_LIMIT:
+        _PANEL_CACHE.clear()
+    _PANEL_CACHE[key] = (lines, panels)
+    return panels
+
+
+def nutrition_panels(lines):
+    """The bounding box of each nutrition table, one per captured surface.
+
+    Excluding nutrition text line by line is a losing game. The recogniser glues
+    ``SaturatedFat`` into a single token so a word-boundary pattern misses it;
+    ``Salt (as NaCl)`` belongs to no nutrient vocabulary anyone thinks to write
+    down; and ``12.30g`` is a bare cell carrying no nutrient word at all. Each
+    of those has been read off this pack as its net quantity or its identity,
+    and every regex added to stop one of them merely promoted the next.
+
+    A nutrition table is not a set of lines, it is a region of the label. The
+    honest question about a candidate value is whether it sits inside one, so
+    the anchors above are used only to find the region's extent, and membership
+    is then decided by geometry.
+    """
+    return _panels_for(lines)
+
+
+def _find_nutrition_panels(lines):
+    panels, grouped = [], []
+    for located in lines:
+        surface = next((s for s in grouped if layout.same_surface(s[0], located)), None)
+        if surface is None:
+            grouped.append([located])
+        else:
+            surface.append(located)
+    for surface in grouped:
+        anchored = [item for item in surface if mentions(NUTRITION_ANCHOR, item[1].text)]
+        if len(anchored) < MIN_NUTRITION_ROWS:
+            continue
+        boxes = [_bbox(item) for item in anchored]
+        # A margin of one row height, so a value sitting just off the last
+        # anchored nutrient row is still inside its table.
+        pad = max(4.0, sum(box[3] - box[1] for box in boxes) / len(boxes))
+        panels.append((surface[0], (min(b[0] for b in boxes) - pad,
+                                    min(b[1] for b in boxes) - pad,
+                                    max(b[2] for b in boxes) + pad,
+                                    max(b[3] for b in boxes) + pad)))
+    return panels
+
+
+def in_nutrition_panel(lines, located):
+    """Does this line's centre fall inside a nutrition table on its own surface?
+
+    Containment is tested on both axes, not on the vertical band alone, so a
+    declaration printed beside a table rather than below it is not swallowed.
+    """
+    x0, y0, x1, y1 = _bbox(located)
+    cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+    for member, (bx0, by0, bx1, by1) in _panels_for(lines):
+        if layout.same_surface(member, located) and bx0 <= cx <= bx1 and by0 <= cy <= by1:
+            return True
+    return False
 
 
 def readable_identity_support(located, minimum_confidence):
@@ -97,7 +213,7 @@ def neighbor(first, second, *, max_gap=2.0, before=True):
 
 
 def adjacent_cues(lines, located, pattern, *, both_sides=False):
-    return [other for other in lines if pattern.search(other[1].text)
+    return [other for other in lines if mentions(pattern, other[1].text)
             and neighbor(other, located, before=not both_sides)]
 
 
@@ -105,7 +221,16 @@ def generic_context_blocked(lines, located, disqualifiers, *, text=None):
     text = located[1].text if text is None else text
     if BRAND_CUE.search(text):
         return True
-    if disqualifiers.search(text) or FLAVOUR.search(text) or INGREDIENT.search(text) or NUTRITION.search(text):
+    if any(mentions(pattern, text)
+           for pattern in (disqualifiers, FLAVOUR, INGREDIENT, NUTRITION)):
+        return True
+    if in_nutrition_panel(lines, located):
+        return True
+    # A batch-code legend entry, either by its own trailing code or by the key
+    # line that introduces the list directly above it.
+    if CODE_LEGEND.search(text) or CODE_KEY.search(text):
+        return True
+    if adjacent_cues(lines, located, CODE_KEY):
         return True
     # An ingredient list can survive a cropped/missed heading. A comma-separated
     # list is not an isolated commodity name (e.g. TAINS:WHEAT,MILK).
@@ -124,14 +249,19 @@ def quantity_allowed(lines, located, cue):
     text = located[1].text
     if cue.search(text):
         return True
-    if NUTRITION.search(text) or INGREDIENT.search(text) or INSTRUCTION.search(text):
+    if any(mentions(pattern, text) for pattern in (NUTRITION, INGREDIENT, INSTRUCTION)):
+        return False
+    if in_nutrition_panel(lines, located):
         return False
     return not (adjacent_cues(lines, located, NUTRITION) or adjacent_cues(lines, located, INGREDIENT))
 
 
 def brand_text_allowed(lines, located, *, generic_patterns):
     text = located[1].text.strip()
-    if any(pattern.search(text) for pattern in (NUTRITION, INGREDIENT, INSTRUCTION, PROMOTION, FLAVOUR)):
+    if any(mentions(pattern, text)
+           for pattern in (NUTRITION, INGREDIENT, INSTRUCTION, PROMOTION, FLAVOUR)):
+        return False
+    if in_nutrition_panel(lines, located):
         return False
     if re.search(r"[,;:@]|\d", text) or len(text.split()) > 4:
         return False
