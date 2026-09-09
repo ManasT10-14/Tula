@@ -36,6 +36,10 @@ def test_title_uses_supported_identity_and_retains_candidate_evidence(brand, com
         shrinkflation=[], declaration_labels=render.DECLARATION_LABEL,
         finding_rows=lambda finding: render.finding_rows(finding, a),
         finding_message=render.finding_message,
+        group_findings=render.group_findings,
+        # This page's "do this next" panel is app state, not render state;
+        # an empty answer is the honest one for a bare template environment.
+        pending_facts=lambda _: [], needs_scale=lambda _: [],
         verdict_class=lambda _: "warn", verdict_label=render.VERDICT_LABEL,
         csrf_token="csrf", asset_url=lambda path: f"/static/{path}")
     assert f"<h1>{title}</h1>" in html

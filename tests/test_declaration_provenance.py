@@ -202,6 +202,10 @@ def render_inspection(analysis):
         integrity=evidence.verify(analysis), headline=render.headline(analysis), history=[], shrinkflation=[],
         declaration_labels=render.DECLARATION_LABEL, finding_rows=lambda finding: render.finding_rows(finding, analysis),
         finding_message=render.finding_message,
+        group_findings=render.group_findings,
+        # This page's "do this next" panel is app state, not render state;
+        # an empty answer is the honest one for a bare template environment.
+        pending_facts=lambda _: [], needs_scale=lambda _: [],
         verdict_class=lambda _: "warn", verdict_label=render.VERDICT_LABEL, csrf_token="test-csrf",
         asset_url=lambda path: f"/static/{path}")
 

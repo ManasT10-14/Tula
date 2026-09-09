@@ -59,14 +59,26 @@
 <ul class="small muted">{% for line in section.rows %}<li>{{ line }}</li>{% endfor %}</ul>
 
 {% elif section.kind == "findings" %}
-{% for f in section.rows %}
+{# Grouped by what the officer does about each -- wrong, open, settled -- and
+   led by what the rule is about rather than by its clause number. The clause,
+   the screening paraphrase and every piece of evidence stay on the card. #}
+{% for group in group_findings(section.rows) %}
+<section class="group">
+  <details {{ 'open' if group.expanded }}>
+    <summary>
+      <h3>{{ group.title }} <span class="chip muted">{{ group.findings | length }}</span></h3>
+      <span class="small muted">{{ group.blurb }}</span>
+    </summary>
+{% for f in group.findings %}
 {% set cls = verdict_class(f.verdict) %}
 <div class="finding {{ cls }}" id="finding-{{ f.finding_id }}"><details>
   <summary class="finding-hd">
     <span class="chip {{ cls }}">{{ verdict_label[f.verdict] }}</span>
-    <span class="cite">{{ f.citation.clause }}</span>
-    <strong>{{ finding_message(f) }}</strong>
+    <strong>{{ f.plain or finding_message(f) }}</strong>
   </summary>
+  <p class="small">{{ finding_message(f) }}</p>
+  {% if f.plain_action %}<p class="small do">{{ f.plain_action }}</p>{% endif %}
+  <p class="small muted cite">{{ f.citation.clause }}</p>
   <dl>
     {% for k, v in finding_rows(f) %}
     <dt>{{ k }}</dt><dd>{{ v }}</dd>
@@ -87,6 +99,9 @@
   <form action="/inspections/{{ a.scan.scan_id }}/review" method="post" class="review-form" data-review-form><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="revision" value="{{ a.review.revision }}"><input type="hidden" name="action" value="decide"><input type="hidden" name="finding_id" value="{{ f.finding_id }}"><div class="grid two"><div><label>Inspector decision<select name="verdict"><option value="INCONCLUSIVE">Needs another scan / review</option><option value="VIOLATION">Verify violation</option><option value="PASS">Requirement satisfied / reject flag</option><option value="NOT_APPLICABLE">Rule does not apply</option></select></label></div><div><label>Reason &amp; observed evidence<input name="reason" required minlength="5" maxlength="3000" placeholder="Explain your decision"></label></div></div><button class="compact" style="margin-top:12px">Save finding decision</button></form>
   {% endif %}
 </details></div>
+{% endfor %}
+  </details>
+</section>
 {% endfor %}
 {% endif %}
 

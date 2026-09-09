@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from ..domain.enums import DeclarationClass, Verdict
+from ..domain.enums import DeclarationClass, Severity, Verdict
 from ..domain.models import Analysis, Finding
 from ..extract.provenance import get_provenance
 
@@ -58,6 +58,57 @@ def finding_message(finding: Finding) -> str:
     if finding.verdict == Verdict.UNVERIFIED:
         return f"{subject}: this machine check requires further verification."
     return finding.message
+
+
+# Findings sorted by what an officer does about them, rather than by rule ID.
+# Sixteen cards in pack order, each headed by a clause number, is a list nobody
+# reads to the end -- and the two that matter are wherever the pack happened to
+# put them. These three questions are the ones being asked: what is wrong, what
+# is still open, and what is settled.
+FINDING_GROUPS = (
+    ("action", "Needs attention", (Verdict.VIOLATION, Verdict.ADVISORY), True,
+     "Non-conformities found on this package."),
+    ("open", "Not decided yet", (Verdict.INCONCLUSIVE, Verdict.UNVERIFIED), True,
+     "The machine will not guess. Each of these names the one thing that would settle it."),
+    ("settled", "Checked and clear", (Verdict.PASS, Verdict.EXEMPT, Verdict.NOT_APPLICABLE), False,
+     "Nothing to do. Kept in the record and in the report."),
+)
+
+
+def finding_groups(analysis):
+    """Group an analysis's findings: what is wrong, what is open, what is settled."""
+    return group_findings(analysis.findings)
+
+
+def group_findings(findings):
+    """Group any list of findings for display, in the same order everywhere."""
+    output = []
+    for key, title, verdicts, expanded, blurb in FINDING_GROUPS:
+        items = [f for f in findings if f.verdict in verdicts]
+        if items:
+            # Severest first inside a group, then by rule so the order is stable
+            # between two runs of the same capture.
+            items.sort(key=lambda f: (SEVERITY_ORDER.get(f.severity, 9), f.rule_id))
+            # Not "items": a dict's own `.items` shadows the key in a Jinja
+            # attribute lookup, and the template then counts a bound method.
+            output.append({"key": key, "title": title, "findings": items,
+                           "expanded": expanded, "blurb": blurb})
+    return output
+
+
+SEVERITY_ORDER = {Severity.CRITICAL: 0, Severity.MAJOR: 1, Severity.MINOR: 2}
+
+
+def needs_scale(analysis) -> list[Finding]:
+    """Undecided checks that a re-capture with the scale card could decide.
+
+    Rule 7(2) is stated in millimetres and a photograph has none, so these are
+    not a failure of the recogniser and no amount of re-reading the same image
+    will settle them. Naming them together lets the officer make one trip.
+    """
+    return [f for f in analysis.findings
+            if f.verdict in (Verdict.INCONCLUSIVE, Verdict.UNVERIFIED)
+            and "scale_source" in (f.evidence or [])]
 
 
 @dataclass
@@ -479,6 +530,25 @@ def _intelligence_sections(analysis: Analysis) -> list[Section]:
             note += " No text match for: " + ", ".join(allergens["unmatched"]) + "; this does not establish absence."
         sections.append(Section("Ingredient and allergen screening", "table", matches,
                                 columns=["Concern", "Matched text", "Match type", "Label context"], note=note))
+    screen = allergens.get("screen", {})
+    if screen.get("detected"):
+        rows = [
+            (str(item.get("allergen", "")).title(),
+             str(item.get("kind", "")).replace("_", " "),
+             "declared" if item.get("declared_in_statement") else "not in any Contains statement",
+             item.get("context", ""))
+            for item in screen["detected"]
+        ]
+        note = screen.get("basis", "") + " " + screen.get("referral", "")
+        if screen.get("undeclared"):
+            note += (
+                " Named in the ingredients but not in any Contains statement: "
+                + ", ".join(screen["undeclared"])
+                + ". A statement may still exist on a face that was not captured."
+            )
+        sections.append(Section("Allergens named on this label", "table", rows,
+                                columns=["Allergen", "Evidence", "Contains statement", "Label context"],
+                                note=note.strip() + " " + screen.get("disclaimer", "")))
     return sections
 
 

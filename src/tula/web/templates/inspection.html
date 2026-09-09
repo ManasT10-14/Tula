@@ -4,7 +4,7 @@
 {% block content %}
 {% set can_review = request is defined and request.state.user is defined and (request.state.user.role in ['admin','supervisor'] or a.scan.inspector_id == request.state.user.id) %}
 {% set declaration_titles = ['Declarations extracted','Applicability and exemptions','Measurement annexe'] %}
-{% set intelligence_titles = ['Supplementary label information','Product context observations','Printed claims and additive identifiers','Ingredient and allergen screening'] %}
+{% set intelligence_titles = ['Supplementary label information','Product context observations','Printed claims and additive identifiers','Ingredient and allergen screening','Allergens named on this label'] %}
 {% set evidence_titles = ['Evidence integrity'] %}
 {% set panelled = declaration_titles + intelligence_titles + evidence_titles + ['Findings'] %}
 
@@ -63,6 +63,49 @@
       {% for note in shrinkflation %}<li>{{ note }}</li>{% endfor %}
     </ul>
   </div>
+  {% endif %}
+  {% if a.demo_fixture %}
+  {# A replayed recording must never be mistaken for a live run, so this says so
+     before anything else on the page and is not collapsible. #}
+  <div class="card replay-banner">
+    <p class="eyebrow">Stored demonstration result · {{ a.demo_fixture }}</p>
+    <p class="small" style="margin:0">These findings were produced by running this same
+    pipeline over these same photographs and recorded, rather than recomputed just now.
+    Nothing here is hand-written: re-run with <code>TULA_DEMO_FIXTURES=off</code> to
+    analyse the images live and compare. A recording made under a different rule pack or
+    recogniser is refused rather than replayed.</p>
+  </div>
+  {% endif %}
+  {% set facts = pending_facts(a) %}
+  {% set scale_blocked = needs_scale(a) %}
+  {% if facts or not a.scan.coverage.is_complete or scale_blocked %}
+  <section class="card next-steps">
+    <p class="eyebrow" style="color:var(--accent)">Do this next</p>
+    <ol class="steps">
+      {% for fact in facts %}
+      <li>
+        <a href="#package-context">{{ fact.action }}</a>
+        <span class="chip info">decides up to {{ fact.count }}</span>
+        <span class="small muted">Held up by {{ fact.label }}.</span>
+      </li>
+      {% endfor %}
+      {% if not a.scan.coverage.is_complete %}
+      <li>
+        Photograph the faces not yet captured, or tick <em>whole package captured</em>
+        <span class="small muted">Until then a declaration that was not found may simply be on a
+        face nobody photographed, so no check can report it missing.</span>
+      </li>
+      {% endif %}
+      {% if scale_blocked %}
+      <li>
+        Re-photograph with the printed scale card in frame
+        <span class="chip info">decides up to {{ scale_blocked | length }}</span>
+        <span class="small muted">Lettering height is measured in millimetres, and a photograph
+        on its own has none. The card supplies them.</span>
+      </li>
+      {% endif %}
+    </ol>
+  </section>
   {% endif %}
   {% for section in sections if section.title == 'Findings' %}{{ sec.render_section(section, a, can_review) }}{% endfor %}
   {% include "_review.html" %}
