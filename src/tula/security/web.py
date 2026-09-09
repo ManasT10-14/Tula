@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import hashlib
 import hmac
 import ipaddress
 import secrets
 from datetime import UTC, datetime
+from functools import lru_cache
 from html import escape
 from pathlib import Path
 from urllib.parse import parse_qs, quote, urlsplit
@@ -208,6 +210,26 @@ class SecurityMiddleware:
         await self.app(scope, downstream_receive, secured_send)
 
 
+@lru_cache(maxsize=32)
+def _asset(name: str) -> str:
+    """Content-hashed URL for a static asset, matching base.html's asset_url().
+
+    These pages are rendered from a string rather than from the Jinja base
+    template, so they do not get asset_url() for free -- and serving the bare
+    path here was enough to freeze an installed app permanently. The service
+    worker caches /static/ cache-first, so a bare URL is fetched once and then
+    never re-fetched: a phone kept the stylesheet it first saw, and no CSS or
+    JS change could ever reach it. The hash in the query string is what makes a
+    changed file a different cache entry.
+    """
+    path = Path(__file__).resolve().parents[1] / "web" / "static" / name
+    try:
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()[:12]
+    except OSError:
+        return "/static/" + name
+    return f"/static/{name}?v={digest}"
+
+
 def _page(title: str, body: str, user: User | None = None) -> HTMLResponse:
     """Account pages in the console's own design.
 
@@ -224,14 +246,14 @@ def _page(title: str, body: str, user: User | None = None) -> HTMLResponse:
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>''' + escape(title) + ''' · TATVA</title>
 <link rel="manifest" href="/static/manifest.webmanifest">
 <meta name="theme-color" content="#f8fafc">
-<link rel="icon" href="/static/favicon.png" type="image/png">
-<link rel="apple-touch-icon" href="/static/favicon.png">
+<link rel="icon" href=''' + _asset("favicon.png") + ''' type="image/png">
+<link rel="apple-touch-icon" href=''' + _asset("favicon.png") + '''>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="TATVA">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/static/console.css">
+<link rel="stylesheet" href="''' + _asset("console.css") + '''">
 <script>
 /* Sign-in is the first page an officer reaches, so the install prompt and the
    shell cache have to be available here and not only behind authentication.
@@ -273,7 +295,7 @@ small{display:block;color:var(--text-muted);margin:6px 0;font-size:12.5px;line-h
 pre{white-space:pre-wrap;overflow-wrap:anywhere;max-width:450px}
 code{overflow-wrap:anywhere}
 footer{max-width:1240px;margin:0 auto;padding:18px 36px 40px;color:var(--text-muted);font-size:12px}
-</style></head><body><header class="auth"><img src="/static/logo.png" alt="TATVA" style="height: 36px; width: auto; object-fit: contain;"><nav aria-label="Account navigation">''' + navigation + '''</nav></header><main>''' + body + '''</main><footer>Legal Metrology Inspection Platform · Evidence, review and accountable decisions</footer></body></html>''')
+</style></head><body><header class="auth"><img src=''' + _asset("logo.png") + ''' alt="TATVA" style="height: 36px; width: auto; object-fit: contain;"><nav aria-label="Account navigation">''' + navigation + '''</nav></header><main>''' + body + '''</main><footer>Legal Metrology Inspection Platform · Evidence, review and accountable decisions</footer></body></html>''')
 
 
 def _hidden(token: str) -> str:
