@@ -14,6 +14,11 @@ from pathlib import Path
 from ..domain.enums import DeclarationClass, PackageClass
 from ..domain.models import Declaration, PackageFacts
 
+_DATE_REVIEW = (
+    "Manufacture/packing event evidence is uncertain or conflicting. Confirm dated "
+    "applicability before applying a Rule 3/26 exclusion; the capture date does not "
+    "resolve the printed-date conflict.")
+
 
 @dataclass
 class Determination:
@@ -23,11 +28,18 @@ class Determination:
     in_scope: bool
     review_reasons: list[str] = field(default_factory=list)
     source_text: str = ""
+    # Facts that must withhold a favourable Rule 3/26 exemption without making
+    # every screened duty undecidable. `review_reasons` is a global channel --
+    # `legal.scope` turns any entry into INCONCLUSIVE for every rule -- so a
+    # concern that only bears on granting relief belongs here instead.
+    exemption_blockers: list[str] = field(default_factory=list)
 
     @property
     def summary(self) -> str:
         if self.review_reasons:
             return "Applicability requires review: " + " ".join(self.review_reasons)
+        if self.exemption_blockers:
+            return "No exemption established: " + " ".join(self.exemption_blockers)
         if not self.in_scope:
             return f"Confirmed {self.package_class.value} transaction: Chapter II retail-package duties excluded under Rule 3."
         if self.exemptions:
@@ -63,9 +75,17 @@ def determine(
                                   for line in text.splitlines() if line.strip()))
     result = Determination(PackageClass.RETAIL, [], ["PCR Rule 3 and Rule 26 applicability"], True)
     result.source_text = blob
+    # A self-contradictory printed date must not buy the package a favourable
+    # exemption, but it is not a reason to abandon every duty: whether a net
+    # quantity is declared at all does not depend on which of two candidate
+    # dates is right. Rules whose applicability genuinely turns on a date are
+    # gated individually by `legal.scope`, which tests the rule's own
+    # transition. This used to be a review reason, which made every rule on
+    # every date-ambiguous package INCONCLUSIVE.
     date_declaration = declarations.get(DeclarationClass.DATE_OF_PACKING)
     if date_declaration and date_declaration.norm.get("date_evidence_uncertain"):
-        result.review_reasons.append("Manufacture/packing event evidence is uncertain or conflicting. Confirm dated applicability before applying a Rule 3/26 exclusion; the capture date does not resolve the printed-date conflict.")
+        result.exemption_blockers.append(_DATE_REVIEW)
+
     category = legal.get("category", "unknown")
     confirmed = legal.get("category_confirmed") is True and category != "unknown"
     scope_confirmed = legal.get("exemption_confirmed") is True
@@ -110,7 +130,7 @@ def determine(
             result.review_reasons.append("Verify that this is fast food actually packed by a restaurant or hotel before applying Rule 26(b).")
     if category in ("drug", "medical_device", "garment"):
         result.considered.append("Category-specific declarations/exceptions require duty-level legal review; no blanket exemption applied.")
-    if result.review_reasons:
+    if result.review_reasons or result.exemption_blockers:
         result.exemptions.clear()
     return result
 
@@ -118,6 +138,22 @@ def determine(
 def apply(facts: PackageFacts, determination: Determination) -> PackageFacts:
     legal = dict(facts.legal_context)
     legal["legal_review_reasons"] = list(determination.review_reasons)
+    legal["exemption_blockers"] = list(determination.exemption_blockers)
+    # The commodity category, exported *only* once it is actually settled, so a
+    # rule can ask about it three-valued with a single comparison.
+    #
+    # `category` on its own cannot do that job: an officer who opens the package
+    # facts form and saves it without choosing stores the string "unknown", and
+    # a rule comparing that against "food" gets a definite False -- so the rule
+    # silently drops out of the record instead of telling the officer that
+    # confirming the category is what would decide it. Absent here means
+    # unsettled, which resolves to None, which is the undecided answer the
+    # engine and the console's next-step panel both already understand.
+    category = legal.get("category", "unknown")
+    if legal.get("category_confirmed") is True and category != "unknown":
+        legal["confirmed_category"] = category
+    else:
+        legal.pop("confirmed_category", None)
     if determination.source_text:
         legal["scope_evidence_text"] = determination.source_text
     return facts.model_copy(update={"klass": determination.package_class,

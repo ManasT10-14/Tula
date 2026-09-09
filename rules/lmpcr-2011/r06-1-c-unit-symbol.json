@@ -1,6 +1,8 @@
 {
   "id": "LMPCR.R6.1.C.UNIT_SYMBOL",
   "title": "Net quantity expressed in a correct standard unit symbol",
+  "plain": "The quantity uses the correct unit symbol",
+  "plain_action": "Check the symbol as printed: it is \"g\", \"kg\", \"ml\", \"l\" -- lower case where shown, no full stop, and never a plural such as \"gms\".",
   "citation": {
     "clause": "Rule 6(1)(c) read with the Legal Metrology (General) Rules, 2011",
     "text": "The net quantity shall be expressed in terms of the standard unit of weight or measure, using the unit symbol prescribed for that unit."

@@ -1,0 +1,63 @@
+{
+  "id": "LMPCR.R6.1.D.EXPIRY_FOOD",
+  "title": "Food package declares a best-before, use-by or expiry date",
+  "plain": "Food says how long it keeps",
+  "plain_action": "Confirm the product category, then look for a best-before, use-by or expiry date on the pack.",
+  "citation": {
+    "clause": "Rule 6(1)(d) referral; FSS (Labelling and Display) Regulations, 2020, reg. 5(10) and 8",
+    "text": "A prepackaged food carries a date of expiry, best-before or use-by declaration under its own labelling regime, which the packaged commodities date rule refers to rather than replaces. Screening for the presence of such a declaration on a confirmed food package only; shelf-life, surface-area and small-package exemptions are not decided here, and this is not a food-law determination."
+  },
+  "effective_from": "2011-04-01",
+  "declaration": "date_of_packing",
+  "applies_when": {
+    "eq": [
+      "$pkg.legal_context.confirmed_category",
+      "food"
+    ]
+  },
+  "assert": {
+    "declares_phrase": [
+      "$pkg.legal_context.scope_evidence_text",
+      [
+        "best before",
+        "best before date",
+        "use by",
+        "use before",
+        "expiry date",
+        "exp date",
+        "date of expiry",
+        "समाप्ति"
+      ],
+      0.86
+    ]
+  },
+  "severity": "major",
+  "min_assurance_tier": "C",
+  "penalty_ref": null,
+  "messages": {
+    "pass": "A best-before, use-by or expiry declaration was found on this food package.",
+    "violation": "No best-before, use-by or expiry declaration was found on this food package.",
+    "inconclusive": "Confirm the product category, and capture every printed face before treating a best-before declaration as absent. A best-before duty is decided under food labelling law, not by this general packaged-commodities screen."
+  },
+  "evidence": [
+    "date_of_packing"
+  ],
+  "tests": "tests/test_rules_engine.py",
+  "sources": [
+    {
+      "url": "https://consumeraffairs.gov.in/public/upload/files/8_1732871406.pdf",
+      "notification": "G.S.R.202(E)",
+      "publication_date": "2011-03-07",
+      "clause": "PCR 2011; read with subsequent amendments",
+      "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+    },
+    {
+      "url": "https://www.fssai.gov.in/upload/uploadfiles/files/Compendium_Labelling_Display_29_11_2021.pdf",
+      "notification": "FSS (Labelling and Display) Regulations, 2020",
+      "publication_date": "2020-11-14",
+      "clause": "Regulations 5(10) and 8; date-of-expiry declarations for food",
+      "review_status": "secondary compendium reviewed; screening paraphrase; not a food-law engine"
+    }
+  ],
+  "legal_check": {}
+}

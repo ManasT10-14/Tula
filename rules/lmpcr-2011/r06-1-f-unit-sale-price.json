@@ -1,6 +1,8 @@
 {
   "id": "LMPCR.R6.1.F.UNIT_PRICE_PRESENT",
   "title": "Unit sale price declaration",
+  "plain": "The price per gram, millilitre or piece is shown",
+  "plain_action": "Look for a unit sale price beside the MRP, and confirm whether this is a single pack or a combination, group or multi-piece package.",
   "citation": {
     "clause": "Rule 6(11), including its provisos",
     "text": "Screening paraphrase: declare the applicable unit price using the prescribed gram/kilogram, centimetre/metre, millilitre/litre or count basis, subject to the equal-price, State-excise and package-structure exceptions."

@@ -1,0 +1,48 @@
+{
+  "id": "LMPCR.R6.1.C.DIMENSION",
+  "title": "Net quantity declared in the dimension the commodity is sold in",
+  "plain": "The quantity is measured in the right way for this product",
+  "plain_action": "Check the quantity is given by weight for a solid, volume for a liquid, length for goods sold by length, or number for goods sold by count.",
+  "citation": {
+    "clause": "Rule 6(1)(c) read with Rule 13",
+    "text": "The net quantity shall be expressed in the unit of weight, measure or number appropriate to the commodity. Screening of the declared dimension only; whether the chosen dimension is the one prescribed for this particular commodity requires the applicable schedule."
+  },
+  "effective_from": "2011-04-01",
+  "declaration": "net_quantity",
+  "applies_when": {
+    "present": "$decl.net_quantity.norm.value"
+  },
+  "assert": {
+    "in": [
+      "$decl.net_quantity.norm.kind",
+      [
+        "mass",
+        "volume",
+        "length",
+        "count"
+      ]
+    ]
+  },
+  "severity": "major",
+  "min_assurance_tier": "C",
+  "penalty_ref": "LM Act 2009 s.36(1)",
+  "messages": {
+    "pass": "The net quantity is expressed in a recognised dimension of weight, volume, length or number.",
+    "violation": "The net quantity is not expressed in a recognised dimension of weight, volume, length or number.",
+    "inconclusive": "The dimension of the declared quantity could not be established from the reading; verify the printed unit."
+  },
+  "evidence": [
+    "net_quantity"
+  ],
+  "tests": "tests/test_rules_engine.py",
+  "sources": [
+    {
+      "url": "https://consumeraffairs.gov.in/public/upload/files/8_1732871406.pdf",
+      "notification": "G.S.R.202(E)",
+      "publication_date": "2011-03-07",
+      "clause": "PCR 2011; read with subsequent amendments",
+      "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+    }
+  ],
+  "legal_check": {}
+}

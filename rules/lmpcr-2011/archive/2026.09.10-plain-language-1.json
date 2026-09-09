@@ -1,0 +1,1303 @@
+{
+  "version": "2026.09.10-plain-language-1",
+  "title": "Legal Metrology (Packaged Commodities) Rules, 2011",
+  "source": "https://consumeraffairs.gov.in/pages/legal-metrology-act",
+  "notes": "REVIEWED SCREENING DRAFT: primary Gazette sources and contextual gates added; not a complete legal consolidation or approved enforcement instrument. Stable IDs retained; citation text is a screening paraphrase. See docs/LEGAL_SOURCE_MATRIX.md. Original pack archived as 2026.09.07-draft; the preceding pack as 2026.09.07-legal-review-1. This version adds `plain` and `plain_action` to every rule: an inspector-facing description of what the rule is about and the one thing to do while it is open. No applicability condition, assertion, threshold, severity, assurance tier, source or statutory message differs from 2026.09.07-legal-review-1, so no verdict either pack can reach has changed; the version is new because the pack's bytes are, which is the only claim a version makes. The citation and its screening paraphrase remain the record and the notice text.",
+  "rules": [
+    {
+      "id": "LMPCR.R6.1.A.MANUFACTURER",
+      "title": "Name and complete address of the manufacturer, packer or importer",
+      "citation": {
+        "act": "Legal Metrology Act, 2009",
+        "rules": "Legal Metrology (Packaged Commodities) Rules, 2011",
+        "clause": "Rule 6(1)(a)",
+        "text": "Screening paraphrase: identify the manufacturer, different packer and importer as applicable, with required addresses; category-specific provisions may govern."
+      },
+      "plain": "Who made or packed it, and where",
+      "plain_action": "Find the maker's or packer's name and full postal address on the pack, and photograph that block.",
+      "effective_from": "2011-04-01",
+      "effective_to": null,
+      "declaration": "manufacturer",
+      "applies_when": true,
+      "assertion": {
+        "all": [
+          {
+            "present": "$decl.manufacturer"
+          },
+          {
+            "truthy": "$decl.manufacturer.norm.has_address"
+          }
+        ]
+      },
+      "severity": "major",
+      "min_assurance_tier": "C",
+      "absence_provable_from": [],
+      "penalty_ref": "LM Act 2009 s.36(1)",
+      "messages": {
+        "passed": "A manufacturer/packer address candidate was located; party roles and postal completeness require review.",
+        "violation": "The package does not carry the name and complete address of the manufacturer, packer or importer. A brand name alone does not satisfy Rule 6(1)(a).",
+        "inconclusive": "A manufacturer declaration was located but the address could not be read with confidence."
+      },
+      "evidence": [
+        "manufacturer"
+      ],
+      "tests": "tests/test_rules_engine.py",
+      "sources": [
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/8_1732871406.pdf",
+          "notification": "G.S.R.202(E)",
+          "publication_date": "2011-03-07",
+          "clause": "PCR 2011; read with subsequent amendments",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        },
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/8(xii)_0_1732871346.pdf",
+          "notification": "G.S.R.629(E)",
+          "publication_date": "2017-06-23",
+          "clause": "Amendments 3-9 and 13",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        }
+      ],
+      "legal_check": {
+        "kind": "manufacturer",
+        "review_categories": [
+          "food",
+          "medical_device",
+          "drug"
+        ]
+      }
+    },
+    {
+      "id": "LMPCR.R6.1.B.GENERIC_NAME",
+      "title": "Common or generic name of the commodity",
+      "citation": {
+        "act": "Legal Metrology Act, 2009",
+        "rules": "Legal Metrology (Packaged Commodities) Rules, 2011",
+        "clause": "Rule 6(1)(b)",
+        "text": "Every package shall bear the common or generic name of the commodity contained in the package."
+      },
+      "plain": "What the product actually is",
+      "plain_action": "The pack must say what the commodity is -- \"biscuits\", \"mustard oil\" -- not only its brand name. Look for that wording.",
+      "effective_from": "2011-04-01",
+      "effective_to": null,
+      "declaration": "generic_name",
+      "applies_when": true,
+      "assertion": {
+        "present": "$decl.generic_name"
+      },
+      "severity": "major",
+      "min_assurance_tier": "C",
+      "absence_provable_from": [],
+      "penalty_ref": "LM Act 2009 s.36(1)",
+      "messages": {
+        "passed": "A commodity-name declaration was located; this presence screen does not establish every category or combination-package requirement.",
+        "violation": "No common or generic name is declared, or the brand name has been used in its place. Rule 6(1)(b) requires a description of what the commodity actually is.",
+        "inconclusive": ""
+      },
+      "evidence": [
+        "generic_name"
+      ],
+      "tests": "tests/test_rules_engine.py",
+      "sources": [
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/8_1732871406.pdf",
+          "notification": "G.S.R.202(E)",
+          "publication_date": "2011-03-07",
+          "clause": "PCR 2011; read with subsequent amendments",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        }
+      ],
+      "legal_check": {}
+    },
+    {
+      "id": "LMPCR.R6.1.C.NET_QUANTITY",
+      "title": "Net quantity declaration",
+      "citation": {
+        "act": "Legal Metrology Act, 2009",
+        "rules": "Legal Metrology (Packaged Commodities) Rules, 2011",
+        "clause": "Rule 6(1)(c)",
+        "text": "Every package shall bear the net quantity, in terms of the standard unit of weight or measure, of the commodity contained in the package, or where the commodity is packed by number, the number of the commodity contained in it."
+      },
+      "plain": "How much is inside",
+      "plain_action": "Find the net quantity on the pack and photograph the label and its number together.",
+      "effective_from": "2011-04-01",
+      "effective_to": null,
+      "declaration": "net_quantity",
+      "applies_when": true,
+      "assertion": {
+        "all": [
+          {
+            "present": "$decl.net_quantity"
+          },
+          {
+            "present": "$decl.net_quantity.norm.value"
+          }
+        ]
+      },
+      "severity": "critical",
+      "min_assurance_tier": "C",
+      "absence_provable_from": [],
+      "penalty_ref": "LM Act 2009 s.36(1)",
+      "messages": {
+        "passed": "Net quantity is declared in a standard unit.",
+        "violation": "No net quantity declaration could be found on the package.",
+        "inconclusive": ""
+      },
+      "evidence": [
+        "net_quantity"
+      ],
+      "tests": "tests/test_rules_engine.py",
+      "sources": [
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/8_1732871406.pdf",
+          "notification": "G.S.R.202(E)",
+          "publication_date": "2011-03-07",
+          "clause": "PCR 2011; read with subsequent amendments",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        }
+      ],
+      "legal_check": {}
+    },
+    {
+      "id": "LMPCR.R6.1.C.UNIT_SYMBOL",
+      "title": "Net quantity expressed in a correct standard unit symbol",
+      "citation": {
+        "act": "Legal Metrology Act, 2009",
+        "rules": "Legal Metrology (Packaged Commodities) Rules, 2011",
+        "clause": "Rule 6(1)(c) read with the Legal Metrology (General) Rules, 2011",
+        "text": "The net quantity shall be expressed in terms of the standard unit of weight or measure, using the unit symbol prescribed for that unit."
+      },
+      "plain": "The quantity uses the correct unit symbol",
+      "plain_action": "Check the symbol as printed: it is \"g\", \"kg\", \"ml\", \"l\" -- lower case where shown, no full stop, and never a plural such as \"gms\".",
+      "effective_from": "2011-04-01",
+      "effective_to": null,
+      "declaration": "net_quantity",
+      "applies_when": {
+        "present": "$decl.net_quantity"
+      },
+      "assertion": {
+        "truthy": "$decl.net_quantity.norm.is_canonical"
+      },
+      "severity": "minor",
+      "min_assurance_tier": "C",
+      "absence_provable_from": [],
+      "penalty_ref": "LM Act 2009 s.36(1)",
+      "messages": {
+        "passed": "The net quantity uses a prescribed unit symbol.",
+        "violation": "The net quantity is expressed using a non-standard unit symbol. Prescribed symbols are case-sensitive, are not pluralised, and do not take a full stop.",
+        "inconclusive": ""
+      },
+      "evidence": [
+        "net_quantity"
+      ],
+      "tests": "tests/test_rules_engine.py",
+      "sources": [
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/8_1732871406.pdf",
+          "notification": "G.S.R.202(E)",
+          "publication_date": "2011-03-07",
+          "clause": "PCR 2011; read with subsequent amendments",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        }
+      ],
+      "legal_check": {}
+    },
+    {
+      "id": "LMPCR.R6.1.D.DATE",
+      "title": "Applicable manufacture-date declaration (category-aware screening)",
+      "citation": {
+        "act": "Legal Metrology Act, 2009",
+        "rules": "Legal Metrology (Packaged Commodities) Rules, 2011",
+        "clause": "Rule 6(1)(d)",
+        "text": "Screening paraphrase: apply the manufacture-date requirement and applicable historical/category exceptions under Rule 6(1)(d). Food date duties require the FSSAI route."
+      },
+      "plain": "The month and year it was made or packed",
+      "plain_action": "Find the manufacturing or packing date and confirm the product category, since food and some other goods follow their own date rules.",
+      "effective_from": "2011-04-01",
+      "effective_to": null,
+      "declaration": "date_of_packing",
+      "applies_when": true,
+      "assertion": {
+        "legal_screen": {
+          "kind": "date",
+          "manufacture_from": "2024-01-01",
+          "manufacture_pattern": "\\b(?:manufactur(?:e|ed|ing)|mfg|mfd)\\b",
+          "review_categories": [
+            "food",
+            "alcohol",
+            "tobacco",
+            "cosmetic",
+            "seed",
+            "medical_device",
+            "drug"
+          ]
+        }
+      },
+      "severity": "major",
+      "min_assurance_tier": "C",
+      "absence_provable_from": [],
+      "penalty_ref": "LM Act 2009 s.36(1)",
+      "messages": {
+        "passed": "A readable month and year with the applicable date cue were located.",
+        "violation": "The applicable generic manufacture-date declaration was not found in the complete readable capture.",
+        "inconclusive": "Category, date role or applicable date exception requires review."
+      },
+      "evidence": [
+        "date_of_packing"
+      ],
+      "tests": "tests/test_rules_engine.py",
+      "sources": [
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/8_1732871406.pdf",
+          "notification": "G.S.R.202(E)",
+          "publication_date": "2011-03-07",
+          "clause": "PCR 2011; read with subsequent amendments",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        },
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/230946_1732871433.pdf",
+          "notification": "G.S.R.779(E)",
+          "publication_date": "2021-11-02",
+          "clause": "Amendment 3; deferred commencement",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        },
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/Amendment%20of%20PCR%20ext%20till%2031.12.2023%20(1)_1732871950.pdf",
+          "notification": "G.S.R.714(E)",
+          "publication_date": "2023-09-30",
+          "clause": "Commencement deferred to 2024-01-01",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        },
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/2023.10.6%20amendment%20in%20PCR_1732871982.pdf",
+          "notification": "G.S.R.722(E)",
+          "publication_date": "2023-10-06",
+          "clause": "Amendments 3(b), 3(c), 4",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        }
+      ],
+      "legal_check": {
+        "kind": "date",
+        "manufacture_from": "2024-01-01",
+        "manufacture_pattern": "\\b(?:manufactur(?:e|ed|ing)|mfg|mfd)\\b",
+        "review_categories": [
+          "food",
+          "alcohol",
+          "tobacco",
+          "cosmetic",
+          "seed",
+          "medical_device",
+          "drug"
+        ]
+      }
+    },
+    {
+      "id": "LMPCR.R6.1.E.MRP_PRESENT",
+      "title": "Retail sale price declaration",
+      "citation": {
+        "act": "Legal Metrology Act, 2009",
+        "rules": "Legal Metrology (Packaged Commodities) Rules, 2011",
+        "clause": "Rule 6(1)(e)",
+        "text": "Every package shall bear the retail sale price of the package."
+      },
+      "plain": "A maximum retail price is printed",
+      "plain_action": "Find the MRP on the pack and photograph it.",
+      "effective_from": "2011-04-01",
+      "effective_to": null,
+      "declaration": "retail_sale_price",
+      "applies_when": true,
+      "assertion": {
+        "all": [
+          {
+            "present": "$decl.retail_sale_price"
+          },
+          {
+            "present": "$decl.retail_sale_price.norm.value"
+          }
+        ]
+      },
+      "severity": "critical",
+      "min_assurance_tier": "C",
+      "absence_provable_from": [],
+      "penalty_ref": "LM Act 2009 s.36(1)",
+      "messages": {
+        "passed": "A retail sale price is declared.",
+        "violation": "No retail sale price is declared on the package.",
+        "inconclusive": ""
+      },
+      "evidence": [
+        "retail_sale_price"
+      ],
+      "tests": "tests/test_rules_engine.py",
+      "sources": [
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/8_1732871406.pdf",
+          "notification": "G.S.R.202(E)",
+          "publication_date": "2011-03-07",
+          "clause": "PCR 2011; read with subsequent amendments",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        }
+      ],
+      "legal_check": {}
+    },
+    {
+      "id": "LMPCR.R6.1.E.MRP_SINGLE",
+      "title": "Competing retail-price declarations and revisions",
+      "citation": {
+        "act": "Legal Metrology Act, 2009",
+        "rules": "Legal Metrology (Packaged Commodities) Rules, 2011",
+        "clause": "Rule 6(3), Rule 18(2A)/(3), applicable Rule 33 orders",
+        "text": "Screening paraphrase: price revisions and competing prices require contextual review; multiple printed prices alone do not establish an offence."
+      },
+      "plain": "Only one retail price is shown",
+      "plain_action": "If more than one price appears, check whether one is a sticker over another, and record both before deciding.",
+      "effective_from": "2011-04-01",
+      "effective_to": null,
+      "declaration": "retail_sale_price",
+      "applies_when": {
+        "present": "$decl.retail_sale_price"
+      },
+      "assertion": {
+        "legal_screen": {
+          "kind": "price_uniqueness"
+        }
+      },
+      "severity": "critical",
+      "min_assurance_tier": "C",
+      "absence_provable_from": [],
+      "penalty_ref": "LM Act 2009 s.36(1)",
+      "messages": {
+        "passed": "One retail-price interpretation was located; this does not certify price compliance.",
+        "violation": "Competing retail-price declarations require review.",
+        "inconclusive": "Review the original and revised prices, sticker layers, dates and applicable permission."
+      },
+      "evidence": [
+        "retail_sale_price"
+      ],
+      "tests": "tests/test_rules_engine.py",
+      "sources": [
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/8_1732871406.pdf",
+          "notification": "G.S.R.202(E)",
+          "publication_date": "2011-03-07",
+          "clause": "PCR 2011; read with subsequent amendments",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        },
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/8(xii)_0_1732871346.pdf",
+          "notification": "G.S.R.629(E)",
+          "publication_date": "2017-06-23",
+          "clause": "Amendments 3-9 and 13",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        },
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/admin/cmsfiles/whatsnews/GST_revision_-_Permission_by_Central_Govtunder_Rules_33_of_the_Legal_Metrology_Packaged_Commodities_Rules2011to_relax_provisions_contained_in_Rule_183_whatsnews.pdf",
+          "notification": "DoCA GST revision order",
+          "publication_date": "2025-09-18",
+          "clause": "Rule 33 relaxation of Rule 18(3)",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        }
+      ],
+      "legal_check": {
+        "kind": "price_uniqueness"
+      }
+    },
+    {
+      "id": "LMPCR.R6.1.E.MRP_FORM",
+      "title": "Retail sale price declared in the prescribed form",
+      "citation": {
+        "act": "Legal Metrology Act, 2009",
+        "rules": "Legal Metrology (Packaged Commodities) Rules, 2011",
+        "clause": "Rule 6(1)(e) read with Rule 2(m)",
+        "text": "The retail sale price shall be declared in the form 'Maximum Retail Price Rs. ... inclusive of all taxes', or in the form 'MRP Rs. ... incl. of all taxes'."
+      },
+      "plain": "The price says it includes all taxes",
+      "plain_action": "Look for the words \"inclusive of all taxes\" beside the MRP.",
+      "effective_from": "2011-04-01",
+      "effective_to": null,
+      "declaration": "retail_sale_price",
+      "applies_when": {
+        "present": "$decl.retail_sale_price"
+      },
+      "assertion": {
+        "contains_phrase": [
+          "$decl.retail_sale_price.raw",
+          [
+            "inclusive of all taxes",
+            "incl of all taxes",
+            "inclusive of all taxes local or otherwise"
+          ],
+          0.82
+        ]
+      },
+      "severity": "major",
+      "min_assurance_tier": "C",
+      "absence_provable_from": [],
+      "penalty_ref": "LM Act 2009 s.36(1)",
+      "messages": {
+        "passed": "The retail sale price is declared in the prescribed form, inclusive of all taxes.",
+        "violation": "The retail sale price is not declared in the prescribed form. The words 'inclusive of all taxes' are absent, so the declared price does not tell the consumer what they will actually pay.",
+        "inconclusive": ""
+      },
+      "evidence": [
+        "retail_sale_price"
+      ],
+      "tests": "tests/test_rules_engine.py",
+      "sources": [
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/8_1732871406.pdf",
+          "notification": "G.S.R.202(E)",
+          "publication_date": "2011-03-07",
+          "clause": "PCR 2011; read with subsequent amendments",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        }
+      ],
+      "legal_check": {}
+    },
+    {
+      "id": "LMPCR.R6.1.F.CONSUMER_CARE",
+      "title": "Consumer care contact details",
+      "citation": {
+        "act": "Legal Metrology Act, 2009",
+        "rules": "Legal Metrology (Packaged Commodities) Rules, 2011",
+        "clause": "Rule 6(2)",
+        "text": "Screening paraphrase: from 1 January 2016, the complaints contact must identify a person or office with name, address, telephone number and e-mail address."
+      },
+      "plain": "Where a buyer can complain",
+      "plain_action": "Find the consumer-care block and check it gives a name or office, an address, a telephone number and an e-mail address.",
+      "effective_from": "2011-04-01",
+      "effective_to": null,
+      "declaration": "consumer_care",
+      "applies_when": true,
+      "assertion": {
+        "legal_screen": {
+          "kind": "consumer_care",
+          "current_from": "2016-01-01",
+          "current_fields": [
+            "name",
+            "address",
+            "phone",
+            "email"
+          ],
+          "historical_fields": [
+            "name",
+            "address",
+            "phone"
+          ]
+        }
+      },
+      "severity": "major",
+      "min_assurance_tier": "C",
+      "absence_provable_from": [],
+      "penalty_ref": "LM Act 2009 s.36(1)",
+      "messages": {
+        "passed": "The complaints-contact block contains the required component types; address completeness and reachability are not certified.",
+        "violation": "Required consumer-care contact components are absent from verified evidence.",
+        "inconclusive": "Verify missing or unreadable consumer-care name, address, telephone and e-mail components."
+      },
+      "evidence": [
+        "consumer_care"
+      ],
+      "tests": "tests/test_rules_engine.py",
+      "sources": [
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/8_1732871406.pdf",
+          "notification": "G.S.R.202(E)",
+          "publication_date": "2011-03-07",
+          "clause": "PCR 2011; read with subsequent amendments",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        },
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/8(x)_0_1732870750.pdf",
+          "notification": "G.S.R.385(E)",
+          "publication_date": "2015-05-14",
+          "clause": "Amendments 1(2), 3(i), 5",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        }
+      ],
+      "legal_check": {
+        "kind": "consumer_care",
+        "current_from": "2016-01-01",
+        "current_fields": [
+          "name",
+          "address",
+          "phone",
+          "email"
+        ],
+        "historical_fields": [
+          "name",
+          "address",
+          "phone"
+        ]
+      }
+    },
+    {
+      "id": "LMPCR.R6.1.F.UNIT_PRICE_ARITHMETIC",
+      "title": "Declared unit sale price is arithmetically correct",
+      "citation": {
+        "act": "Legal Metrology Act, 2009",
+        "rules": "Legal Metrology (Packaged Commodities) Rules, 2011",
+        "clause": "Rule 6(11), including its provisos",
+        "text": "Screening paraphrase: declare the applicable unit price using the prescribed gram/kilogram, centimetre/metre, millilitre/litre or count basis, subject to the equal-price, State-excise and package-structure exceptions."
+      },
+      "plain": "The price per unit is calculated correctly",
+      "plain_action": "Divide the MRP by the net quantity and compare with the printed unit price, using the basis the Rules prescribe for that size.",
+      "effective_from": "2024-01-01",
+      "effective_to": null,
+      "declaration": "unit_sale_price",
+      "applies_when": {
+        "all": [
+          {
+            "present": "$decl.unit_sale_price.norm.value"
+          },
+          {
+            "present": "$decl.retail_sale_price.norm.value"
+          },
+          {
+            "present": "$decl.net_quantity.norm.value_base"
+          }
+        ]
+      },
+      "assertion": {
+        "legal_screen": {
+          "kind": "unit_price",
+          "exempt_bundles": [
+            "combination",
+            "group",
+            "multipiece"
+          ],
+          "bases": {
+            "g": {
+              "boundary": 1000,
+              "small": 1,
+              "large": 1000
+            },
+            "ml": {
+              "boundary": 1000,
+              "small": 1,
+              "large": 1000
+            },
+            "cm": {
+              "boundary": 100,
+              "small": 1,
+              "large": 100
+            },
+            "N": {
+              "small": 1
+            }
+          }
+        }
+      },
+      "severity": "major",
+      "min_assurance_tier": "C",
+      "absence_provable_from": [],
+      "penalty_ref": "LM Act 2009 s.36(1)",
+      "messages": {
+        "passed": "The printed unit price uses the prescribed denominator and matches Decimal arithmetic rounded to two places.",
+        "violation": "The declared unit price uses an incorrect statutory denominator or does not match the declared MRP and net quantity.",
+        "inconclusive": "Unit-price applicability, units or arithmetic require review."
+      },
+      "evidence": [
+        "unit_sale_price",
+        "net_quantity",
+        "retail_sale_price"
+      ],
+      "tests": "tests/test_rules_engine.py",
+      "sources": [
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/230946_1732871433.pdf",
+          "notification": "G.S.R.779(E)",
+          "publication_date": "2021-11-02",
+          "clause": "Amendment 3; deferred commencement",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        },
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/GSR226_1732871458.pdf",
+          "notification": "G.S.R.226(E)",
+          "publication_date": "2022-03-28",
+          "clause": "PCR 6(11) replacement",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        },
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/Amendment%20of%20PCR%20ext%20till%2031.12.2023%20(1)_1732871950.pdf",
+          "notification": "G.S.R.714(E)",
+          "publication_date": "2023-09-30",
+          "clause": "Commencement deferred to 2024-01-01",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        },
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/2023.10.6%20amendment%20in%20PCR_1732871982.pdf",
+          "notification": "G.S.R.722(E)",
+          "publication_date": "2023-10-06",
+          "clause": "Amendments 3(b), 3(c), 4",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        }
+      ],
+      "legal_check": {
+        "kind": "unit_price",
+        "exempt_bundles": [
+          "combination",
+          "group",
+          "multipiece"
+        ],
+        "bases": {
+          "g": {
+            "boundary": 1000,
+            "small": 1,
+            "large": 1000
+          },
+          "ml": {
+            "boundary": 1000,
+            "small": 1,
+            "large": 1000
+          },
+          "cm": {
+            "boundary": 100,
+            "small": 1,
+            "large": 100
+          },
+          "N": {
+            "small": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "LMPCR.R6.1.F.UNIT_PRICE_PRESENT",
+      "title": "Unit sale price declaration",
+      "citation": {
+        "act": "Legal Metrology Act, 2009",
+        "rules": "Legal Metrology (Packaged Commodities) Rules, 2011",
+        "clause": "Rule 6(11), including its provisos",
+        "text": "Screening paraphrase: declare the applicable unit price using the prescribed gram/kilogram, centimetre/metre, millilitre/litre or count basis, subject to the equal-price, State-excise and package-structure exceptions."
+      },
+      "plain": "The price per gram, millilitre or piece is shown",
+      "plain_action": "Look for a unit sale price beside the MRP, and confirm whether this is a single pack or a combination, group or multi-piece package.",
+      "effective_from": "2024-01-01",
+      "effective_to": null,
+      "declaration": "unit_sale_price",
+      "applies_when": {
+        "present": "$decl.net_quantity"
+      },
+      "assertion": {
+        "present": "$decl.unit_sale_price.norm.value"
+      },
+      "severity": "major",
+      "min_assurance_tier": "C",
+      "absence_provable_from": [],
+      "penalty_ref": "LM Act 2009 s.36(1)",
+      "messages": {
+        "passed": "A unit price was located; its denominator and arithmetic are checked separately.",
+        "violation": "No required unit price was located for the confirmed ordinary single package.",
+        "inconclusive": "Confirm the applicable unit-price basis and exceptions."
+      },
+      "evidence": [
+        "unit_sale_price",
+        "net_quantity",
+        "retail_sale_price"
+      ],
+      "tests": "tests/test_rules_engine.py",
+      "sources": [
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/230946_1732871433.pdf",
+          "notification": "G.S.R.779(E)",
+          "publication_date": "2021-11-02",
+          "clause": "Amendment 3; deferred commencement",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        },
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/GSR226_1732871458.pdf",
+          "notification": "G.S.R.226(E)",
+          "publication_date": "2022-03-28",
+          "clause": "PCR 6(11) replacement",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        },
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/Amendment%20of%20PCR%20ext%20till%2031.12.2023%20(1)_1732871950.pdf",
+          "notification": "G.S.R.714(E)",
+          "publication_date": "2023-09-30",
+          "clause": "Commencement deferred to 2024-01-01",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        },
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/2023.10.6%20amendment%20in%20PCR_1732871982.pdf",
+          "notification": "G.S.R.722(E)",
+          "publication_date": "2023-10-06",
+          "clause": "Amendments 3(b), 3(c), 4",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        }
+      ],
+      "legal_check": {
+        "kind": "unit_price",
+        "exempt_bundles": [
+          "combination",
+          "group",
+          "multipiece"
+        ],
+        "bases": {
+          "g": {
+            "boundary": 1000,
+            "small": 1,
+            "large": 1000
+          },
+          "ml": {
+            "boundary": 1000,
+            "small": 1,
+            "large": 1000
+          },
+          "cm": {
+            "boundary": 100,
+            "small": 1,
+            "large": 100
+          },
+          "N": {
+            "small": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "LMPCR.R6.COUNTRY_OF_ORIGIN",
+      "title": "Country of origin for imported commodities",
+      "citation": {
+        "act": "Legal Metrology Act, 2009",
+        "rules": "Legal Metrology (Packaged Commodities) Rules, 2011",
+        "clause": "Rule 6(1)(aa)",
+        "text": "Screening paraphrase: imported products carry country of origin, manufacture or assembly as applicable; food may have a distinct origin requirement."
+      },
+      "plain": "Imported goods name their country of origin",
+      "plain_action": "Confirm whether this commodity was imported. A barcode prefix or a foreign-sounding brand does not settle it.",
+      "effective_from": "2018-01-01",
+      "effective_to": null,
+      "declaration": "country_of_origin",
+      "applies_when": true,
+      "assertion": {
+        "present": "$decl.country_of_origin.norm.country"
+      },
+      "severity": "major",
+      "min_assurance_tier": "C",
+      "absence_provable_from": [],
+      "penalty_ref": "LM Act 2009 s.36(1)",
+      "messages": {
+        "passed": "Country of origin is declared for this imported commodity.",
+        "violation": "This package appears to contain an imported commodity but does not declare the country of origin.",
+        "inconclusive": ""
+      },
+      "evidence": [
+        "country_of_origin"
+      ],
+      "tests": "tests/test_rules_engine.py",
+      "sources": [
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/8(xii)_0_1732871346.pdf",
+          "notification": "G.S.R.629(E)",
+          "publication_date": "2017-06-23",
+          "clause": "Amendments 3-9 and 13",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        }
+      ],
+      "legal_check": {
+        "kind": "origin"
+      }
+    },
+    {
+      "id": "LMPCR.R7.GROUPED",
+      "title": "Mandatory declarations grouped together on one panel",
+      "citation": {
+        "act": "Legal Metrology Act, 2009",
+        "rules": "Legal Metrology (Packaged Commodities) Rules, 2011",
+        "clause": "Rule 2(h) and Rule 8(1) (panel screening)",
+        "text": "Panel screening only. The PDP may include pre-printed information in one place and on-line information in another; physical panel differences alone do not establish an offence."
+      },
+      "plain": "The declarations are together, on one panel",
+      "plain_action": "Check whether the mandatory declarations are grouped on a single face, and photograph the whole of that face.",
+      "effective_from": "2011-04-01",
+      "effective_to": null,
+      "declaration": null,
+      "applies_when": {
+        "all": [
+          {
+            "present": "$decl.net_quantity"
+          },
+          {
+            "present": "$decl.retail_sale_price"
+          }
+        ]
+      },
+      "assertion": null,
+      "severity": "minor",
+      "min_assurance_tier": "C",
+      "absence_provable_from": [],
+      "penalty_ref": "LM Act 2009 s.36(1)",
+      "messages": {
+        "passed": "The mandatory declarations are grouped on a single panel.",
+        "violation": "The mandatory declarations are scattered across different panels rather than grouped together at one place as Rule 7 requires.",
+        "inconclusive": "Panel assignment requires review: pre-printed and on-line declarations may occupy separate places."
+      },
+      "evidence": [
+        "net_quantity",
+        "retail_sale_price",
+        "date_of_packing"
+      ],
+      "tests": "tests/test_rules_engine.py",
+      "sources": [
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/8_1732871406.pdf",
+          "notification": "G.S.R.202(E)",
+          "publication_date": "2011-03-07",
+          "clause": "PCR 2011; read with subsequent amendments",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        }
+      ],
+      "legal_check": {}
+    },
+    {
+      "id": "LMPCR.R8.1.MIN_HEIGHT",
+      "title": "Minimum measured declaration height by panel area",
+      "citation": {
+        "act": "Legal Metrology Act, 2009",
+        "rules": "Legal Metrology (Packaged Commodities) Rules, 2011",
+        "clause": "Rule 7(2), Table I",
+        "text": "Screening of measured declaration heights against the PDP area table. Full legal applicability requires review."
+      },
+      "plain": "The lettering is large enough for the pack size",
+      "plain_action": "Place the printed scale card beside the panel and re-photograph, then confirm the package shape.",
+      "effective_from": "2018-01-01",
+      "effective_to": null,
+      "declaration": null,
+      "applies_when": true,
+      "assertion": {
+        "gte_measured": [
+          "$meas.min_declaration_height",
+          {
+            "table_lookup": {
+              "key": "$pkg.pdp_area_cm2",
+              "rows": [
+                {
+                  "max": 50,
+                  "normal": 1,
+                  "blown_formed": 2
+                },
+                {
+                  "max": 100,
+                  "normal": 1.5,
+                  "blown_formed": 3
+                },
+                {
+                  "max": 500,
+                  "normal": 2.5,
+                  "blown_formed": 4
+                },
+                {
+                  "max": 2500,
+                  "normal": 4,
+                  "blown_formed": 6
+                },
+                {
+                  "max": null,
+                  "normal": 6,
+                  "blown_formed": 6
+                }
+              ],
+              "select": {
+                "if": "$pkg.is_blown_formed",
+                "then": "blown_formed",
+                "else": "normal"
+              },
+              "boundary_policy": "favour_subject"
+            }
+          }
+        ]
+      },
+      "severity": "major",
+      "min_assurance_tier": "B",
+      "absence_provable_from": [],
+      "penalty_ref": "LM Act 2009 s.36(1)",
+      "messages": {
+        "passed": "The measured declarations meet the selected panel-area height threshold.",
+        "violation": "A measured declaration is smaller than the selected panel-area height threshold.",
+        "inconclusive": "Physical height or panel area is missing or too uncertain; re-capture with a scale reference."
+      },
+      "evidence": [
+        "scale_source"
+      ],
+      "tests": "tests/test_rules_engine.py",
+      "sources": [
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/8(xii)_0_1732871346.pdf",
+          "notification": "G.S.R.629(E)",
+          "publication_date": "2017-06-23",
+          "clause": "Amendments 3-9 and 13",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        },
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/8(xiii)_0_1732871373.pdf",
+          "notification": "G.S.R.1373(E)",
+          "publication_date": "2017-11-07",
+          "clause": "Table I corrigendum, English p.2",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        },
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/267107_1761404707.pdf",
+          "notification": "G.S.R.778(E)",
+          "publication_date": "2025-10-24",
+          "clause": "Medical Devices Rules referrals",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        }
+      ],
+      "legal_check": {
+        "kind": "height",
+        "review_categories": [
+          "medical_device",
+          "drug",
+          "food"
+        ]
+      }
+    },
+    {
+      "id": "LMPCR.R8.2.NETQTY_HEIGHT",
+      "title": "Minimum height of the net quantity numerals",
+      "citation": {
+        "act": "Legal Metrology Act, 2009",
+        "rules": "Legal Metrology (Packaged Commodities) Rules, 2011",
+        "clause": "Rule 7(2), Table I",
+        "text": "Screening of numeral height against the PDP area table; see the official Rule 7(2) text and applicable exceptions."
+      },
+      "plain": "The quantity figures are large enough",
+      "plain_action": "Place the printed scale card beside the panel and re-photograph, then confirm the package shape.",
+      "effective_from": "2018-01-01",
+      "effective_to": null,
+      "declaration": "net_quantity",
+      "applies_when": {
+        "present": "$decl.net_quantity"
+      },
+      "assertion": {
+        "gte_measured": [
+          "$meas.net_quantity_cap_height",
+          {
+            "table_lookup": {
+              "key": "$pkg.pdp_area_cm2",
+              "rows": [
+                {
+                  "max": 50,
+                  "normal": 1,
+                  "blown_formed": 2
+                },
+                {
+                  "max": 100,
+                  "normal": 1.5,
+                  "blown_formed": 3
+                },
+                {
+                  "max": 500,
+                  "normal": 2.5,
+                  "blown_formed": 4
+                },
+                {
+                  "max": 2500,
+                  "normal": 4,
+                  "blown_formed": 6
+                },
+                {
+                  "max": null,
+                  "normal": 6,
+                  "blown_formed": 6
+                }
+              ],
+              "select": {
+                "if": "$pkg.is_blown_formed",
+                "then": "blown_formed",
+                "else": "normal"
+              },
+              "boundary_policy": "favour_subject"
+            }
+          }
+        ]
+      },
+      "severity": "major",
+      "min_assurance_tier": "B",
+      "absence_provable_from": [],
+      "penalty_ref": "LM Act 2009 s.36(1)",
+      "messages": {
+        "passed": "The net quantity numerals meet the minimum height for this panel size.",
+        "violation": "The numerals declaring net quantity are smaller than the minimum height prescribed for a principal display panel of this area.",
+        "inconclusive": "The measured numeral height cannot be distinguished from the prescribed minimum within the measurement uncertainty. Re-capture with a scale reference."
+      },
+      "evidence": [
+        "net_quantity",
+        "scale_source",
+        "pdp_area_derivation"
+      ],
+      "tests": "tests/test_rules_engine.py",
+      "sources": [
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/8(xii)_0_1732871346.pdf",
+          "notification": "G.S.R.629(E)",
+          "publication_date": "2017-06-23",
+          "clause": "Amendments 3-9 and 13",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        },
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/8(xiii)_0_1732871373.pdf",
+          "notification": "G.S.R.1373(E)",
+          "publication_date": "2017-11-07",
+          "clause": "Table I corrigendum, English p.2",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        },
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/267107_1761404707.pdf",
+          "notification": "G.S.R.778(E)",
+          "publication_date": "2025-10-24",
+          "clause": "Medical Devices Rules referrals",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        }
+      ],
+      "legal_check": {
+        "kind": "height",
+        "review_categories": [
+          "medical_device",
+          "drug"
+        ]
+      }
+    },
+    {
+      "id": "LMPCR.R9.2.NOT_ON_BOTTOM",
+      "title": "WITHDRAWN: Declarations not to be affixed to the bottom of the package",
+      "citation": {
+        "act": "Legal Metrology Act, 2009",
+        "rules": "Legal Metrology (Packaged Commodities) Rules, 2011",
+        "clause": "Rule 9(2)",
+        "text": "The cited Rule 9(2) concerns reading through liquid, not bottom placement."
+      },
+      "plain": "Withdrawn -- not screened",
+      "plain_action": "",
+      "effective_from": "2011-04-01",
+      "effective_to": null,
+      "declaration": null,
+      "applies_when": false,
+      "assertion": {
+        "all": [
+          {
+            "panel_is": [
+              "retail_sale_price",
+              [
+                "pdp",
+                "back",
+                "left",
+                "right",
+                "top"
+              ]
+            ]
+          },
+          {
+            "panel_is": [
+              "net_quantity",
+              [
+                "pdp",
+                "back",
+                "left",
+                "right",
+                "top"
+              ]
+            ]
+          }
+        ]
+      },
+      "severity": "major",
+      "min_assurance_tier": "C",
+      "absence_provable_from": [],
+      "penalty_ref": null,
+      "messages": {
+        "passed": "",
+        "violation": "",
+        "inconclusive": "The cited Rule 9(2) concerns reading through liquid, not bottom placement."
+      },
+      "evidence": [
+        "retail_sale_price",
+        "net_quantity"
+      ],
+      "tests": "tests/test_rules_engine.py",
+      "sources": [
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/8_1732871406.pdf",
+          "notification": "G.S.R.202(E)",
+          "publication_date": "2011-03-07",
+          "clause": "PCR 2011; read with subsequent amendments",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        }
+      ],
+      "legal_check": {}
+    },
+    {
+      "id": "LMPCR.R9.3.BILINGUAL",
+      "title": "Net quantity in Hindi or English (script screening)",
+      "citation": {
+        "act": "Legal Metrology Act, 2009",
+        "rules": "Legal Metrology (Packaged Commodities) Rules, 2011",
+        "clause": "Rule 9(4)",
+        "text": "The declarations required under these rules shall be made in Hindi in Devanagari script or in English, and nothing shall prevent the use of any other language in addition."
+      },
+      "plain": "Printed in Hindi or English",
+      "plain_action": "Check the script the declarations are printed in.",
+      "effective_from": "2011-04-01",
+      "effective_to": null,
+      "declaration": "net_quantity",
+      "applies_when": {
+        "present": "$decl.net_quantity"
+      },
+      "assertion": {
+        "any": [
+          {
+            "script_coverage": [
+              "net_quantity",
+              [
+                "latin"
+              ]
+            ]
+          },
+          {
+            "script_coverage": [
+              "net_quantity",
+              [
+                "devanagari"
+              ]
+            ]
+          }
+        ]
+      },
+      "severity": "minor",
+      "min_assurance_tier": "C",
+      "absence_provable_from": [],
+      "penalty_ref": "LM Act 2009 s.36(1)",
+      "messages": {
+        "passed": "The net quantity uses Latin or Devanagari script; language and complete declaration coverage require review.",
+        "violation": "Neither supported declaration script was identified. Verify the original label.",
+        "inconclusive": "The declaration script could not be established."
+      },
+      "evidence": [
+        "net_quantity"
+      ],
+      "tests": "tests/test_rules_engine.py",
+      "sources": [
+        {
+          "url": "https://sansad.in/getFile/annex/256/AU1181.pdf?source=pqars",
+          "notification": "Rajya Sabha AU1181",
+          "publication_date": "2022-02-11",
+          "clause": "PCR Rule 9(4)",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        }
+      ],
+      "legal_check": {
+        "kind": "script"
+      }
+    },
+    {
+      "id": "LMPCR.R11.MRP_ROUNDING",
+      "title": "Historical MRP rounding, with amendment-transition review",
+      "citation": {
+        "act": "Legal Metrology Act, 2009",
+        "rules": "Legal Metrology (Packaged Commodities) Rules, 2011",
+        "clause": "Historical Rule 6(1)(e); not Rule 11",
+        "text": "Screening paraphrase: the 2017 amendment introduced rupee/50-paise rounding; a later amendment replaced it. This check is inactive for current assessments."
+      },
+      "plain": "Withdrawn -- price rounding is not screened",
+      "plain_action": "",
+      "effective_from": "2018-01-01",
+      "effective_to": "2023-12-31",
+      "declaration": "retail_sale_price",
+      "applies_when": {
+        "present": "$decl.retail_sale_price.norm.value"
+      },
+      "assertion": {
+        "rounded_to": [
+          "$decl.retail_sale_price.norm.value",
+          0.5
+        ]
+      },
+      "severity": "minor",
+      "min_assurance_tier": "C",
+      "absence_provable_from": [],
+      "penalty_ref": null,
+      "messages": {
+        "passed": "The price satisfies the historical rounding increment.",
+        "violation": "The price does not satisfy the applicable historical rounding increment.",
+        "inconclusive": "Historical rounding transition requires legal review."
+      },
+      "evidence": [
+        "retail_sale_price"
+      ],
+      "tests": "tests/test_rules_engine.py",
+      "sources": [
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/8(xii)_0_1732871346.pdf",
+          "notification": "G.S.R.629(E)",
+          "publication_date": "2017-06-23",
+          "clause": "Amendments 3-9 and 13",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        },
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/230946_1732871433.pdf",
+          "notification": "G.S.R.779(E)",
+          "publication_date": "2021-11-02",
+          "clause": "Amendment 3; deferred commencement",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        },
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/GSR226_1732871458.pdf",
+          "notification": "G.S.R.226(E)",
+          "publication_date": "2022-03-28",
+          "clause": "PCR 6(11) replacement",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        },
+        {
+          "url": "https://consumeraffairs.gov.in/public/upload/files/Amendment%20of%20PCR%20ext%20till%2031.12.2023%20(1)_1732871950.pdf",
+          "notification": "G.S.R.714(E)",
+          "publication_date": "2023-09-30",
+          "clause": "Commencement deferred to 2024-01-01",
+          "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+        }
+      ],
+      "legal_check": {
+        "kind": "rounding_history",
+        "deterministic_to": "2022-03-31"
+      }
+    }
+  ],
+  "legal_policy": {
+    "medical_devices": {
+      "from": "2025-10-24",
+      "reason": "Medical-device declaration/height requirements are referred to the Medical Devices Rules 2017 by G.S.R.778(E). Verify the regulated category and applicable MDR provision; this general PCR screen cannot decide it."
+    },
+    "exemptions": {
+      "small_limit": 10,
+      "tobacco_from": "2016-01-01",
+      "pan_masala_from": "2026-02-01",
+      "ordinary_large_limit": 25000,
+      "large_from": "2018-01-01",
+      "institutional_terms": [
+        "not for retail sale",
+        "for institutional use",
+        "institutional pack",
+        "for industrial use",
+        "industrial pack",
+        "for catering purpose"
+      ],
+      "tobacco_terms": [
+        "tobacco",
+        "gutkha",
+        "gutka",
+        "cigarette",
+        "bidi",
+        "beedi",
+        "khaini",
+        "zarda",
+        "snuff"
+      ]
+    },
+    "enforcement": {
+      "from": "2026-05-01",
+      "reference": "LM Act section 36(1), as substituted by Jan Vishwas Act 2026 Schedule 66(N); S.O.2103(E)",
+      "reason": "Officer must establish identity, authority and offence history. First-offence improvement notice and later sanctions are not automatic photo outcomes."
+    }
+  }
+}

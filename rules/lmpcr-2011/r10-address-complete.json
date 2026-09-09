@@ -1,0 +1,50 @@
+{
+  "id": "LMPCR.R10.ADDRESS_COMPLETE",
+  "title": "Manufacturer, packer or importer address carries its locality components",
+  "plain": "The address is complete enough to reach the company",
+  "plain_action": "Check the address block gives a company name, a street or locality and a PIN code, and photograph the whole block.",
+  "citation": {
+    "clause": "Rule 6(1)(a) read with Rule 10",
+    "text": "The name and complete address of the manufacturer, packer or importer shall be declared. Screening of parsed components only: a name, address wording and a PIN code. This does not certify that the postal address is complete, correct or that the party is reachable."
+  },
+  "effective_from": "2011-04-01",
+  "declaration": "manufacturer",
+  "applies_when": {
+    "present": "$decl.manufacturer"
+  },
+  "assert": {
+    "all": [
+      {
+        "truthy": "$decl.manufacturer.norm.has_name"
+      },
+      {
+        "truthy": "$decl.manufacturer.norm.has_address"
+      },
+      {
+        "truthy": "$decl.manufacturer.norm.has_pin"
+      }
+    ]
+  },
+  "severity": "major",
+  "min_assurance_tier": "C",
+  "penalty_ref": "LM Act 2009 s.36(1)",
+  "messages": {
+    "pass": "The address block carries a name, locality wording and a PIN code; postal completeness is not certified.",
+    "violation": "The declared address is missing a name, locality wording or a PIN code.",
+    "inconclusive": "The address components could not be read well enough to judge; verify the printed block."
+  },
+  "evidence": [
+    "manufacturer"
+  ],
+  "tests": "tests/test_rules_engine.py",
+  "sources": [
+    {
+      "url": "https://consumeraffairs.gov.in/public/upload/files/8_1732871406.pdf",
+      "notification": "G.S.R.202(E)",
+      "publication_date": "2011-03-07",
+      "clause": "PCR 2011; read with subsequent amendments",
+      "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+    }
+  ],
+  "legal_check": {}
+}

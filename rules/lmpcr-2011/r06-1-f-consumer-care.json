@@ -1,6 +1,8 @@
 {
   "id": "LMPCR.R6.1.F.CONSUMER_CARE",
   "title": "Consumer care contact details",
+  "plain": "Where a buyer can complain",
+  "plain_action": "Find the consumer-care block and check it gives a name or office, an address, a telephone number and an e-mail address.",
   "citation": {
     "clause": "Rule 6(2)",
     "text": "Screening paraphrase: from 1 January 2016, the complaints contact must identify a person or office with name, address, telephone number and e-mail address."

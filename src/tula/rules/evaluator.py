@@ -348,6 +348,27 @@ def _op_contains_phrase(ctx: EvalContext, args: list[Any]) -> Tri:
     return any(fuzzy_contains(str(subject), p, threshold) for p in phrases)
 
 
+def _op_declares_phrase(ctx: EvalContext, args: list[Any]) -> Tri:
+    """Like `contains_phrase`, but "not found" is gated on coverage.
+
+    The difference is what the subject is. `contains_phrase` asks about the form
+    of a declaration already located and read -- does this price block say
+    "inclusive of all taxes" -- and there a miss really is a miss, because the
+    block was in evidence. This operator asks whether the *package* carries a
+    wording anywhere, and a miss then means one of two very different things:
+    the package does not carry it, or nobody photographed the face that does.
+
+    Only the first is a violation. Without this the food best-before screen
+    convicted a package on a single-face capture, which is the exact failure the
+    whole three-valued design exists to prevent, and which `bench.py`'s
+    `partial_capture` scenario is there to catch.
+    """
+    found = _op_contains_phrase(ctx, args)
+    if found is not False:
+        return found
+    return False if ctx.absence_is_provable() else None
+
+
 def _op_tier_at_least(ctx: EvalContext, arg: Any) -> Tri:
     tier = ctx.resolve("$ctx.tier")
     if tier is None:
@@ -504,6 +525,8 @@ def evaluate(ctx: EvalContext, node: Any) -> Tri:
         return re.search(arg[1], str(subject), re.IGNORECASE | re.UNICODE) is not None
     if op == "contains_phrase":
         return _op_contains_phrase(ctx, arg)
+    if op == "declares_phrase":
+        return _op_declares_phrase(ctx, arg)
 
     if op == "gte_measured":
         return _op_gte_measured(ctx, arg)

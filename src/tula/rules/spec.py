@@ -48,6 +48,16 @@ class Rule(BaseModel):
     id: str
     title: str
     citation: RuleCitation
+    # What this rule is about, in the words an inspector would use to a
+    # shopkeeper. The citation text is a screening paraphrase of the statute and
+    # reads like one; it belongs in the record and on the notice, not as the
+    # first thing on screen. Sixteen findings whose headings all begin "Rule
+    # 6(1)(c), Rule 13" are sixteen findings nobody reads. Data, not code,
+    # because it is amended alongside the clause it describes.
+    plain: str = ""
+    # The one thing to do about this rule when it is not decided, phrased as an
+    # instruction. Empty where the verdict already carries its own next step.
+    plain_action: str = ""
     effective_from: date
     effective_to: date | None = None
 

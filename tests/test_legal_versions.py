@@ -59,10 +59,29 @@ ORIGIN = "LMPCR.R6.COUNTRY_OF_ORIGIN"
 ROUND = "LMPCR.R11.MRP_ROUNDING"
 
 
+_EARLIER_EIGHTEEN = tuple(
+    type("R", (), {"id": name}) for name in (
+        "LMPCR.R6.1.A.MANUFACTURER", "LMPCR.R6.1.B.GENERIC_NAME",
+        "LMPCR.R6.1.C.NET_QUANTITY", "LMPCR.R6.1.C.UNIT_SYMBOL",
+        "LMPCR.R6.1.D.DATE", "LMPCR.R6.1.E.MRP_PRESENT", "LMPCR.R6.1.E.MRP_SINGLE",
+        "LMPCR.R6.1.E.MRP_FORM", "LMPCR.R6.1.F.CONSUMER_CARE",
+        "LMPCR.R6.1.F.UNIT_PRICE_PRESENT", "LMPCR.R6.1.F.UNIT_PRICE_ARITHMETIC",
+        "LMPCR.R6.COUNTRY_OF_ORIGIN", "LMPCR.R7.GROUPED", "LMPCR.R8.1.MIN_HEIGHT",
+        "LMPCR.R8.2.NETQTY_HEIGHT", "LMPCR.R9.2.NOT_ON_BOTTOM",
+        "LMPCR.R9.3.BILINGUAL", "LMPCR.R11.MRP_ROUNDING",
+    ))
+
+
 def test_current_pack_retains_stable_ids_and_primary_source_metadata(engine):
     validate_legal_metadata(engine.pack)
-    assert engine.pack.version == "2026.09.07-legal-review-1"
-    assert len({r.id for r in engine.pack.rules}) == 18
+    assert engine.pack.version == "2026.09.10-expanded-1"
+    identifiers = {r.id for r in engine.pack.rules}
+    assert len(identifiers) == 22
+    # The eighteen audited in docs/LEGAL_SOURCE_MATRIX.md keep their identifiers:
+    # an inspection saved under an earlier pack must still resolve every rule it
+    # was judged under. Four screens were added alongside them, not in place of
+    # any of them.
+    assert len(identifiers - {r.id for r in _EARLIER_EIGHTEEN}) == 4
     assert all(r.sources for r in engine.pack.rules)
     assert engine.pack.by_id(CARE).citation.clause == "Rule 6(2)"
     assert engine.pack.by_id(ORIGIN).effective_from == date(2018, 1, 1)

@@ -42,7 +42,7 @@ def analysis():
 def test_overall_determination(analysis):
     assert analysis.overall is Verdict.VIOLATION
     assert analysis.engine == "fixture"
-    assert analysis.rules_version == "2026.09.07-legal-review-1"
+    assert analysis.rules_version == "2026.09.10-expanded-1"
 
 
 def test_exactly_the_expected_violations_fire(analysis):
