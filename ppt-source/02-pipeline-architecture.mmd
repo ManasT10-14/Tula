@@ -1,0 +1,39 @@
+flowchart LR
+    subgraph CAP["1 - CAPTURE"]
+        C1["Guided multi-panel capture<br/>PDP / back / sides"]
+        C2["Printed ArUco scale card<br/>optional, gives Tier B"]
+    end
+    subgraph REC["2 - RECOGNISE"]
+        R1["RapidOCR PP-OCRv4<br/>ONNX, CPU only"]
+        R2["Tesseract 5 eng+hin<br/>Devanagari"]
+        R3["zxing-cpp<br/>barcode / GTIN"]
+    end
+    subgraph EXT["3 - EXTRACT"]
+        E1["Cue-anchored parsers<br/>9 declaration classes"]
+        E2["found vs trusted filter<br/>untrusted = review candidate"]
+    end
+    subgraph MEA["4 - MEASURE"]
+        M1["Glyph cap-height<br/>from the same image"]
+        M2["Panel area bracketed<br/>text hull to package edge"]
+        M3["Uncertainty at k=2<br/>ILAC-G8 guard band"]
+    end
+    subgraph EVA["5 - EVALUATE"]
+        V1["18 versioned JSON rules<br/>temporal validity + citation"]
+        V2["Kleene 3-valued engine<br/>7 verdicts"]
+        V3["3 independent gates<br/>tier / coverage / lane"]
+    end
+    subgraph REP["6 - REPORT"]
+        P1["PDF + DOCX + JSON<br/>crops and clause text"]
+        P2["Inspector drafts, then<br/>independent supervisor approves"]
+    end
+    CAP -->|"image bytes"| REC
+    REC -->|"text + boxes"| EXT
+    EXT -->|"located declarations"| MEA
+    MEA -->|"mm +/- u"| EVA
+    EVA -->|"graded findings"| REP
+    DB[("Evidence store - SQLite WAL<br/>SHA-256 originals, append-only audit<br/>every finding traces to a pixel")]
+    CAP -.-> DB
+    EXT -.-> DB
+    MEA -.-> DB
+    EVA -.-> DB
+    REP -.-> DB
