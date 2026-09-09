@@ -1,0 +1,139 @@
+{
+  "collected_at": "2026-09-08T16:44:48+00:00",
+  "provenance": "Wikimedia Commons, fetched once each through the Commons API. Every file carries a licence permitting redistribution with attribution; the attribution is recorded here and must travel with the images. None of these photographers or publishers endorses Tula.",
+  "sources": [
+    {
+      "id": "scrapple-can-back",
+      "filename": "scrapple-can-back.jpg",
+      "commons_title": "File:Reese Philadelphia Canned Scrapple - back of can with ingredient list.jpg",
+      "author": "Loudfan",
+      "license": "CC BY-SA 4.0",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AReese_Philadelphia_Canned_Scrapple_-_back_of_can_with_ingredient_list.jpg",
+      "accessed_at": "2026-09-08T16:44:24+00:00",
+      "local_modifications": "None; original source bytes retained",
+      "dimensions": [
+        3120,
+        4160
+      ],
+      "format": "JPEG",
+      "bytes": 2605628,
+      "sha256": "b06fef81a57489e8ef7931b9337e27f192f006c79380f0e112e2f25cf222c2a5",
+      "status": "retained",
+      "note": "already present; not refetched"
+    },
+    {
+      "id": "white-pudding",
+      "filename": "white-pudding.jpg",
+      "commons_title": "File:White pudding ingredients label.JPG",
+      "author": "O'Dea",
+      "license": "CC BY-SA 4.0",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AWhite_pudding_ingredients_label.JPG",
+      "accessed_at": "2026-09-08T16:44:24+00:00",
+      "local_modifications": "None; original source bytes retained",
+      "dimensions": [
+        2560,
+        1920
+      ],
+      "format": "JPEG",
+      "bytes": 2305764,
+      "sha256": "8cf59dc3a992fb188e9be3ae56162f22dd2c962fe0888d71c24fd3bfb67cbd57",
+      "status": "retained",
+      "note": "already present; not refetched"
+    },
+    {
+      "id": "marrowfat-peas",
+      "filename": "marrowfat-peas.jpg",
+      "commons_title": "File:Euroshopper canned marrowfat peas ingredient list.jpg",
+      "author": "Not separately identified on the file page",
+      "license": "CC BY 4.0",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AEuroshopper_canned_marrowfat_peas_ingredient_list.jpg",
+      "accessed_at": "2026-09-08T16:44:24+00:00",
+      "local_modifications": "None; original source bytes retained",
+      "dimensions": [
+        1156,
+        1474
+      ],
+      "format": "JPEG",
+      "original_url": "https://upload.wikimedia.org/wikipedia/commons/b/b4/Euroshopper_canned_marrowfat_peas_ingredient_list.jpg",
+      "bytes": 313615,
+      "sha256": "3b1953ba5a8a163db888f6eef6e49a94572048933db6a08d659bc835d7c77881",
+      "status": "retained"
+    },
+    {
+      "id": "tomato-soup",
+      "filename": "tomato-soup.jpg",
+      "commons_title": "File:Tomato soup in a can ingredient list.jpg",
+      "author": "Not separately identified on the file page",
+      "license": "CC BY 4.0",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3ATomato_soup_in_a_can_ingredient_list.jpg",
+      "accessed_at": "2026-09-08T16:44:32+00:00",
+      "local_modifications": "None; original source bytes retained",
+      "dimensions": [
+        1176,
+        1863
+      ],
+      "format": "JPEG",
+      "original_url": "https://upload.wikimedia.org/wikipedia/commons/5/5c/Tomato_soup_in_a_can_ingredient_list.jpg",
+      "bytes": 543284,
+      "sha256": "71a775fa49b63408b01c1667d675b55348c65c9e8413330e8bba8219836aeecf",
+      "status": "retained"
+    },
+    {
+      "id": "confectionery-tartrazine",
+      "filename": "confectionery-tartrazine.jpg",
+      "commons_title": "File:Ingredients and tartrazine warning on confectionery label.jpg",
+      "author": "Sokolikmawwer0",
+      "license": "CC BY-SA 3.0",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AIngredients_and_tartrazine_warning_on_confectionery_label.jpg",
+      "accessed_at": "2026-09-08T16:44:41+00:00",
+      "local_modifications": "None; original source bytes retained",
+      "dimensions": [
+        1466,
+        457
+      ],
+      "format": "JPEG",
+      "original_url": "https://upload.wikimedia.org/wikipedia/commons/5/5d/Ingredients_and_tartrazine_warning_on_confectionery_label.jpg",
+      "bytes": 222010,
+      "sha256": "d05119d92ebc14e878c1f9b693e1d8b669207dccb37eb4a2e42cd358a33bf2cd",
+      "status": "retained"
+    },
+    {
+      "id": "tortilla-chips",
+      "filename": "tortilla-chips.png",
+      "commons_title": "File:Ingredients label for tortilla chips .png",
+      "author": "Cindyy28",
+      "license": "CC BY-SA 4.0",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AIngredients_label_for_tortilla_chips_.png",
+      "accessed_at": "2026-09-08T16:44:48+00:00",
+      "local_modifications": "None; original source bytes retained",
+      "dimensions": [
+        471,
+        97
+      ],
+      "format": "PNG",
+      "bytes": 99835,
+      "sha256": "d7a3b9520cc0e4191db73547fcf726fc9b912e8e6b6c0813190e052b30c8601d",
+      "status": "retained",
+      "note": "already present; not refetched"
+    },
+    {
+      "id": "habanero-condiment",
+      "filename": "habanero-condiment.jpg",
+      "commons_title": "File:Yellowbird Habanero Condiment ingredients label.jpg",
+      "author": "Xyzerb",
+      "license": "CC0",
+      "source_page": "https://commons.wikimedia.org/wiki/File%3AYellowbird_Habanero_Condiment_ingredients_label.jpg",
+      "accessed_at": "2026-09-08T16:44:48+00:00",
+      "local_modifications": "None; original source bytes retained",
+      "dimensions": [
+        353,
+        465
+      ],
+      "format": "JPEG",
+      "bytes": 68594,
+      "sha256": "2f1a5839f865be35b3ffba666262ce5a20830ddb9126b5444ab10be5f1b1dd43",
+      "status": "retained",
+      "note": "already present; not refetched"
+    }
+  ]
+}

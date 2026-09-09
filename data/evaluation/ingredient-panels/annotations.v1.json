@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "dataset_id": "ingredient-panels-single-annotator-v1",
+  "annotation_date": "2026-09-08",
+  "annotator": "Single agent, visual inspection of each photograph before any OCR was run on this set. No independent adjudication.",
+  "protocol": "Each photograph was opened and read by eye, and the ingredient text and expected allergen outcome were written down before the evaluation script existed. These are agent-created annotations on an unblinded development set, not externally validated ground truth, and the denominators are far too small to support an accuracy claim. Filenames, Commons descriptions and product knowledge must not supply text that is not legible in the image.",
+  "scope": "Allergen screening only. No legal, medical or safety verdict is annotated. 'Expected' below is what the deterministic lexicon should return given the FSSAI reg. 5(3) categories it screens against; where the expectation is 'nothing', that is a negative control, and a detection there is a false positive.",
+  "lexicon_change_before_this_run": {
+    "term": "dairy -> milk (explicit)",
+    "reason": "Reading habanero-condiment.jpg by eye showed a cross-contact statement worded 'contains dairy, tree nuts, and eggs'. The lexicon had no entry for the word 'dairy', so it would have missed a milk cross-contact that a human reads immediately.",
+    "found_by": "visual inspection of the photograph, before OCR was run on this set",
+    "recorded_because": "the term was added before the first evaluation run, so this set never scored the pre-change lexicon; the change is disclosed rather than hidden inside a passing number"
+  },
+  "images": [
+    {
+      "file": "scrapple-can-back.jpg",
+      "language": "English",
+      "printed_ingredients": "INGREDIENTS Pork stock, pork skins, water, boned pork heads, corn meal, chopped pork, rendered lard, wheat flour, pork livers, pork hearts, pork kidneys, salt and spices.",
+      "contains_statement": null,
+      "expected_allergens": [
+        {"allergen": "gluten", "kind": "possible", "because": "wheat flour"}
+      ],
+      "must_not_report": [
+        {"allergen": "milk", "why": "'butter' appears in SERVING SUGGESTIONS above the ingredient heading, not in the ingredient list"},
+        {"allergen": "egg", "why": "'eggs' and 'one egg' appear in SERVING SUGGESTIONS, not in the ingredient list"}
+      ],
+      "notes": "Small curved label, aged print, photographed at an angle across a cylindrical can. The hardest recognition target in this set."
+    },
+    {
+      "file": "white-pudding.jpg",
+      "language": "English",
+      "printed_ingredients": "Ingredients Oats, Water, Pork Fat, Onion, Pork Rind, Pork Shoulder, Pork Liver, Rusk (Wheat Starch, Salt), Salt, Pimento, Seasoning (Rusk, Spices).",
+      "contains_statement": null,
+      "expected_allergens": [
+        {"allergen": "gluten", "kind": "possible", "because": "oats and wheat starch"}
+      ],
+      "must_not_report": [],
+      "notes": "Curved sleeve on a sausage, held in a hand, with a 300 g weight and use-by date also visible."
+    },
+    {
+      "file": "marrowfat-peas.jpg",
+      "language": "English and Dutch, both printed",
+      "printed_ingredients": "Ingredients: marrowfat peas, water, salt, antioxidant (E385).",
+      "contains_statement": null,
+      "expected_allergens": [],
+      "must_not_report": [],
+      "notes": "Negative control. Cylindrical can, 800 g declared, English block above a Dutch block."
+    },
+    {
+      "file": "tortilla-chips.png",
+      "language": "English",
+      "printed_ingredients": "INGREDIENTS: WHOLE GRAIN WHITE CORN, WHITE CORN FLOUR, VEGETABLE OIL, BEET POWDER, NATURAL GROUND PEA HULL FIBRE, SEA SALT, CALCIUM HYDROXIDE.",
+      "contains_statement": null,
+      "expected_allergens": [],
+      "must_not_report": [
+        {"allergen": "gluten", "why": "'CORN FLOUR' is not a gluten cereal; matching 'flour' generally would be wrong"}
+      ],
+      "notes": "Negative control. A tight crop of the ingredient strip only."
+    },
+    {
+      "file": "habanero-condiment.jpg",
+      "language": "English",
+      "printed_ingredients": "INGREDIENTS Organic carrots, onions, habanero peppers, organic distilled vinegar, garlic, organic cane sugar, tangerine juice concentrate, salt, lime juice concentrate",
+      "contains_statement": "All natural. Contains no allergens. ... Manufactured in a facility that contains dairy, tree nuts, and eggs.",
+      "expected_allergens": [
+        {"allergen": "milk", "kind": "cross_contact", "because": "facility statement names dairy"},
+        {"allergen": "tree nuts", "kind": "cross_contact", "because": "facility statement names tree nuts"},
+        {"allergen": "egg", "kind": "cross_contact", "because": "facility statement names eggs"}
+      ],
+      "must_not_report": [
+        {"allergen": "any as an ingredient", "why": "the ingredient list itself names none; the facility statement is cross-contact and must be labelled as such"},
+        {"allergen": "gluten", "why": "a GLUTEN FREE badge appears on the label and must not be read as a gluten declaration"}
+      ],
+      "notes": "The most informative label in the set: it says 'Contains no allergens' and then names three in a facility statement."
+    },
+    {
+      "file": "tomato-soup.jpg",
+      "language": "Dutch and Czech; no English ingredient block",
+      "printed_ingredients": "Ingredienten: 55% tomaat ... tarwegriesmeel (gluten), scharrelei-eiwit (ei) ... soja-eiwit (soja) ... (selderij). Allergie-informatie: bevat tarwe (gluten), ei, gerst (gluten), soja, selderij.",
+      "contains_statement": "Allergie-informatie: bevat tarwe (gluten), ei, gerst (gluten), soja, selderij",
+      "expected_allergens": [],
+      "expected_reason": "Out of scope by design, not by failure. The ingredient cue recognises English and Devanagari; a Dutch or Czech block is not read, so nothing should be reported rather than something guessed. Recorded here because a real allergen list going unreported is a limitation worth measuring even when it is intended.",
+      "must_not_report": [],
+      "notes": "Cylindrical can, three language blocks wrapped around it, small dense print."
+    },
+    {
+      "file": "confectionery-tartrazine.jpg",
+      "language": "Russian",
+      "printed_ingredients": "Sostav: izyum, sakharnaya pudra, patoka karamelnaya, maslo podsolnechnoe rafinirovannoe, vosk pchelinyy, parafin pishchevoy, limonnaya kislota, pishchevye krasiteli karmuazin, tartrazin, antisrezhivatel-talk pishchevoy.",
+      "contains_statement": null,
+      "expected_allergens": [],
+      "expected_reason": "Out of scope by design: Cyrillic ingredient cue is not recognised. The label also carries no allergen from the screened categories, so nothing is missed in substance.",
+      "must_not_report": [],
+      "notes": "Also carries a tartrazine warning about children's activity and attention, which is a food safety statement and not screened here."
+    }
+  ]
+}

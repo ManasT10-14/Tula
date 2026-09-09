@@ -70,6 +70,8 @@ def label(
     gtin: str | None,
     hindi: bool = False,
     qty_box_px: int = 56,
+    ingredients: str | None = None,
+    contains: str | None = None,
 ) -> str:
     """Compose a fixture label. Geometry matters: the net-quantity box height
     drives the Rule 8 measurement, so a small box is a real violation."""
@@ -100,6 +102,13 @@ def label(
         add(f"Consumer Care: {care}")
     if origin:
         add(origin)
+    # Ingredients feed the allergen referral, which is a food safety
+    # observation rather than a Legal Metrology finding. A demonstration
+    # without one leaves half the record page empty.
+    if ingredients:
+        add(f"Ingredients: {ingredients}", 44)
+    if contains:
+        add(contains, 44)
     if gtin:
         add(gtin)
     return "\n".join(rows) + "\n"
@@ -205,6 +214,8 @@ CASES = [
          "qty": "200 g", "mrp": "Rs. 45.00 inclusive of all taxes",
          "unit_price": "Rs. 0.23 per g", "brand": "Suraj Gold", "generic": "Biscuits",
          "gtin": "8904321567896", "hindi": True, "qty_box_px": 96,
+         "ingredients": "Refined wheat flour, sugar, edible vegetable oil, milk solids, cashew paste, invert syrup, raising agent (INS 500ii), salt",
+         "contains": "Contains: Milk. May contain traces of peanuts.",
          "mfr": "Suraj Foods Ltd", "address": "Sector 63, Noida 201301",
          "region": "New Delhi", "geo": (28.6139, 77.2090), "settle": "approve",
          "context": {"category": "food", "shape": "rectangular"}},
@@ -212,6 +223,7 @@ CASES = [
          "qty": "5 kg", "mrp": "Rs. 285.00 inclusive of all taxes",
          "unit_price": "Rs. 57.00 per kg", "brand": "Annapurna Mills", "generic": "Wheat flour",
          "gtin": "8905671234568", "hindi": True, "qty_box_px": 120,
+         "ingredients": "Whole wheat, added dietary fibre",
          "mfr": "Annapurna Mills Pvt Ltd", "address": "Peenya Industrial Area, Bengaluru 560058",
          "width_mm": 220, "height_mm": 340,
          "region": "Bengaluru", "geo": (12.9716, 77.5946), "settle": "approve",
@@ -227,6 +239,7 @@ CASES = [
          "qty": "50 g", "mrp": "Rs. 38.00 inclusive of all taxes",
          "unit_price": "Rs. 0.76 per g", "brand": "Deccan Spice", "generic": "Chilli powder",
          "gtin": "8908765432109", "hindi": True, "qty_box_px": 62,
+         "ingredients": "Red chilli, edible common salt, permitted anticaking agent (INS 551)",
          "mfr": "Deccan Spice Company", "address": "Balanagar, Hyderabad 500037",
          "region": "Hyderabad", "geo": (17.3850, 78.4867), "settle": "submit",
          "context": {"category": "food", "shape": "other"}},
@@ -361,6 +374,8 @@ def main() -> int:
             gtin=case.get("gtin"),
             hindi=case.get("hindi", False),
             qty_box_px=case.get("qty_box_px", 56),
+            ingredients=case.get("ingredients"),
+            contains=case.get("contains"),
         )
         image = stem.with_suffix(".png")
         stem.with_suffix(".txt").write_text(sidecar, encoding="utf-8")
