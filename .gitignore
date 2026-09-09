@@ -42,3 +42,6 @@ Thumbs.db
 data/evaluation/additional-real-labels/nestle-india-box.jpg
 data/evaluation/additional-real-labels/nestle-india-tin.png
 data/evaluation/additional-real-labels/visual-crops/can-raw-900-1500.png
+
+# Local conda env
+env/
