@@ -273,7 +273,7 @@ small{display:block;color:var(--text-muted);margin:6px 0;font-size:12.5px;line-h
 pre{white-space:pre-wrap;overflow-wrap:anywhere;max-width:450px}
 code{overflow-wrap:anywhere}
 footer{max-width:1240px;margin:0 auto;padding:18px 36px 40px;color:var(--text-muted);font-size:12px}
-</style></head><body><header class="auth"><strong>TATVA</strong><nav aria-label="Account navigation">''' + navigation + '''</nav></header><main>''' + body + '''</main><footer>Legal Metrology Inspection Platform · Evidence, review and accountable decisions</footer></body></html>''')
+</style></head><body><header class="auth"><img src="/static/logo.png" alt="TATVA" style="height: 36px; width: auto; object-fit: contain;"><nav aria-label="Account navigation">''' + navigation + '''</nav></header><main>''' + body + '''</main><footer>Legal Metrology Inspection Platform · Evidence, review and accountable decisions</footer></body></html>''')
 
 
 def _hidden(token: str) -> str:
