@@ -20,7 +20,10 @@ from .store import SESSION_SECONDS, AuthenticationError, RateLimited, SecuritySt
 SESSION_COOKIE = "tula_session"
 LOGIN_CSRF_COOKIE = "tula_login_csrf"
 SAFE_METHODS = frozenset({"GET", "HEAD", "OPTIONS"})
-PUBLIC_PATHS = frozenset({"/login", "/healthz"})
+# /sw.js is the installed console's service worker. It has to be fetchable before
+# sign-in for the app to install at all, and it carries no data: it caches only
+# /static/, which is public already.
+PUBLIC_PATHS = frozenset({"/login", "/healthz", "/sw.js"})
 _MAX_FORM_BYTES = 64 * 1024
 _MAX_BODY_BYTES = 302 * 1024 * 1024
 
@@ -219,7 +222,23 @@ def _page(title: str, body: str, user: User | None = None) -> HTMLResponse:
         navigation += '<a href="/admin/users">Accounts</a><a href="/admin/audit">Audit log</a>'
     return HTMLResponse('''<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>''' + escape(title) + ''' · Tula</title>
+<link rel="manifest" href="/static/manifest.webmanifest">
+<meta name="theme-color" content="#0b1624">
+<link rel="icon" href="/static/icons/icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tula">
 <link rel="stylesheet" href="/static/console.css">
+<script>
+/* Sign-in is the first page an officer reaches, so the install prompt and the
+   shell cache have to be available here and not only behind authentication.
+   console.js is not loaded on these plain pages; this is the same registration. */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function () {});
+  });
+}
+</script>
 <style>
 header.auth{background:var(--rail);color:var(--rail-ink);padding:14px 30px;display:flex;align-items:center;
   gap:26px;flex-wrap:wrap;box-shadow:inset 0 3px 0 var(--brass)}

@@ -240,7 +240,9 @@ def check(args, evidence):
     package = Path(importlib.import_module("tula").__file__).parent
     for relative in ("web/templates/inspection.html", "web/templates/api_docs.html", "web/templates/processing.html",
                      "web/templates/index.html", "web/static/capture.js", "web/static/review.js",
-                     "web/static/console.css", "web/static/htmx.min.js"):
+                     "web/static/console.css", "web/static/htmx.min.js",
+                     "web/static/sw.js", "web/static/manifest.webmanifest",
+                     "web/static/offline.html", "web/static/icons/icon-192.png"):
         require((package / relative).is_file(), f"Installed asset missing: {relative}")
     evidence["installed_assets"] = [p.relative_to(package).as_posix()
                                    for folder in ("web/templates", "web/static")
@@ -389,7 +391,9 @@ def check(args, evidence):
         with closing(inspector):
             require(inspector.get("/admin/users").status_code == 403, "Inspector could access administration")
             pages = ("/", "/dashboard", "/repository", "/processing", "/rules", "/bench", "/docs", "/openapi.json",
-                     "/static/console.css", "/static/capture.js", "/static/review.js", "/static/htmx.min.js")
+                     "/static/console.css", "/static/capture.js", "/static/review.js", "/static/htmx.min.js",
+                     "/sw.js", "/static/manifest.webmanifest", "/static/offline.html",
+                     "/static/icons/icon-192.png")
             evidence["http_pages"] = {page: inspector.get(page).status_code for page in pages}
             require(all(code == 200 for code in evidence["http_pages"].values()), "Installed asset or page failed")
             context = {"category": "cosmetic", "category_confirmed": True, "bundle_type": "single",

@@ -112,3 +112,14 @@ document.addEventListener('htmx:configRequest', event => {event.detail.headers['
     }
   });
 })();
+
+/* Install the console as an app on a handset.
+   navigator.serviceWorker is undefined outside a secure context, so this is a
+   no-op over LAN HTTP -- which never reaches a page anyway, since the transport
+   policy answers 426 there. Registration failure is not worth troubling an
+   officer with: the console works identically without it. */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => {});
+  });
+}

@@ -1,0 +1,50 @@
+# Caddy in front of Tula, terminating HTTPS with an automatic Let's Encrypt
+# certificate. Replace tula.example.org with the real hostname and reload:
+#
+#     sudo caddy validate --config /etc/caddy/Caddyfile
+#     sudo systemctl reload caddy
+#
+# A real certificate is not only about the padlock here. The console refuses
+# plain HTTP from anything but loopback, and browsers refuse to register a
+# service worker on an origin with certificate errors -- so the app installs to
+# a phone's home screen behind this and not behind a self-signed certificate.
+# The public hostname is also why the deployment needs a real domain rather than
+# a bare IP address: Let's Encrypt does not issue for IPs.
+
+tula.example.org {
+	# Uvicorn binds loopback only, so nothing but this proxy can reach it, and
+	# its forwarded headers are trusted from 127.0.0.1 alone. Caddy sets
+	# X-Forwarded-Proto itself and strips any copy a client sent, which is what
+	# stops an internet peer from claiming HTTPS to get past the transport check.
+	reverse_proxy 127.0.0.1:8000 {
+		# OCR runs in a background worker so uploads return promptly, but PDF
+		# and DOCX rendering is synchronous and embeds evidence crops.
+		transport http {
+			read_timeout 300s
+			write_timeout 300s
+		}
+		# Uvicorn names itself in every response. A top-level `header -Server`
+		# does not reach this: the directive runs before reverse_proxy, so it
+		# never sees the upstream's headers.
+		header_down -Server
+	}
+
+	# Package images: 25 MB each, up to twelve faces per inspection. The
+	# application enforces its own limits and rejects the rest.
+	request_body {
+		max_size 320MB
+	}
+
+	encode zstd gzip
+
+	# The application sets its own Cache-Control, CSP, HSTS and frame policy per
+	# response; do not add competing copies here.
+
+	log {
+		# Tula emits its own privacy-bounded JSON events and deliberately keeps
+		# query strings out of them. Apply the same policy to the proxy log
+		# rather than recording raw URLs beside it.
+		output file /var/log/caddy/tula.log
+		format json
+	}
+}

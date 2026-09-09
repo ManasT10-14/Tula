@@ -25,6 +25,11 @@ The demonstration accounts from `scripts/seed_demo.py` are the ones to sign in
 with, and the README's warning applies with more force here than on loopback --
 this port is reachable by everything on the network, so delete those accounts or
 change their passwords when you are finished.
+
+This serves the console to a phone; it does not install one. Browsers refuse to
+register a service worker on an origin with certificate errors, so the pages and
+the camera work here but "Add to home screen" will not produce the standalone app.
+That needs a certificate the phone actually trusts -- see `deploy/` in the README.
 """
 
 from __future__ import annotations
