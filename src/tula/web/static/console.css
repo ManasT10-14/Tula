@@ -624,7 +624,7 @@ pre { overflow-x: auto; background: var(--surface-muted); padding: 10px 12px; bo
   .app { grid-template-columns: 1fr; }
   .rail { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--chrome-border); flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px; padding: 0 16px 12px; }
   .rail-brand { flex: 1 1 auto; border-bottom: 0; padding: 14px 0 10px; justify-content: flex-start; margin-bottom: 0; }
-  .brand-logo { width: auto; max-width: 130px; height: 32px; transform: scale(1); }
+  .brand-logo { width: auto; max-width: 160px; height: 38px; transform: scale(1.35); transform-origin: left center; }
   .rail-primary { flex: 0 0 auto; padding: 0; }
   .navgroup { padding: 0; }
   .navgroup h2 { display: none; }
