@@ -223,11 +223,14 @@ def _page(title: str, body: str, user: User | None = None) -> HTMLResponse:
     return HTMLResponse('''<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>''' + escape(title) + ''' · Tula</title>
 <link rel="manifest" href="/static/manifest.webmanifest">
-<meta name="theme-color" content="#0b1624">
+<meta name="theme-color" content="#f8fafc">
 <link rel="icon" href="/static/icons/icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Tula">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/static/console.css">
 <script>
 /* Sign-in is the first page an officer reaches, so the install prompt and the
@@ -240,27 +243,27 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 <style>
-header.auth{background:var(--rail);color:var(--rail-ink);padding:14px 30px;display:flex;align-items:center;
-  gap:26px;flex-wrap:wrap;box-shadow:inset 0 3px 0 var(--brass)}
-header.auth strong{font-family:var(--f-display);font-size:20px;letter-spacing:-.3px}
+header.auth{background:var(--chrome-bg);color:var(--chrome-text-hover);padding:14px 30px;display:flex;align-items:center;
+  gap:26px;flex-wrap:wrap;border-bottom:1px solid var(--chrome-border)}
+header.auth strong{font-family:var(--font-sans);font-size:20px;letter-spacing:-.3px;color:var(--text-primary)}
 header.auth nav{display:flex;gap:18px;flex-wrap:wrap;font-size:13px}
-header.auth a{color:var(--rail-ink);text-decoration:none}
+header.auth a{color:var(--chrome-text-hover);text-decoration:none}
 header.auth a:hover{text-decoration:underline}
 main{max-width:1180px;margin:0 auto;padding:30px 30px 60px}
 .narrow{max-width:460px;margin:8vh auto}
 .card{margin:18px 0}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
-.error{background:var(--bad-soft);color:var(--bad);border-left:3px solid var(--bad);padding:12px 15px;
-  border-radius:0 var(--r) var(--r) 0;font-size:13px}
-.success{background:var(--ok-soft);color:var(--ok);padding:12px 15px;border-radius:var(--r);font-size:13px}
+.error{background:var(--status-danger-bg);color:var(--status-danger-text);border-left:3px solid var(--status-danger-border);padding:12px 15px;
+  border-radius:0 var(--radius-md) var(--radius-md) 0;font-size:13px}
+.success{background:var(--status-success-bg);color:var(--status-success-text);padding:12px 15px;border-radius:var(--radius-md);font-size:13px}
 .table-wrap{overflow-x:auto}
 td input,td select{min-width:115px}
 form button{margin-top:12px}
 td button,form.row button{margin-top:0}
-small{display:block;color:var(--muted);margin:5px 0;font-size:12px}
+small{display:block;color:var(--text-muted);margin:5px 0;font-size:12px}
 pre{white-space:pre-wrap;overflow-wrap:anywhere;max-width:450px}
 code{overflow-wrap:anywhere}
-footer{max-width:1180px;margin:0 auto;padding:18px 30px 40px;color:var(--muted);font-size:12px}
+footer{max-width:1180px;margin:0 auto;padding:18px 30px 40px;color:var(--text-muted);font-size:12px}
 </style></head><body><header class="auth"><strong>Tula</strong><nav aria-label="Account navigation">''' + navigation + '''</nav></header><main>''' + body + '''</main><footer>Legal Metrology Inspection Platform · Evidence, review and accountable decisions</footer></body></html>''')
 
 
