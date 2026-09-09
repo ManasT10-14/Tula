@@ -75,13 +75,13 @@
   --surface-overlay:      rgba(15, 23, 42, 0.6);
 
   /* Navigational Chrome (Sidebar & App Frame) */
-  --chrome-bg:            var(--slate-900);
-  --chrome-border:        var(--slate-800);
-  --chrome-text:          var(--slate-400);
-  --chrome-text-hover:    #ffffff;
-  --chrome-item-hover:    var(--slate-800);
-  --chrome-item-active:   var(--slate-800);
-  --chrome-active-accent: var(--blue-400);
+  --chrome-bg:            var(--slate-50);
+  --chrome-border:        var(--slate-200);
+  --chrome-text:          var(--slate-600);
+  --chrome-text-hover:    var(--slate-900);
+  --chrome-item-hover:    var(--slate-100);
+  --chrome-item-active:   #ffffff;
+  --chrome-active-accent: var(--blue-600);
   --chrome-section-label: var(--slate-500);
 
   /* Typography Colors */
@@ -355,7 +355,7 @@ input[type=checkbox], input[type=radio] { width: auto; padding: 0; margin: 0 6px
 .rail { background-color: var(--chrome-bg); color: var(--chrome-text); display: flex; flex-direction: column; border-right: 1px solid var(--chrome-border); position: sticky; top: 0; height: 100vh; overflow-y: auto; }
 .rail-brand { display: flex; align-items: center; gap: 10px; padding: 18px 20px 16px; border-bottom: 1px solid var(--chrome-border); text-decoration: none; color: var(--chrome-text-hover); }
 .rail-mark { width: 34px; height: 34px; flex: 0 0 34px; border-radius: 8px; background: var(--amber-600); color: #fff; display: grid; place-items: center; font-size: 17px; font-weight: 700; line-height: 1; }
-.rail-brand b { font-family: var(--font-sans); font-size: 17px; font-weight: 700; letter-spacing: -0.2px; display: block; color: var(--text-inverse); }
+.rail-brand b { font-family: var(--font-sans); font-size: 17px; font-weight: 700; letter-spacing: -0.2px; display: block; color: var(--text-primary); }
 .rail-brand small { display: block; font-size: 11px; color: var(--chrome-section-label); letter-spacing: 0.2px; }
 .rail-primary { padding: 16px 14px 6px; }
 .rail-primary a { display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--blue-600); color: #ffffff; font-weight: 650; text-decoration: none; padding: 10px 14px; border-radius: var(--radius-md); font-size: 13.5px; transition: filter 0.15s; }
@@ -462,11 +462,11 @@ a.tile:hover span { color: var(--blue-600); }
 
 /* Charts */
 .bar { height: 8px; background: var(--surface-muted); border-radius: 4px; overflow: hidden; min-width: 60px; }
-.bar i { display: block; height: 100%; background: var(--blue-500); }
+.bar i { display: block; height: 100%; background: var(--emerald-500); }
 .chart-row { display: grid; grid-template-columns: minmax(104px, 1fr) 2fr 40px; gap: 12px; font-size: 12.5px; align-items: center; margin: 10px 0; }
 .chart-row > * { min-width: 0; overflow-wrap: anywhere; }
 .chart-row b { white-space: nowrap; font-variant-numeric: tabular-nums; }
-.chart-row .bar i.clear { background: var(--blue-500); }
+.chart-row .bar i.clear { background: var(--emerald-500); }
 .chart-row .bar i.flagged { background: var(--amber-500); }
 .chart-row.region-row { grid-template-columns: minmax(110px, 1fr) 2fr 58px; }
 .chart-row.region-row b { text-align: right; }
