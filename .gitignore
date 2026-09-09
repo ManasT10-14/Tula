@@ -45,3 +45,6 @@ data/evaluation/additional-real-labels/visual-crops/can-raw-900-1500.png
 
 # Local conda env
 env/
+
+# Local style guides
+universal_css_light_theme_style_guide_non_hardcoded.md
