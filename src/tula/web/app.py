@@ -394,6 +394,22 @@ def healthz():
             "rules": len(rules.pack.rules)}
 
 
+@app.get("/sw.js", include_in_schema=False)
+def service_worker():
+    """The installed console's service worker, served from the root.
+
+    A worker's default scope is the directory it is served from, so the copy
+    under /static/ could only control /static/. Serving the same file here gives
+    it the whole origin without a Service-Worker-Allowed header. It caches the
+    shell and refuses to store casework; see the file for why.
+
+    The middleware's "no-store, private" applies here as it does to any path
+    outside /static/, which is what a worker script wants anyway: the browser
+    re-fetches it to detect updates rather than serving a stale copy.
+    """
+    return FileResponse(BASE / "static" / "sw.js", media_type="text/javascript")
+
+
 @app.get("/inspections/{scan_id}/frames/{index}")
 def evidence_frame(scan_id: str, index: int):
     analysis = repo.get(scan_id)

@@ -19,7 +19,8 @@ tula = "tula.cli:main"
 dependencies = {file = ["requirements.txt"]}
 
 [tool.setuptools.package-data]
-"tula.web" = ["templates/*.html", "static/*.js", "static/*.css", "static/*.txt"]
+"tula.web" = ["templates/*.html", "static/*.js", "static/*.css", "static/*.txt",
+              "static/*.html", "static/*.webmanifest", "static/icons/*.png"]
 
 [tool.setuptools.data-files]
 "share/tula/rules/lmpcr-2011" = ["rules/lmpcr-2011/*.json"]

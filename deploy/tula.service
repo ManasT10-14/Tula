@@ -1,0 +1,71 @@
+# systemd unit for the Tula console. Install to /etc/systemd/system/tula.service,
+# adjust the three paths below, then:
+#
+#     sudo systemctl daemon-reload
+#     sudo systemctl enable --now tula
+#     systemctl status tula
+#
+# Expects a dedicated unprivileged account and a virtual environment:
+#
+#     sudo useradd --system --home /srv/tula --shell /usr/sbin/nologin tula
+#     sudo -u tula python3 -m venv /srv/tula/venv
+#     sudo -u tula /srv/tula/venv/bin/pip install /path/to/tula-0.1.0-py3-none-any.whl
+#     sudo -u tula TULA_DATA_DIR=/srv/tula/data /srv/tula/venv/bin/python -m tula.security \
+#          bootstrap --username your.admin --display-name "Deployment Administrator"
+#
+# Bootstrap once, before first start. TULA_DATA_DIR must be identical here and
+# at bootstrap, or the service will look for a database that is not there.
+
+[Unit]
+Description=Tula Legal Metrology console
+Documentation=https://github.com/ManasT10-14/Tula
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=exec
+User=tula
+Group=tula
+WorkingDirectory=/srv/tula
+
+# Database, original images, working images and generated reports all live here.
+# It must be on persistent storage: evidence is verified by SHA-256 against
+# these files, so losing them invalidates every report that cites them.
+Environment=TULA_DATA_DIR=/srv/tula/data
+
+# Bind loopback. Caddy is the only thing that should reach this port, and
+# Uvicorn trusts forwarded headers from 127.0.0.1 alone -- binding a public
+# interface would let a peer present its own X-Forwarded-Proto.
+ExecStart=/srv/tula/venv/bin/python -m uvicorn tula.web.app:app \
+    --host 127.0.0.1 --port 8000 \
+    --forwarded-allow-ips 127.0.0.1 \
+    --no-access-log
+
+# The inspection worker holds SQLite leases and may be mid-OCR. SIGINT is
+# Uvicorn's graceful shutdown; give the worker room to finish or release its
+# lease, because a killed job has to be retried by hand from Processing.
+KillSignal=SIGINT
+TimeoutStopSec=120
+Restart=on-failure
+RestartSec=5
+
+# Hardening. The runtime directory is the only writable path the service needs.
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/srv/tula/data
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+LockPersonality=yes
+RestrictSUIDSGID=yes
+# Left permissive deliberately: ONNX Runtime, which is what actually reads the
+# labels, allocates writable-executable pages. Setting this to yes stops OCR.
+MemoryDenyWriteExecute=no
+
+[Install]
+WantedBy=multi-user.target

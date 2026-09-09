@@ -34,6 +34,93 @@ It provisions `demo.admin`, `demo.inspector` and `demo.supervisor` (password `Tu
 
 These accounts exist for a loopback walkthrough. **Delete them or change their passwords before exposing the application to anything but localhost**, and re-run with `--reset` to discard seeded records.
 
+### On a phone
+
+The console is responsive and the capture page is built for a handset, but a phone
+cannot reach a loopback bind, and pointing it at `http://<laptop-ip>:8000` does not
+work either: every page except `/healthz` answers **426** with "Use HTTPS to sign in
+or access inspection data". That is `SecurityMiddleware` refusing plain HTTP from a
+non-loopback address, and it is the intended behaviour. The camera needs the same
+fix for its own reason — `getUserMedia` is undefined outside a secure context, so
+"Use camera" cannot work over LAN HTTP whatever the server allows.
+
+HTTPS settles both. Serve the console with a self-signed certificate named for this
+machine's network address:
+
+```powershell
+python scripts/serve_phone.py
+```
+
+It prints the URL to open on a phone joined to the same Wi-Fi. The certificate is
+self-signed, so the browser warns once and you accept it; the connection is then
+encrypted but unauthenticated, which is why this is for trying the console on a
+network you trust and not a deployment. Certificates are written under `out/`, which
+is git-ignored. The warning about the demonstration accounts above applies with more
+force here, because this port is reachable by every device on the network.
+
+Verified on a 412 x 839 handset viewport: sign-in, capture with staged uploads and
+per-image panel/rotate/crop controls, live camera preview, a full analysis through
+real RapidOCR, the five record tabs, evidence images, and PDF/DOCX/JSON export. Wide
+tables scroll inside their own containers rather than the page. Physical-device
+testing across real iOS and Android browsers remains outstanding; the checks above
+were made under mobile emulation.
+
+`serve_phone.py` is for trying the console on a handset, not for installing it.
+Browsers refuse to register a service worker on an origin with certificate errors,
+so the self-signed certificate reaches the pages and the camera but not the home
+screen. Installing needs a real certificate, which means the deployment below.
+
+### Installing it on a phone
+
+Behind a trusted certificate the console is an installable progressive web app:
+"Add to home screen" gives it a launcher icon and a standalone window with no
+address bar. What it does **not** do is work offline. Recognition, the rule pack
+and the evidence record are all server-side, and every casework response carries
+`Cache-Control: no-store, private` because it may hold label images, recognised
+text or inspection records. The service worker therefore caches the interface and
+refuses to store anything else; offline navigation reaches a page that says so.
+Saved capture drafts stay on the server and are unaffected.
+
+Verified against the deployment below: the worker registers at root scope, only
+`/static/` assets enter the cache after visiting the dashboard and the record
+repository, offline navigation reaches the explanatory page, and the console
+recovers when the connection returns.
+
+## Deploy
+
+Tula keeps its database, evidence images and generated reports on local disk, and
+drains its inspection queue with worker threads holding SQLite leases. It is a
+single-node application: it needs one machine with persistent storage, not a
+serverless target and not several replicas behind a load balancer. Report evidence
+is verified by SHA-256 against those files, so an ephemeral filesystem invalidates
+every report that cites them. Budget around 2 GB of memory and real CPU -- the
+recogniser is CPU-bound ONNX inference.
+
+`deploy/` holds a worked example for an Ubuntu or Debian host:
+
+```powershell
+sudo cp deploy/tula.service /etc/systemd/system/tula.service
+sudo cp deploy/Caddyfile /etc/caddy/Caddyfile     # edit the hostname first
+sudo systemctl daemon-reload && sudo systemctl enable --now tula
+sudo systemctl reload caddy
+```
+
+Caddy terminates HTTPS with an automatic Let's Encrypt certificate and proxies to
+Uvicorn on loopback. Both halves matter. The console answers 426 to plain HTTP from
+any non-loopback address, so it only works at all once the proxy presents
+`X-Forwarded-Proto: https`; and Uvicorn trusts that header from 127.0.0.1 alone,
+which is why the unit binds loopback rather than a public interface. Point it at a
+real hostname: Let's Encrypt does not issue certificates for bare IP addresses.
+
+Before it faces anyone, delete the demonstration accounts or change their
+passwords, and read [authentication and deployment](docs/SECURITY.md) -- there is
+no MFA, no SSO and no email password recovery, so accounts are administrator-
+provisioned and an administrator is the only route back into a locked-out one.
+
+Nothing here changes the standing caveats: the rule pack is draft and awaits
+independent legal sign-off, citizen and marketplace findings are advisory, and
+machine findings require officer verification.
+
 Tula emits privacy-bounded JSON operational events for HTTP requests, inspection stages and report generation. Each response carries `X-Request-ID`; background inspection events retain the originating upload request ID. Use it to correlate a user's error with service logs. Raw URLs, query strings, OCR text, filenames, evidence paths, cookies and passwords are excluded. The application suppresses Uvicorn's duplicate raw access line; keep `--no-access-log` explicit and apply the same query-string policy to any reverse proxy.
 
 `TULA_DATA_DIR` selects a separate runtime directory for the web app and default bootstrap database. Source checkouts default to the repository; installed wheels default to `~/.tula`. Set this variable consistently before provisioning and starting the server. Bootstrap also accepts an explicit `--database` path. Keep the database, originals and working images together. See [authentication and deployment](docs/SECURITY.md) for roles, password management and HTTPS requirements outside loopback.
