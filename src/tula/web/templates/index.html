@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}New inspection · Tula{% endblock %}
+{% block title %}New inspection · TATVA{% endblock %}
 {% block content %}
 {% set prior = rescan_record if rescan_record is defined else none %}
 <div class="page-heading"><div><p class="eyebrow">Legal Metrology · Inspection workspace</p><h1>Every declaration. Backed by evidence.</h1><p class="lede">Capture the faces of one package. Review what the system reads, resolve uncertainties and submit an inspection for approval.</p></div><a class="button-link secondary" href="/repository">Inspection records ↗</a></div>
@@ -29,7 +29,7 @@
 
 <details class="drawer" style="margin:4px 0 0"><summary>Optional details <span class="hint">coordinates, allergens, package facts, panel size</span></summary>
 
-<div class="field location-capture" aria-labelledby="location-heading" style="margin-top:14px"><p id="location-heading" class="small" style="font-weight:600;margin-bottom:7px">Inspection coordinates</p><input id="geo" name="geo" type="hidden"><div class="row"><button id="record-location" type="button" class="ghost compact">Record device location</button><button id="clear-location" type="button" class="ghost compact" hidden>Clear recorded location</button></div><p id="location-status" class="small muted" role="status" aria-live="polite">No coordinates recorded. Location access is requested only after you select the button.</p><p class="small muted">The browser captures one coordinate pair for this inspection; Tula does not track the device continuously. Exact coordinates are retained in the inspection evidence. Dashboard points are rounded to about 100 metres.</p></div>
+<div class="field location-capture" aria-labelledby="location-heading" style="margin-top:14px"><p id="location-heading" class="small" style="font-weight:600;margin-bottom:7px">Inspection coordinates</p><input id="geo" name="geo" type="hidden"><div class="row"><button id="record-location" type="button" class="ghost compact">Record device location</button><button id="clear-location" type="button" class="ghost compact" hidden>Clear recorded location</button></div><p id="location-status" class="small muted" role="status" aria-live="polite">No coordinates recorded. Location access is requested only after you select the button.</p><p class="small muted">The browser captures one coordinate pair for this inspection; TATVA does not track the device continuously. Exact coordinates are retained in the inspection evidence. Dashboard points are rounded to about 100 metres.</p></div>
 
 <div class="field"><label for="concerns">Allergens to highlight</label><input id="concerns" name="concerns" maxlength="600" placeholder="e.g. milk, peanuts, soy, gluten"><p class="small muted" style="margin-top:6px">Informational ingredient matching, with source text and uncertainty.</p></div>
 

@@ -276,7 +276,7 @@ def write_notice(analysis: Analysis, path: str | Path, *, premises: str = "") ->
 def _page_footer(doc, analysis):
     for section in doc.sections:
         paragraph = section.footer.paragraphs[0]
-        _run(paragraph, f"Tula | {analysis.scan.scan_id} | Revision {analysis.review.revision} | Page ", size=8, colour=_MUTED)
+        _run(paragraph, f"TATVA | {analysis.scan.scan_id} | Revision {analysis.review.revision} | Page ", size=8, colour=_MUTED)
         field = OxmlElement("w:fldSimple")
         field.set(qn("w:instr"), "PAGE")
         paragraph._p.append(field)

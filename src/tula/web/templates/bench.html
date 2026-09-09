@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Bench · Tula{% endblock %}
+{% block title %}Bench · TATVA{% endblock %}
 {% block content %}
 
 <div class="lab-banner">
@@ -31,8 +31,8 @@ re-run, and see which clause moves.</p>
       <p class="eyebrow" style="margin:0">Presets</p>
       <div class="row" style="gap:.4rem">
         {% for s in scenarios %}
-        <button type="button" class="ghost preset" data-key="{{ s.key }}"
-                style="font-size:.72rem;padding:.3rem .55rem" title="{{ s.proves }}">{{ s.key }}</button>
+        <button type="button" class="preset" data-key="{{ s.key }}"
+                style="font-size:12.5px;padding:6px 14px;border-radius:20px;background:var(--surface-subtle);color:var(--text-secondary);border:1px solid var(--border-subtle);box-shadow:var(--shadow-xs);transition:all 0.15s;" title="{{ s.proves }}">{{ s.key|replace('_',' ') }}</button>
         {% endfor %}
       </div>
 
@@ -156,13 +156,13 @@ re-run, and see which clause moves.</p>
         </select>
       </div>
 
-      <div class="row" style="margin-top:.3rem">
-        <label style="display:flex;align-items:center;gap:.4rem;text-transform:none;letter-spacing:0;font-family:var(--f-body);font-size:.88rem;color:var(--ink)">
-          <input type="checkbox" name="tax_clause" value="on" checked style="width:auto">
+      <div class="row" style="margin-top:10px;gap:16px;">
+        <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:13.5px;color:var(--text-primary);font-weight:500;">
+          <input type="checkbox" name="tax_clause" value="on" checked style="width:auto;margin:0;">
           “inclusive of all taxes”
         </label>
-        <label style="display:flex;align-items:center;gap:.4rem;text-transform:none;letter-spacing:0;font-family:var(--f-body);font-size:.88rem;color:var(--ink)">
-          <input type="checkbox" name="hindi_net_qty" value="on" checked style="width:auto">
+        <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:13.5px;color:var(--text-primary);font-weight:500;">
+          <input type="checkbox" name="hindi_net_qty" value="on" checked style="width:auto;margin:0;">
           Devanagari net quantity
         </label>
       </div>
@@ -173,13 +173,13 @@ re-run, and see which clause moves.</p>
         field above, then switch these, to see the same missing declaration read as a
         violation or as undetermined.
       </p>
-      <div class="row">
-        <label style="display:flex;align-items:center;gap:.4rem;text-transform:none;letter-spacing:0;font-family:var(--f-body);font-size:.88rem;color:var(--ink)">
-          <input type="checkbox" name="covers_all_declarations" value="on" checked style="width:auto">
+      <div class="row" style="margin-top:8px;gap:16px;">
+        <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:13.5px;color:var(--text-primary);font-weight:500;">
+          <input type="checkbox" name="covers_all_declarations" value="on" checked style="width:auto;margin:0;">
           Whole package captured
         </label>
-        <label style="display:flex;align-items:center;gap:.4rem;text-transform:none;letter-spacing:0;font-family:var(--f-body);font-size:.88rem;color:var(--ink)">
-          <input type="checkbox" name="blank_panel" value="on" style="width:auto">
+        <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:13.5px;color:var(--text-primary);font-weight:500;">
+          <input type="checkbox" name="blank_panel" value="on" style="width:auto;margin:0;">
           Unreadable frame — draw nothing
         </label>
       </div>

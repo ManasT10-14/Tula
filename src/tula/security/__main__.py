@@ -12,7 +12,7 @@ from .store import SecurityStore
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Tula account administration")
+    parser = argparse.ArgumentParser(description="TATVA account administration")
     commands = parser.add_subparsers(dest="command", required=True)
     bootstrap = commands.add_parser("bootstrap", help="Create the first administrator only")
     bootstrap.add_argument("--database", type=Path,

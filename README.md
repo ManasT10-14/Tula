@@ -1,4 +1,4 @@
-# Tula · तुला
+# TATVA · तुला
 
 A local SIH prototype for screening packaged-commodity labels using CPU OCR, declaration extraction, measured character heights, draft rules and evidence reports.
 
@@ -88,7 +88,7 @@ recovers when the connection returns.
 
 ## Deploy
 
-Tula keeps its database, evidence images and generated reports on local disk, and
+TATVA keeps its database, evidence images and generated reports on local disk, and
 drains its inspection queue with worker threads holding SQLite leases. It is a
 single-node application: it needs one machine with persistent storage, not a
 serverless target and not several replicas behind a load balancer. Report evidence
@@ -121,7 +121,7 @@ Nothing here changes the standing caveats: the rule pack is draft and awaits
 independent legal sign-off, citizen and marketplace findings are advisory, and
 machine findings require officer verification.
 
-Tula emits privacy-bounded JSON operational events for HTTP requests, inspection stages and report generation. Each response carries `X-Request-ID`; background inspection events retain the originating upload request ID. Use it to correlate a user's error with service logs. Raw URLs, query strings, OCR text, filenames, evidence paths, cookies and passwords are excluded. The application suppresses Uvicorn's duplicate raw access line; keep `--no-access-log` explicit and apply the same query-string policy to any reverse proxy.
+TATVA emits privacy-bounded JSON operational events for HTTP requests, inspection stages and report generation. Each response carries `X-Request-ID`; background inspection events retain the originating upload request ID. Use it to correlate a user's error with service logs. Raw URLs, query strings, OCR text, filenames, evidence paths, cookies and passwords are excluded. The application suppresses Uvicorn's duplicate raw access line; keep `--no-access-log` explicit and apply the same query-string policy to any reverse proxy.
 
 `TULA_DATA_DIR` selects a separate runtime directory for the web app and default bootstrap database. Source checkouts default to the repository; installed wheels default to `~/.tula`. Set this variable consistently before provisioning and starting the server. Bootstrap also accepts an explicit `--database` path. Keep the database, originals and working images together. See [authentication and deployment](docs/SECURITY.md) for roles, password management and HTTPS requirements outside loopback.
 

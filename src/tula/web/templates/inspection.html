@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% import "_section.html" as sec with context %}
-{% block title %}{{ a.scan.scan_id }} · Tula{% endblock %}
+{% block title %}{{ a.scan.scan_id }} · TATVA{% endblock %}
 {% block content %}
 {% set can_review = request is defined and request.state.user is defined and (request.state.user.role in ['admin','supervisor'] or a.scan.inspector_id == request.state.user.id) %}
 {% set declaration_titles = ['Declarations extracted','Applicability and exemptions','Measurement annexe'] %}

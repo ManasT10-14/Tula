@@ -1,6 +1,6 @@
-# Operating, backing up and restoring Tula
+# Operating, backing up and restoring TATVA
 
-This procedure is for the single SQLite runtime used by the web application and account administration. Run maintenance from an installed Tula environment outside the runtime being restored. Keep the matching application wheel/source release and its dependency versions separately; the runtime archive is not an application installer.
+This procedure is for the single SQLite runtime used by the web application and account administration. Run maintenance from an installed TATVA environment outside the runtime being restored. Keep the matching application wheel/source release and its dependency versions separately; the runtime archive is not an application installer.
 
 ## Choose and retain the runtime location
 
@@ -26,7 +26,7 @@ The bootstrap command prompts for a password and refuses to replace existing acc
 
 ## Correlate requests, background analysis and reports
 
-Tula writes compact JSON operational events through Python logging. Each HTTP response carries an `X-Request-ID`. A valid caller-supplied ID is retained; otherwise the service creates one. The upload request ID is stored with its private queued job and appears on later `inspection_started`, stage, completion or failure events, even though OCR runs in another thread. Report start/completion/failure events include inspection ID, format, revision, duration and the retained artifact ID where applicable.
+TATVA writes compact JSON operational events through Python logging. Each HTTP response carries an `X-Request-ID`. A valid caller-supplied ID is retained; otherwise the service creates one. The upload request ID is stored with its private queued job and appears on later `inspection_started`, stage, completion or failure events, even though OCR runs in another thread. Report start/completion/failure events include inspection ID, format, revision, duration and the retained artifact ID where applicable.
 
 These operational events omit request bodies, query strings, OCR transcriptions, filenames, evidence paths, cookies, passwords and exception messages. Failures record only the exception type. An unexpected pre-response server failure returns a generic message containing the request ID so support can locate the matching event without showing internal details. Operational logs are diagnostic records; the database audit trail remains the authoritative account of officer, rule, user and report actions.
 
@@ -58,7 +58,7 @@ Older application versions and independent scripts may not participate in that l
 
 1. Verify the archive while the current runtime remains intact. Inspect its `manifest.json` to confirm the original `runtime_root`, operating-system convention and `working_directory`.
 2. Stop every runtime process. Preserve the existing runtime separately using your controlled recovery process. The command refuses any existing destination, including an empty directory, and never deletes or merges it.
-3. From a separately installed Tula environment, restore to the **exact original absolute root**:
+3. From a separately installed TATVA environment, restore to the **exact original absolute root**:
 
 ```powershell
 python -m tula.storage.backup restore 'D:\TulaBackups\2026-09-07.zip' --destination 'C:\TulaRuntime'
@@ -101,7 +101,7 @@ Set-Location -LiteralPath $acceptance
 & $venvPython -I '.\check_installed_deployment.py' --work (Join-Path $acceptance 'run') --checkout $checkout --wheel $wheel
 ```
 
-This particular command sequence reuses system dependencies, including HTTPX for the acceptance client. It establishes that **Tula itself comes from the installed wheel**, while the inference libraries/models may come from the host environment. It does not establish a clean dependency installation on another computer. For that separate check, create the venv without `--system-site-packages`, install the wheel and its dependencies plus HTTPX from the deployment's approved package source, provision the supported font and any optional Tesseract language data, then run the same script. Preserve dependency versions and required model files with the release. Standard isolated wheel builds are recommended; a `--no-isolation` build can be disrupted by unrelated global setuptools plugins.
+This particular command sequence reuses system dependencies, including HTTPX for the acceptance client. It establishes that **TATVA itself comes from the installed wheel**, while the inference libraries/models may come from the host environment. It does not establish a clean dependency installation on another computer. For that separate check, create the venv without `--system-site-packages`, install the wheel and its dependencies plus HTTPX from the deployment's approved package source, provision the supported font and any optional Tesseract language data, then run the same script. Preserve dependency versions and required model files with the release. Standard isolated wheel builds are recommended; a `--no-isolation` build can be disrupted by unrelated global setuptools plugins.
 
 To require an independent Python dependency environment, use this variation with the same absolute `$checkout` and `$wheel` variables:
 
@@ -182,7 +182,7 @@ Private draft `82c0a871019c0bf61bc95f5a673cae35` retained its 1440 × 2160 origi
 
 The [successful receipt](C:/Users/offic/OneDrive/Desktop/sih/out/rescan-release-installed-qa/acceptance.json) records exact source/import, model, dependency, HTTP, export and table/file hashes. [ARTIFACTS.json](C:/Users/offic/OneDrive/Desktop/sih/out/rescan-release-installed-qa/ARTIFACTS.json) identifies 27 byte-identical copied artifacts; [execution-receipt.json](C:/Users/offic/OneDrive/Desktop/sih/out/rescan-release-installed-qa/execution-receipt.json) records reproduction arguments. The durable folder excludes venvs, runtime databases, account rows, original-upload directories and the backup ZIP. Original evidence remains under `C:\Users\offic\AppData\Local\Temp\tula-rescan-clean-908cc4bfb5164a7982e8700ed5e19639`. The first post-rescan wheel was superseded by the report-heading wording fix before acceptance; its bytes and build receipts remain in the [superseded subfolder](C:/Users/offic/OneDrive/Desktop/sih/out/rescan-release-installed-qa/superseded/README.md). Earlier accepted releases were not overwritten.
 
-The final wheel was installed with `pip install --force-reinstall --no-deps` after provisioning this venv from the retained dependency lock; only Tula was replaced. The corrected checker SHA-256 remains `0c29892a26ddd6ff35384a824697b090cd588dd4ee49ac136d622d799c4892dd`. It ran with `-I`, `--require-clean`, a new work directory and **no historical baseline override**. Use the clean-venv reproduction above with the retained final wheel and matching source snapshot; do not substitute the superseded wheel merely because both distribution names are `tula-0.1.0`.
+The final wheel was installed with `pip install --force-reinstall --no-deps` after provisioning this venv from the retained dependency lock; only TATVA was replaced. The corrected checker SHA-256 remains `0c29892a26ddd6ff35384a824697b090cd588dd4ee49ac136d622d799c4892dd`. It ran with `-I`, `--require-clean`, a new work directory and **no historical baseline override**. Use the clean-venv reproduction above with the retained final wheel and matching source snapshot; do not substitute the superseded wheel merely because both distribution names are `tula-0.1.0`.
 
 This installed run checked the standard inspection, private-draft and recovery workflow. The actual linked-rescan browser journey is separate source-runtime evidence in [rescan browser verification](C:/Users/offic/OneDrive/Desktop/sih/out/rescan-browser-qa/final/verification.json), not an additional installed-rescan OCR run. Nirmala/RAQM and optional Tesseract `eng+hin` came from the host; no OCR environment overrides were used. Python socket restrictions do not establish an OS-wide air gap. Full source tests ran concurrently after the timed OCR benchmarks finished, so this acceptance supplies no latency or real-photo accuracy claim. It is not an external deployment or another-machine acceptance.
 

@@ -1,6 +1,6 @@
 # Authentication, roles and accountability
 
-Tula protects application pages, evidence files, exports and APIs with persisted
+TATVA protects application pages, evidence files, exports and APIs with persisted
 accounts. The login page, static assets and basic health endpoint are public.
 Interactive API documentation also requires sign-in. No account, demo password,
 anonymous-access switch or hardcoded session is shipped.

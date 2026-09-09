@@ -1,16 +1,16 @@
-# Tula user manual and feature coverage
+# TATVA user manual and feature coverage
 
 Updated 7 September 2026. This guide describes the inspection workspace, its controls, verified source code and known unfinished work. Start with the guided tour below. Sections 2–7 cover everyday use; sections 8–15 explain rules, reports, administration and coverage. Section 17 gives the next improvement priorities.
 
 **Open the demonstration: [New inspection](http://127.0.0.1:8000/).** Start it from the repository with `python scripts/seed_demo.py` followed by `python -m uvicorn tula.web.app:app --port 8000`, and sign in as `demo.inspector` or `demo.supervisor`. Every record named in this guide is produced by that seed script through the real pipeline, so the walkthrough regenerates on any machine. Record identifiers differ on each run: find records by brand in Inspection records rather than by identifier.
 
-These loopback links address the computer running Tula. On a phone, `127.0.0.1` addresses the phone itself. For another device, use an administrator-configured HTTPS deployment address; plain LAN HTTP is refused by the application's transport protection.
+These loopback links address the computer running TATVA. On a phone, `127.0.0.1` addresses the phone itself. For another device, use an administrator-configured HTTPS deployment address; plain LAN HTTP is refused by the application's transport protection.
 
 The seeded demonstration runs on `2026.09.07-legal-review-1`. Inspections saved under an earlier pack keep the version they were judged under, as intended: a record is evidence of what the rules said on the day it was assessed.
 
 **Current walkthrough:** the demonstration includes targeted close-ups, parent-revision comparison, conflicting-reading safeguards, clearer unresolved finding headings, possible-overexposure guidance, a retained-area warning for tight crops, and optional consented device-coordinate capture feeding an accessible dashboard plot. The original ten real photos and four additional photos completed actual OCR evaluation, followed by a separate replay through the final extraction code. Section 15 separates these results from generated examples and independent validation still needed. Section 17 lists further improvements.
 
-Tula helps an officer turn package photographs into extracted declarations, evidence-linked screening findings, a recorded review and downloadable reports. The rules remain a draft. A machine flag, an officer decision and supervisor approval are three different stages.
+TATVA helps an officer turn package photographs into extracted declarations, evidence-linked screening findings, a recorded review and downloadable reports. The rules remain a draft. A machine flag, an officer decision and supervisor approval are three different stages.
 
 For your first walkthrough, follow **New inspection → Review inspection → Evidence and corrections → Finding decisions → Submit → Independent approval → Report → Inspection records → Dashboard**. Then explore the Test lab and the Rule pack. The improvement plan at the end is for the next development pass.
 
@@ -67,7 +67,7 @@ For your own first inspection, use the step-by-step sequence in section 3. Do no
 
 ## 1. How the supplied reference was used
 
-**Yes: [your Claude artifact](https://claude.ai/code/artifact/8df904f7-104a-4b5d-bcc1-a7147916dade) was used as the product requirements reference.** The retained text supplied with the work item contains 43 numbered sections, from **Primary objective** through **Final deliverable**. All 43 were read again for this audit and manual. The retained copy is 27,923 bytes with SHA-256 `cb3dd1e82a2d079fde387977ed93424572b05fff56bb67a2c30c6f753f2b6404`. It is titled *Tula Compliance Engine* and presents a product requirements document for SIH PS 26034.
+**Yes: [your Claude artifact](https://claude.ai/code/artifact/8df904f7-104a-4b5d-bcc1-a7147916dade) was used as the product requirements reference.** The retained text supplied with the work item contains 43 numbered sections, from **Primary objective** through **Final deliverable**. All 43 were read again for this audit and manual. The retained copy is 27,923 bytes with SHA-256 `cb3dd1e82a2d079fde387977ed93424572b05fff56bb67a2c30c6f753f2b6404`. It is titled *TATVA Compliance Engine* and presents a product requirements document for SIH PS 26034.
 
 It informed the four delivery lanes, evidence-linked findings, measurement uncertainty, versioned rules, reports, repository, review workflow and testing approach. It describes a much larger platform than the current application.
 
@@ -597,7 +597,7 @@ The plot shows at most the 200 most frequent rounded coordinate groups while its
 
 This counts inspections this office recorded, not market prevalence: a district with more inspections is a district that was visited more often. It uses the typed location field, which is independent of the optional recorded coordinates below it — an inspection can have either, both or neither.
 
-Tula deliberately does **not** draw an administrative boundary map of India. Depicting national or state boundaries in an official context requires an authorised base map, and an approximate outline taken from a general-purpose dataset would be both wrong and inappropriate for a government product. The coordinate plot is therefore labelled as an operational coordinate frame, and district aggregation is shown as a ranked chart rather than a shaded map. An approved boundary layer remains future work.
+TATVA deliberately does **not** draw an administrative boundary map of India. Depicting national or state boundaries in an official context requires an authorised base map, and an approximate outline taken from a general-purpose dataset would be both wrong and inappropriate for a government product. The coordinate plot is therefore labelled as an operational coordinate frame, and district aggregation is shown as a ranked chart rather than a shaded map. An approved boundary layer remains future work.
 
 ## 12. Test lab: bench and all 20 scenarios
 
@@ -739,7 +739,7 @@ This matrix accounts for every numbered section in the retained reference. “Pa
 |---|---|---|
 | 1 | Primary objective | **Partial.** The core capture, extraction, rules, evidence, reports, history, dashboards, search and access workflow is available; the wider platform objective still needs physical, legal, scale and field acceptance. |
 | 2 | Inspect the existing codebase | **Completed process.** Routes, services, templates, JavaScript, rule data, storage, reports, tests, packaging and runtime behavior were audited before and during the fixes. |
-| 3 | Product vision | **Partial.** Tula operates as an evidence-led inspection system; production and jurisdiction-wide readiness are not claimed. |
+| 3 | Product vision | **Partial.** TATVA operates as an evidence-led inspection system; production and jurisdiction-wide readiness are not claimed. |
 | 4 | UI/UX | **Partial.** Responsive capture/review/history/admin flows, empty/error/loading states and keyboard/accessibility checks exist; formal accessibility and representative-device certification remain. |
 | 5 | Dashboard | **Partial.** Live database summaries cover activity, outcomes, category, typed location, review work and optional rounded inspection coordinates. The accessible indexed coordinate view opens its underlying inspection records while preserving scope, but it is not a validated political-boundary/market-prevalence map; external production load proof remains. |
 | 6 | Inspection workflow | **Available.** Guided upload, panel assignment, processing, review, corrections, rescan, submit, approve and exports are connected end to end. |

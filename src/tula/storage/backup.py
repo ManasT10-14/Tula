@@ -241,7 +241,7 @@ def _validate_database(conn, *, origin: Path, working_directory: Path, files: di
         raise ValueError("The database has broken relational references.")
     tables = _tables(conn)
     if not tables.intersection({"inspection", "security_user"}):
-        raise ValueError("This is not a supported Tula database.")
+        raise ValueError("This is not a supported TATVA database.")
     if "inspection_job" in tables and conn.execute(
             "SELECT 1 FROM inspection_job WHERE state IN ('queued','running') LIMIT 1").fetchone():
         raise ValueError("Queued or running inspections remain. Finish or recover them before offline backup.")
@@ -491,7 +491,7 @@ def restore_backup(archive: str | Path, destination: str | Path):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description="Offline Tula runtime backup and verified, path-preserving restore")
+    parser = argparse.ArgumentParser(description="Offline TATVA runtime backup and verified, path-preserving restore")
     commands = parser.add_subparsers(dest="command", required=True)
     create = commands.add_parser("create", help="Back up a stopped runtime; archive must be outside it")
     create.add_argument("archive", type=Path)

@@ -12,7 +12,7 @@
 // page, and starts faster on a slow field connection. It does not work offline
 // in the sense of carrying out inspections, and it is not supposed to.
 
-const VERSION = 'tula-shell-v1';
+const VERSION = 'tula-shell-v2';
 const OFFLINE_URL = '/static/offline.html';
 
 // Assets referenced by every page. Template URLs carry a ?v= content hash, so

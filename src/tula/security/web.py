@@ -221,13 +221,13 @@ def _page(title: str, body: str, user: User | None = None) -> HTMLResponse:
     if user and user.role == "admin":
         navigation += '<a href="/admin/users">Accounts</a><a href="/admin/audit">Audit log</a>'
     return HTMLResponse('''<!doctype html><html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>''' + escape(title) + ''' · Tula</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>''' + escape(title) + ''' · TATVA</title>
 <link rel="manifest" href="/static/manifest.webmanifest">
 <meta name="theme-color" content="#f8fafc">
 <link rel="icon" href="/static/icons/icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Tula">
+<meta name="apple-mobile-web-app-title" content="TATVA">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -243,28 +243,37 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 <style>
-header.auth{background:var(--chrome-bg);color:var(--chrome-text-hover);padding:14px 30px;display:flex;align-items:center;
-  gap:26px;flex-wrap:wrap;border-bottom:1px solid var(--chrome-border)}
-header.auth strong{font-family:var(--font-sans);font-size:20px;letter-spacing:-.3px;color:var(--text-primary)}
-header.auth nav{display:flex;gap:18px;flex-wrap:wrap;font-size:13px}
-header.auth a{color:var(--chrome-text-hover);text-decoration:none}
-header.auth a:hover{text-decoration:underline}
-main{max-width:1180px;margin:0 auto;padding:30px 30px 60px}
+header.auth{background:rgba(255,255,255,0.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);color:var(--chrome-text-hover);padding:18px 36px;display:flex;align-items:center;
+  gap:32px;flex-wrap:wrap;border-bottom:1px solid var(--border-subtle);position:sticky;top:0;z-index:50}
+header.auth strong{font-family:var(--font-sans);font-size:22px;font-weight:800;letter-spacing:-0.5px;color:var(--text-primary)}
+header.auth nav{display:flex;gap:24px;flex-wrap:wrap;font-size:14px;font-weight:500}
+header.auth a{color:var(--text-secondary);text-decoration:none;padding:6px 12px;border-radius:var(--radius-md);transition:all 0.2s ease;margin-left:-12px}
+header.auth a:hover{color:var(--blue-700);background:var(--blue-50)}
+main{max-width:1240px;margin:0 auto;padding:40px 36px 80px}
 .narrow{max-width:460px;margin:8vh auto}
-.card{margin:18px 0}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.card{margin:24px 0;background:var(--surface-default);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:24px}
+.card.table-wrap{padding:0;overflow:hidden}
+.table-wrap table{width:100%;border-collapse:collapse}
+.table-wrap th{background:rgba(248,250,252,0.85);color:var(--text-muted);font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;padding:14px 20px;border-bottom:1px solid var(--border-subtle);text-align:left}
+.table-wrap td{padding:18px 20px;border-bottom:1px solid var(--border-subtle);color:var(--text-primary);font-size:14px;vertical-align:top}
+.table-wrap tr:last-child td{border-bottom:none}
+.table-wrap tbody tr:hover{background-color:var(--surface-subtle)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px}
 .error{background:var(--status-danger-bg);color:var(--status-danger-text);border-left:3px solid var(--status-danger-border);padding:12px 15px;
   border-radius:0 var(--radius-md) var(--radius-md) 0;font-size:13px}
 .success{background:var(--status-success-bg);color:var(--status-success-text);padding:12px 15px;border-radius:var(--radius-md);font-size:13px}
 .table-wrap{overflow-x:auto}
-td input,td select{min-width:115px}
-form button{margin-top:12px}
+td input,td select{min-width:115px;margin-bottom:16px}
+td form label{margin-top:16px}
+td form label:first-of-type{margin-top:0}
+form button{margin-top:14px;width:100%}
 td button,form.row button{margin-top:0}
-small{display:block;color:var(--text-muted);margin:5px 0;font-size:12px}
+label:has(input[type="checkbox"]){display:inline-flex;align-items:center;gap:8px;margin:8px 0 0;color:var(--text-primary);cursor:pointer;font-weight:600}
+small{display:block;color:var(--text-muted);margin:6px 0;font-size:12.5px;line-height:1.4}
 pre{white-space:pre-wrap;overflow-wrap:anywhere;max-width:450px}
 code{overflow-wrap:anywhere}
-footer{max-width:1180px;margin:0 auto;padding:18px 30px 40px;color:var(--text-muted);font-size:12px}
-</style></head><body><header class="auth"><strong>Tula</strong><nav aria-label="Account navigation">''' + navigation + '''</nav></header><main>''' + body + '''</main><footer>Legal Metrology Inspection Platform · Evidence, review and accountable decisions</footer></body></html>''')
+footer{max-width:1240px;margin:0 auto;padding:18px 36px 40px;color:var(--text-muted);font-size:12px}
+</style></head><body><header class="auth"><strong>TATVA</strong><nav aria-label="Account navigation">''' + navigation + '''</nav></header><main>''' + body + '''</main><footer>Legal Metrology Inspection Platform · Evidence, review and accountable decisions</footer></body></html>''')
 
 
 def _hidden(token: str) -> str:
@@ -277,7 +286,7 @@ def _login_page(request: Request, *, error: str = "", status: int = 200) -> Resp
     setup = ""
     if not get_security(request).has_users():
         setup = '<p class="muted">This installation needs its first administrator. Ask the deployment administrator to complete account setup using the documented bootstrap command.</p>'
-    body = '<div class="narrow"><p class="eyebrow">Authorized personnel</p><h1>Sign in to Tula</h1><p class="muted">Review evidence, conduct inspections and maintain a traceable record of every decision.</p>'
+    body = '<div class="narrow"><p class="eyebrow">Authorized personnel</p><h1>Sign in to TATVA</h1><p class="muted">Review evidence, conduct inspections and maintain a traceable record of every decision.</p>'
     if error:
         body += '<p class="error" role="alert">' + escape(error) + '</p>'
     body += setup + '<form class="card" method="post" action="/login">' + _hidden(token)
