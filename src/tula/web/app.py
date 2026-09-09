@@ -50,7 +50,7 @@ UPLOADS = ROOT / "data" / "uploads"
 BENCH = ROOT / "data" / "bench"
 OUT = ROOT / "out"
 
-app = FastAPI(title="Tula", description="Legal Metrology compliance engine", docs_url=None, redoc_url=None)
+app = FastAPI(title="TATVA", description="Legal Metrology compliance engine", docs_url=None, redoc_url=None)
 suppress_default_access_log()
 install_operational_logging()
 app.mount("/static", StaticFiles(directory=str(BASE / "static"), check_dir=False), name="static")

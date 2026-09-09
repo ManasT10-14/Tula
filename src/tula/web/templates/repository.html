@@ -1,4 +1,4 @@
-{% extends "base.html" %}{% block title %}Inspection records · Tula{% endblock %}{% block content %}
+{% extends "base.html" %}{% block title %}Inspection records · TATVA{% endblock %}{% block content %}
 {% set advanced = filters.date_from or filters.date_to or filters.operator or filters.manufacturer or filters.rule_id or filters.finding_outcome or filters.region or filters.geo_lat or filters.geo_lon or verdict %}
 <div class="page-heading"><div>
   <p class="eyebrow">{{ 'Test-bench dataset' if filters.source=='bench' else 'Searchable inspection records' }}</p>
@@ -31,12 +31,12 @@
     <div class="filter-grid" style="margin-top:12px">
       <label>From<input type="date" name="date_from" value="{{ filters.date_from }}"></label>
       <label>To<input type="date" name="date_to" value="{{ filters.date_to }}"></label>
-      <label>Inspector<input name="operator" value="{{ filters.operator }}"></label>
-      <label>Manufacturer<input name="manufacturer" value="{{ filters.manufacturer }}"></label>
-      <label>Rule ID<input name="rule_id" value="{{ filters.rule_id }}"></label>
+      <label>Inspector<input type="text" name="operator" value="{{ filters.operator }}"></label>
+      <label>Manufacturer<input type="text" name="manufacturer" value="{{ filters.manufacturer }}"></label>
+      <label>Rule ID<input type="text" name="rule_id" value="{{ filters.rule_id }}"></label>
       <label>Finding outcome<select name="finding_outcome"><option value="">Any finding outcome</option><option value="FLAGGED" {{ 'selected' if filters.finding_outcome=='FLAGGED' }}>Flagged · violation or advisory</option>{% for value in ['VIOLATION','PASS','ADVISORY','INCONCLUSIVE','UNVERIFIED','EXEMPT','NOT_APPLICABLE'] %}<option value="{{ value }}" {{ 'selected' if filters.finding_outcome==value }}>{{ value|replace('_',' ')|title }}</option>{% endfor %}</select></label>
       <label>Machine outcome<select name="verdict"><option value="">Any outcome</option>{% for value in ['VIOLATION','PASS','ADVISORY','INCONCLUSIVE','UNVERIFIED','EXEMPT','NOT_APPLICABLE'] %}<option value="{{ value }}" {{ 'selected' if verdict==value }}>{{ value }}</option>{% endfor %}</select></label>
-      <label>Typed location<input name="region" value="{{ filters.region }}"></label>
+      <label>Typed location<input type="text" name="region" value="{{ filters.region }}"></label>
       <label>Coordinate latitude<input type="number" step="0.001" min="-90" max="90" name="geo_lat" value="{{ filters.geo_lat }}"></label>
       <label>Coordinate longitude<input type="number" step="0.001" min="-180" max="180" name="geo_lon" value="{{ filters.geo_lon }}"></label>
     </div>
