@@ -12,18 +12,20 @@
 // page, and starts faster on a slow field connection. It does not work offline
 // in the sense of carrying out inspections, and it is not supposed to.
 
-const VERSION = 'tula-shell-v2';
+const VERSION = 'tatva-shell-v3';
 const OFFLINE_URL = '/static/offline.html';
 
 // Assets referenced by every page. Template URLs carry a ?v= content hash, so
 // these bare paths are warmed here and the hashed variants are cached on first
 // use; a content change produces a new URL rather than a stale hit.
+// Only the offline page and the icon are warmed by bare path. The stylesheet and
+// scripts are deliberately absent: security/web.py renders the sign-in page with
+// un-hashed asset URLs, and a cache-first entry against a bare path can never be
+// superseded when the file changes -- an installed phone would keep the stylesheet
+// it first saw for ever. They are still cached on first use via their hashed URLs,
+// which do change with content.
 const SHELL = [
   OFFLINE_URL,
-  '/static/console.css',
-  '/static/console.js',
-  '/static/htmx.min.js',
-  '/static/tabs.js',
   '/static/icons/icon-192.png',
 ];
 
@@ -44,8 +46,16 @@ self.addEventListener('activate', (event) => {
   })());
 });
 
-function isShellAsset(url) {
+function isStatic(url) {
   return url.origin === self.location.origin && url.pathname.startsWith('/static/');
+}
+
+// A URL carrying ?v=<hash> is immutable by construction: change the file and the
+// URL changes with it, so a cached copy can never be stale. Anything else under
+// /static/ is served by a bare path, and caching one of those first-and-for-ever
+// is what froze installed handsets on the stylesheet they happened to load first.
+function isImmutable(url) {
+  return isStatic(url) && url.searchParams.has('v');
 }
 
 self.addEventListener('fetch', (event) => {
@@ -55,9 +65,8 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  // Shell assets: cache first. Their URLs are content-hashed by asset_url(), so
-  // a hit is never stale for a changed file.
-  if (isShellAsset(url)) {
+  // Content-hashed assets: cache first, for ever. The hash guarantees freshness.
+  if (isImmutable(url)) {
     event.respondWith((async () => {
       const hit = await caches.match(request);
       if (hit) return hit;
@@ -67,6 +76,28 @@ self.addEventListener('fetch', (event) => {
         cache.put(request, response.clone());
       }
       return response;
+    })());
+    return;
+  }
+
+  // Un-hashed static assets -- the manifest, icons, anything a template emits by
+  // bare path -- go to the network first and fall back to cache only when it is
+  // unreachable. Slower by one request on a warm connection, and the difference
+  // between an app that updates and one that cannot.
+  if (isStatic(url)) {
+    event.respondWith((async () => {
+      try {
+        const response = await fetch(request);
+        if (response.ok && response.type === 'basic') {
+          const cache = await caches.open(VERSION);
+          cache.put(request, response.clone());
+        }
+        return response;
+      } catch (error) {
+        const hit = await caches.match(request);
+        if (hit) return hit;
+        throw error;
+      }
     })());
     return;
   }
