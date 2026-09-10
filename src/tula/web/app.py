@@ -37,6 +37,7 @@ from ..observability import (
 )
 from ..report import render
 from ..report.evidence import verify
+from ..rules import unblock
 from ..rules.engine import RulesEngine
 from ..security import install_security
 from ..services.reports import ReportError, export_inspection
@@ -79,8 +80,27 @@ templates.env.globals.update(
     }.get(v, "muted"),
     finding_rows=render.finding_rows,
     finding_message=render.finding_message,
+    finding_groups=render.finding_groups,
+    group_findings=render.group_findings,
+    needs_scale=render.needs_scale,
+    pending_facts=lambda a: unblock_hints(a),
     default_spec=LabelSpec(),
 )
+
+
+def unblock_hints(analysis):
+    """Facts an officer could confirm now, and what each would decide.
+
+    Derived at render time rather than stored: it is a hint about what to do
+    next, not a finding, and it must never end up inside a saved record as
+    though it were one. Withheld for a record judged under a different pack --
+    a hint computed from today's rules about a decision made under last
+    month's would be worse than no hint.
+    """
+    if analysis.rules_version != rules.pack.version:
+        return []
+    return unblock.pending(rules, analysis.scan, analysis.package, analysis.declarations,
+                           analysis.measurements, analysis.findings)
 
 
 # ---------------------------------------------------------------------------

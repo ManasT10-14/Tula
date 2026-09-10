@@ -1,0 +1,50 @@
+{
+  "id": "LMPCR.R6.1.E.CURRENCY",
+  "title": "Retail sale price declared in Indian currency",
+  "plain": "The price is in rupees",
+  "plain_action": "Check the price carries a rupee mark or the word Rs, not a foreign currency.",
+  "citation": {
+    "clause": "Rule 6(1)(e), currency wording as amended 2021",
+    "text": "The retail sale price shall be declared in Indian currency. Screening of the currency actually parsed from the price block; price control, conversion and dual-currency questions are not decided here."
+  },
+  "effective_from": "2011-04-01",
+  "declaration": "retail_sale_price",
+  "applies_when": {
+    "present": "$decl.retail_sale_price.norm.value"
+  },
+  "assert": {
+    "eq": [
+      "$decl.retail_sale_price.norm.currency",
+      "INR"
+    ]
+  },
+  "severity": "major",
+  "min_assurance_tier": "C",
+  "penalty_ref": "LM Act 2009 s.36(1)",
+  "messages": {
+    "pass": "The retail sale price is declared in Indian currency.",
+    "violation": "The retail sale price does not appear to be declared in Indian currency.",
+    "inconclusive": "The currency of the declared price could not be established; verify the printed price block."
+  },
+  "evidence": [
+    "retail_sale_price"
+  ],
+  "tests": "tests/test_rules_engine.py",
+  "sources": [
+    {
+      "url": "https://consumeraffairs.gov.in/public/upload/files/8_1732871406.pdf",
+      "notification": "G.S.R.202(E)",
+      "publication_date": "2011-03-07",
+      "clause": "PCR 2011; read with subsequent amendments",
+      "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+    },
+    {
+      "url": "https://consumeraffairs.gov.in/public/upload/files/8(xv)_1732871207.pdf",
+      "notification": "G.S.R.629(E) 2021",
+      "publication_date": "2021-09-09",
+      "clause": "Amendment 3(a)(ii), currency and price wording",
+      "review_status": "primary source reviewed; screening paraphrase; incomplete consolidation"
+    }
+  ],
+  "legal_check": {}
+}

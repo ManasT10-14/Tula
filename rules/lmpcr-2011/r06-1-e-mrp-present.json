@@ -1,6 +1,8 @@
 {
   "id": "LMPCR.R6.1.E.MRP_PRESENT",
   "title": "Retail sale price declaration",
+  "plain": "A maximum retail price is printed",
+  "plain_action": "Find the MRP on the pack and photograph it.",
   "citation": {
     "clause": "Rule 6(1)(e)",
     "text": "Every package shall bear the retail sale price of the package."

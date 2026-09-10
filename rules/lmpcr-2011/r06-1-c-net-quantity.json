@@ -1,6 +1,8 @@
 {
   "id": "LMPCR.R6.1.C.NET_QUANTITY",
   "title": "Net quantity declaration",
+  "plain": "How much is inside",
+  "plain_action": "Find the net quantity on the pack and photograph the label and its number together.",
   "citation": {
     "clause": "Rule 6(1)(c)",
     "text": "Every package shall bear the net quantity, in terms of the standard unit of weight or measure, of the commodity contained in the package, or where the commodity is packed by number, the number of the commodity contained in it."

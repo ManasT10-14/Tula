@@ -177,9 +177,24 @@ _PRICE_RE = re.compile(
     rf"|(?:{_MRP_CUE})\s*[:\-]?\s*({_NUM})\s*(?:{_CURRENCY})?",
     re.IGNORECASE,
 )
+# Three things may introduce a unit price, and an Indian pack routinely uses
+# only the third. A currency symbol is one; the words "unit sale price" are
+# another; and "135/-", the rupee form every packet prints its MRP in, is the
+# third -- the unit price is set immediately after it and carries no symbol of
+# its own, so demanding one missed the declaration on a label that plainly
+# makes it. Something must still introduce the figure: a bare "per 100 g" is
+# how a nutrition table is written, and admitting that would read an energy
+# value as a price.
+#
+# `per` is matched without a trailing word boundary because a recogniser closes
+# the gap: "0.34 per g" comes back as "0.34 perg", and `per\b` cannot match
+# inside a single token. The leading `\b` is kept, so "supermarket" is safe.
+# The "135/-" marker is matched as a lookbehind, never consumed: the caller
+# removes a unit price's own span before reading the retail price off the same
+# line, and swallowing the MRP's last digit here turned "MRP: 135" into 13.
 _UNIT_PRICE_RE = re.compile(
-    rf"(?:unit\s*(?:sale\s*)?price\s*)?(?:{_CURRENCY})\s*({_NUM})\s*"
-    rf"(?:/|per\b)\s*({_NUM})?\s*({_UNIT_ALTERNATION})(?![A-Za-z])",
+    rf"(?:unit\s*(?:sale\s*)?price\s*[:\-]?\s*(?:{_CURRENCY})?|(?:{_CURRENCY})|(?<=/-))\s*"
+    rf"({_NUM})\s*(?:/|\bper\s*)\s*({_NUM})?\s*({_UNIT_ALTERNATION})(?![A-Za-z])",
     re.IGNORECASE,
 )
 _TAX_PHRASES = ("inclusive of all taxes", "incl of all taxes", "incl. of all taxes")
@@ -261,6 +276,14 @@ _DATE_CUE = re.compile(
     r"|packed\s+(?:on|in)|pkd)", re.IGNORECASE
 )
 _NUM_DATE = re.compile(r"(?<![\d/.-])(0?[1-9]|1[0-2])\s*[/\-.]\s*(20\d{2}|\d{2})(?!\d)")
+# A clock is not a calendar. Consumer-care blocks print their opening hours in
+# exactly the shape of a MM.YY date -- "BETWEEN 10.00 AM TO 6.00 PM" -- and on a
+# line that also carries the words "MFG. DATE" the cue window walks straight
+# into it and reports a package manufactured in October 2000. Removing the time
+# readings before the date grammar runs costs nothing on a real printed date,
+# which never carries a meridiem.
+_CLOCK = re.compile(
+    r"\d{1,2}\s*[.:]\s*\d{2}\s*(?:a\.?\s?m|p\.?\s?m|hrs?|hours)\b", re.IGNORECASE)
 _ALPHA_DATE = re.compile(
     r"(" + "|".join(_MONTHS) + r")[a-z]*\.?\s*[,/\-]?\s*(20\d{2}|\d{2})", re.IGNORECASE
 )
@@ -273,6 +296,7 @@ def parse_date(text: str) -> dict[str, Any] | None:
     if cue:
         window = text[cue.end() : cue.end() + 60]
     window = re.split(r"\b(?:best\s*before|use\s*by|exp(?:iry|ires)?)\b", window, flags=re.IGNORECASE)[0]
+    window = _CLOCK.sub(" ", window)
 
     iso = re.search(r"(?<!\d)(20\d{2})[-/](\d{1,2})[-/](\d{1,2})(?!\d)", window)
     full = re.search(r"(?<!\d)(\d{1,2})[/-](\d{1,2})[/-](20\d{2}|\d{2})(?!\d)", window)
@@ -410,6 +434,17 @@ _ORIGIN_RE = re.compile(
     r"\b(?:country\s+of\s+origin|made\s+in|product\s+of|origin)\b\s*[:\-]?\s*"
     r"([A-Z][A-Za-z ]{2,30})", re.IGNORECASE
 )
+# "Made in a facility that processes peanuts" is an allergen sentence wearing an
+# origin declaration's clothes, and reading a country out of it puts a second,
+# fictional origin beside the real one -- which is then a conflict, and the
+# whole declaration is withheld. A country is a proper noun: it does not open
+# with an article and does not contain a premises or relative-clause word. This
+# is a stop list rather than a gazetteer, so an unlisted country still reads
+# normally; only a clause is rejected.
+_NOT_A_COUNTRY = re.compile(
+    r"^(?:a|an|the)\b|\b(?:facility|facilities|plant|premises|factory|factories|"
+    r"unit|line|that|which|where|this|these|those|our|their|its|containing|"
+    r"processes|processed|made|manufactured|packed)\b", re.IGNORECASE)
 
 
 def looks_imported(text: str) -> bool:
@@ -426,4 +461,6 @@ def parse_country_of_origin(text: str) -> dict[str, Any] | None:
     # A single OCR detection can contain several declarations; do not convert
     # "Made in India MRP 120" into the non-existent country "India MRP".
     country = re.split(r"\b(?:MRP|Net|Manufactured|Imported|Packed|Batch|Expiry|Consumer)\b", country, flags=re.IGNORECASE)[0].strip()
+    if not country or _NOT_A_COUNTRY.search(country):
+        return None
     return {"country": country, "raw": match.group(0).strip()}

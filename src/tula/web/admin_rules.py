@@ -121,7 +121,12 @@ def validate_expression(node, *, truth=True, depth=0, counter=None):
             if isinstance(value, (dict, list)) or (isinstance(value, str) and value.startswith("$")):
                 raise ValueError("Membership choices must be literals.")
             child(value, boolean=False)
-    elif op == "contains_phrase":
+    elif op in ("contains_phrase", "declares_phrase"):
+        # Same shape, different question: `contains_phrase` asks about the form
+        # of a declaration already read, `declares_phrase` asks whether the
+        # package carries a wording anywhere and returns undecided rather than
+        # False when the capture cannot establish absence. Both are validated
+        # identically because both take a field, phrases and a threshold.
         args(2, 3)
         _field(arg[0])
         phrases = arg[1] if isinstance(arg[1], list) else [arg[1]]

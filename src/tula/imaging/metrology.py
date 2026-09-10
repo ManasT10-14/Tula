@@ -41,6 +41,7 @@ SOURCE_SIGMA_REL = {
     "aruco_card": 0.004,
     "device_depth": 0.020,
     "mono_metric": 0.090,
+    "barcode_symbol": 0.237,
     "geometry_prior": 0.330,
 }
 
@@ -49,6 +50,9 @@ SOURCE_TIER = {
     "aruco_card": AssuranceTier.B,
     "device_depth": AssuranceTier.B,
     "mono_metric": AssuranceTier.C,
+    # A bracket derived from a printing standard, not a measurement of this
+    # package. It may support an advisory or a clearance; never a conviction.
+    "barcode_symbol": AssuranceTier.C,
     "geometry_prior": AssuranceTier.C,
 }
 
@@ -148,6 +152,75 @@ def from_geometry_prior(
     return from_reference(
         package_span_px, span_mm, "geometry_prior",
         detail=f"{net_quantity_base:g} {unit_base} at {density:g} g/cm3 implies a ~{span_mm:.0f} mm face",
+    )
+
+
+# --------------------------------------------------------------------------
+# The barcode as a ruler
+# --------------------------------------------------------------------------
+#
+# Rule 7(2) is stated in millimetres and a photograph has none, so the height
+# rules normally wait for someone to walk back to the shop with the scale card.
+# But almost every retail package already carries a printed object of regulated
+# size: its own barcode.
+#
+# EAN-13 and UPC-A encode 95 modules between the symbol's outer bar edges, EAN-8
+# encodes 67. The module width -- the X-dimension -- is 0.330 mm at nominal
+# (100%) magnification, and the GS1 General Specifications permit retail
+# point-of-sale symbols to be printed between 80% and 200% of nominal. So the
+# symbol's true width lies in a bounded interval, and dividing by its measured
+# pixel width brackets the scale of the label plane.
+#
+# This is a bracket, not a measurement: the permitted magnification range spans
+# a factor of 2.5, which is why the estimate below is Tier C and carries a large
+# sigma. What makes it worth having is that it is *independent* of the declared
+# quantity and its density prior, so where both exist they fuse into something
+# tighter than either, and where the quantity could not be read the barcode is
+# the only automatic scale left. Neither can sustain a violation on its own --
+# the tier gate in the rules engine sees to that.
+
+MODULES = {"EAN-13": 95, "UPC-A": 95, "EAN-8": 67, "UPC-E": 51}
+NOMINAL_X_MM = 0.330
+# GS1 General Specifications, retail POS magnification range.
+MAGNIFICATION = (0.80, 2.00)
+
+
+def from_barcode(
+    pixel_width: float, symbology: str, *, detail: str = ""
+) -> ScaleEstimate | None:
+    """Bracket mm-per-pixel from a retail barcode's printed width.
+
+    The returned interval at k=2 is exactly the range the standard permits, so
+    the uncertainty is a statement about the specification rather than a guess
+    about this particular printer.
+    """
+    modules = MODULES.get(symbology)
+    if not modules or pixel_width <= 0:
+        return None
+    low, high = (modules * NOMINAL_X_MM * m / pixel_width for m in MAGNIFICATION)
+    # Arithmetic centre with sigma a quarter of the range, so that the k=2
+    # interval this estimate advertises is exactly [low, high].
+    #
+    # A geometric centre is the more natural summary of a multiplicative
+    # quantity, and it was what this used first -- but `ScaleEstimate` carries
+    # one symmetric sigma, so a geometric centre cannot also span the permitted
+    # range, and the interval is the part the conformity decision actually
+    # tests. Nothing is known about where in the range this printer sits, and
+    # for a quantity known only to lie in an interval the midpoint is the honest
+    # summary; the geometric centre would quietly assert that smaller
+    # magnifications are likelier.
+    centre = (low + high) / 2.0
+    sigma = (high - low) / 4.0
+    return ScaleEstimate(
+        source="barcode_symbol",
+        mm_per_px=centre,
+        sigma=sigma,
+        tier=SOURCE_TIER["barcode_symbol"],
+        detail=detail or (
+            f"{symbology} symbol spans {pixel_width:.0f} px; {modules} modules at "
+            f"{NOMINAL_X_MM} mm and {MAGNIFICATION[0]:.0%}-{MAGNIFICATION[1]:.0%} "
+            f"magnification put the label between {low:.4f} and {high:.4f} mm/px"
+        ),
     )
 
 
@@ -378,4 +451,230 @@ def pdp_area_cm2(
         tier=scale.tier,
         sources=[scale.source],
         method=f"{width_px:.0f} x {height_px:.0f} px at {scale.mm_per_px:.5f} mm/px",
+    )
+
+
+# ---------------------------------------------------------------------------
+# Panel extent, without a ruler
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class PanelExtent:
+    """How large the principal display panel is, in pixels, as an interval.
+
+    A photograph does not hand you the panel boundary. Two things about it are
+    knowable without guessing: every printed line sits *on* the panel, so the
+    hull of the recognised text is a floor; and if the package is wholly inside
+    the frame, the frame is a ceiling. Segmentation, when it agrees with both,
+    narrows the interval -- it never replaces it.
+
+    The point estimate is the geometric mean of the two bounds, which is the
+    centre of the interval in the ratio sense, and `rel_sigma` is the standard
+    deviation of a uniform distribution across it. That is a wide error bar on
+    purpose: the Rule 8 threshold changes sixfold across the table, so an
+    over-confident panel area is worse than an honest interval.
+    """
+
+    width_px: float
+    height_px: float
+    min_width_px: float
+    min_height_px: float
+    max_width_px: float
+    max_height_px: float
+    method: str
+    rel_sigma: float
+    segmented: bool = False
+
+    @property
+    def span_px(self) -> float:
+        """The longer side of the point estimate."""
+        return max(self.width_px, self.height_px)
+
+    @property
+    def geometric_mean_px(self) -> float:
+        return math.sqrt(self.width_px * self.height_px)
+
+
+# A uniform distribution over an interval has this standard deviation relative
+# to its half-width; it turns a bracket into an error bar without inventing a
+# sharper distribution than the evidence supports.
+_UNIFORM_SIGMA = 1.0 / math.sqrt(3.0)
+
+
+def _text_hull(boxes) -> tuple[int, int, int, int] | None:
+    usable = [b for b in boxes if b and b[2] > b[0] and b[3] > b[1]]
+    if not usable:
+        return None
+    return (
+        min(b[0] for b in usable), min(b[1] for b in usable),
+        max(b[2] for b in usable), max(b[3] for b in usable),
+    )
+
+
+def _segment_package(image_path: str):
+    """Find the package against its background; return its box and the frame size.
+
+    Deliberately conservative. Product photography is not a controlled scene:
+    the background may be a shelf, another package, or the officer's hand. The
+    caller checks this result against the text hull and discards it when the
+    two disagree, so a wrong segmentation costs precision, never correctness.
+    """
+    if not _CV or not Path(image_path).exists():
+        return None
+    image = cv2.imread(image_path)
+    if image is None:
+        return None
+    height, width = image.shape[:2]
+    factor = 900.0 / max(height, width)
+    small = cv2.resize(image, None, fx=factor, fy=factor) if factor < 1 else image
+    edge = np.concatenate([
+        small[0:3].reshape(-1, 3), small[-3:].reshape(-1, 3),
+        small[:, 0:3].reshape(-1, 3), small[:, -3:].reshape(-1, 3),
+    ])
+    background = np.median(edge, axis=0)
+    noise = float(np.median(np.abs(edge - background)))
+    distance = np.linalg.norm(small.astype(np.float32) - background, axis=2)
+    mask = (distance > max(18.0, 4.0 * noise)).astype(np.uint8) * 255
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, np.ones((9, 9), np.uint8))
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, np.ones((5, 5), np.uint8))
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if not contours:
+        return None
+    biggest = max(contours, key=cv2.contourArea)
+    x, y, w, h = cv2.boundingRect(biggest)
+    if w < 8 or h < 8:
+        return None
+    back = 1.0 / factor if factor < 1 else 1.0
+    box = (int(x * back), int(y * back), int((x + w) * back), int((y + h) * back))
+    return box, width, height
+
+
+def panel_extent_px(
+    image_path: str | None,
+    text_boxes,
+    *,
+    frame_size: tuple[int, int] | None = None,
+) -> PanelExtent | None:
+    """Bracket the panel's pixel extent from the photograph alone.
+
+    Returns None when there is no recognised text to anchor the floor, because
+    a bracket with no floor is just the frame, and the frame is not a
+    measurement of anything.
+    """
+    hull = _text_hull(text_boxes)
+    if hull is None:
+        return None
+    low_w = float(hull[2] - hull[0])
+    low_h = float(hull[3] - hull[1])
+    if low_w <= 0 or low_h <= 0:
+        return None
+
+    segmentation = _segment_package(image_path) if image_path else None
+    width = height = None
+    method = "text hull to frame"
+    segmented = False
+    if segmentation is not None:
+        box, frame_w, frame_h = segmentation
+        width, height = float(frame_w), float(frame_h)
+        contains_text = (
+            box[0] <= hull[0] + 2 and box[1] <= hull[1] + 2
+            and box[2] >= hull[2] - 2 and box[3] >= hull[3] - 2
+        )
+        box_w, box_h = float(box[2] - box[0]), float(box[3] - box[1])
+        # A segmentation that fills the frame has found the frame, not the
+        # package; one that misses printed text has found something else.
+        useful = box_w * box_h < 0.97 * width * height
+        if contains_text and useful and box_w >= low_w and box_h >= low_h:
+            width, height = box_w, box_h
+            method = "package segmented against its background"
+            segmented = True
+    if width is None or height is None:
+        frame = frame_size or _frame_size(image_path)
+        if frame is None:
+            return None
+        width, height = float(frame[0]), float(frame[1])
+    high_w, high_h = max(width, low_w), max(height, low_h)
+
+    # The interval is multiplicative, so its centre is the geometric mean.
+    point_w = math.sqrt(low_w * high_w)
+    point_h = math.sqrt(low_h * high_h)
+    half = 0.5 * (
+        (high_w - low_w) / (high_w + low_w) + (high_h - low_h) / (high_h + low_h)
+    )
+    return PanelExtent(
+        width_px=point_w, height_px=point_h,
+        min_width_px=low_w, min_height_px=low_h,
+        max_width_px=high_w, max_height_px=high_h,
+        method=(
+            f"{method}; printed text spans {low_w:.0f} x {low_h:.0f} px, "
+            f"outer bound {high_w:.0f} x {high_h:.0f} px"
+        ),
+        rel_sigma=half * _UNIFORM_SIGMA,
+        segmented=segmented,
+    )
+
+
+def _frame_size(image_path: str | None) -> tuple[int, int] | None:
+    if not image_path or not Path(image_path).exists():
+        return None
+    if _CV:
+        image = cv2.imread(image_path)
+        if image is not None:
+            return int(image.shape[1]), int(image.shape[0])
+    try:
+        from PIL import Image
+
+        with Image.open(image_path) as handle:
+            return int(handle.width), int(handle.height)
+    except (OSError, ValueError):  # pragma: no cover - unreadable file
+        return None
+
+
+def pdp_area_from_extent(extent: PanelExtent, scale: ScaleEstimate) -> Measured | None:
+    """Panel area from a bracketed pixel extent and a millimetre scale.
+
+    This reports a *bound*, not an estimate with an error bar around it, and
+    the distinction is the whole point. Measured against rendered labels whose
+    true panel size is known, a point estimate at the centre of the bracket
+    under-read the area by a median of 31% and its k=2 interval missed the
+    truth in five cases out of eight -- because where the truth sits inside the
+    bracket depends on how much of the frame the photographer filled, which is
+    a fact about the photographer and not about the package.
+
+    So the interval is the bracket itself: the floor is the panel being no
+    larger than the printed text on it, the ceiling is the package boundary or
+    the frame. The true panel is inside that by construction whenever the
+    package is wholly in view, and the scale's own uncertainty widens it
+    further. The value in the middle is a midpoint, not a claim.
+
+    A wide interval is not a weakness here. It flows into the same guard-banded
+    comparison every other measurement does, so Rule 8 decides where the band
+    is unambiguous and declines where it is not -- instead of selecting a
+    Table I row from a number that is confidently wrong.
+    """
+    if scale.mm_per_px <= 0 or extent.min_width_px <= 0 or extent.max_width_px <= 0:
+        return None
+    per_cm2 = (scale.mm_per_px**2) / 100.0
+    low = extent.min_width_px * extent.min_height_px * per_cm2
+    high = extent.max_width_px * extent.max_height_px * per_cm2
+    if high < low:
+        return None
+
+    value = (low + high) / 2.0
+    half_width = (high - low) / 2.0
+    # Area goes as scale squared, so the scale's relative error doubles.
+    scale_term = value * COVERAGE_FACTOR * 2 * (scale.sigma / scale.mm_per_px)
+
+    return Measured(
+        quantity="pdp_area",
+        value=value,
+        uncertainty=math.hypot(half_width, scale_term),
+        unit="cm2",
+        tier=scale.tier,
+        sources=[scale.source, "panel extent bounded from the photograph"],
+        method=(
+            f"panel area bounded to {low:.0f}-{high:.0f} cm2 at "
+            f"{scale.mm_per_px:.5f} mm/px; {extent.method}"
+        ),
     )

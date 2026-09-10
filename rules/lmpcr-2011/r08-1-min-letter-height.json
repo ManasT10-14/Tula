@@ -1,6 +1,8 @@
 {
   "id": "LMPCR.R8.1.MIN_HEIGHT",
   "title": "Minimum measured declaration height by panel area",
+  "plain": "The lettering is large enough for the pack size",
+  "plain_action": "Place the printed scale card beside the panel and re-photograph, then confirm the package shape.",
   "citation": {
     "clause": "Rule 7(2), Table I",
     "text": "Screening of measured declaration heights against the PDP area table. Full legal applicability requires review."

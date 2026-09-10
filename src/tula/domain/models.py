@@ -163,6 +163,19 @@ class EvidenceCoverage(BaseModel):
                     "can be concluded about what this package declares. Re-capture "
                     "in better light, square to the panel and in focus."
                 )
+            # Two different things fail this test, and saying the wrong one sends
+            # an officer to fix the wrong thing. A frame the recogniser could not
+            # read is not the same as a capture that read too little overall, and
+            # reporting "only 79 lines were legible" directly beneath a panel
+            # showing 79 of 112 lines legible reads as a contradiction.
+            if self.unreadable_frames and self.legible_lines >= self.MIN_LEGIBLE_LINES:
+                count = len(self.unreadable_frames)
+                return False, (
+                    f"{count} of the {self.frames} captured frame(s) could not be read "
+                    "reliably, so a declaration missing from this evidence may simply "
+                    "be on one of them. Re-capture that face before treating any "
+                    "declaration as absent."
+                )
             return False, (
                 f"Only {self.legible_lines} line(s) of text were legible across "
                 f"{self.frames} frame(s). That is too little to establish that a "
@@ -312,6 +325,11 @@ class Finding(BaseModel):
     declaration: DeclarationClass | None = None
     verdict: Verdict
     severity: Severity = Severity.MAJOR
+    # What the rule is about and what to do next, in an inspector's words,
+    # carried from the rule pack so the console can lead with them and keep the
+    # clause and its screening paraphrase for the record and the notice.
+    plain: str = ""
+    plain_action: str = ""
     message: str = ""
     detail: str = ""
     measured: Measured | None = None
@@ -406,6 +424,11 @@ class Analysis(BaseModel):
     elapsed_ms: int = 0
     intelligence: dict[str, Any] = Field(default_factory=dict)
     review: ReviewState = Field(default_factory=ReviewState)
+    # Set when this analysis was replayed from a stored recording rather than
+    # computed from the images just uploaded. Empty for every live run. It is a
+    # field on the record, not a rendering detail, so the provenance survives
+    # into the saved inspection, the JSON export and the PDF.
+    demo_fixture: str = ""
 
     @property
     def verified_violations(self) -> list[Finding]:

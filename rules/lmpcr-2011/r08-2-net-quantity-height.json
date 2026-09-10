@@ -1,6 +1,8 @@
 {
   "id": "LMPCR.R8.2.NETQTY_HEIGHT",
   "title": "Minimum height of the net quantity numerals",
+  "plain": "The quantity figures are large enough",
+  "plain_action": "Place the printed scale card beside the panel and re-photograph, then confirm the package shape.",
   "citation": {
     "clause": "Rule 7(2), Table I",
     "text": "Screening of numeral height against the PDP area table; see the official Rule 7(2) text and applicable exceptions."

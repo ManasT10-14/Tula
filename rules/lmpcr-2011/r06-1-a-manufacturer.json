@@ -1,6 +1,8 @@
 {
   "id": "LMPCR.R6.1.A.MANUFACTURER",
   "title": "Name and complete address of the manufacturer, packer or importer",
+  "plain": "Who made or packed it, and where",
+  "plain_action": "Find the maker's or packer's name and full postal address on the pack, and photograph that block.",
   "citation": {
     "clause": "Rule 6(1)(a)",
     "text": "Screening paraphrase: identify the manufacturer, different packer and importer as applicable, with required addresses; category-specific provisions may govern."

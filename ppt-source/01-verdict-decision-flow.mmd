@@ -1,0 +1,14 @@
+flowchart TD
+    A["One photograph<br/>of a packaged commodity"] --> B{"Is this rule in force<br/>for this package?"}
+    B -->|"outside Chapter II scope<br/>or not yet commenced"| NA["NOT_APPLICABLE"]
+    B -->|yes| C{"Does Rule 3 or 26<br/>relieve this duty?"}
+    C -->|"small pack, tobacco,<br/>industrial purchase"| EX["EXEMPT"]
+    C -->|no| D{"Assertion evaluated on<br/>extracted declarations"}
+    D -->|"an input could<br/>not be obtained"| UV["UNVERIFIED"]
+    D -->|"measurement straddles<br/>the limit at k=2"| IC["INCONCLUSIVE"]
+    D -->|"holds"| P["PASS"]
+    D -->|"fails"| E{"GATE 1 - Assurance tier<br/>A artwork / B scale card / C monocular"}
+    E -->|"Tier C only:<br/>no scale reached the camera"| AD1["ADVISORY"]
+    E -->|"tier sufficient"| F{"GATE 2 - Evidence lane<br/>who captured it"}
+    F -->|"citizen or marketplace:<br/>not an inspector's capture"| AD2["ADVISORY"]
+    F -->|"field or pre-market"| V["VIOLATION<br/>with clause, crop and uncertainty"]

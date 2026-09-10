@@ -149,10 +149,27 @@ def test_date_corrections_do_not_invent_a_resolved_ambiguous_or_invalid_date(cas
     assert "temporal_status" not in item
 
 
-def test_short_year_requires_explicit_interpretation_even_with_one_candidate(case):
+def test_short_year_resolves_to_a_value_but_keeps_its_century_assumption(case):
+    """A two-digit year is an assumption on the record, not an open question.
+
+    This previously withheld the value. But a two-digit year is simply how
+    Indian packaging prints a year -- "PKD ON: 01-JULY-26" is the norm, not an
+    anomaly -- and the parser resolves the century deterministically to
+    2000-2099, so nothing was actually left undecided by it. Withholding the
+    value made the date declaration unresolved on essentially every real pack,
+    and with it every rule gated on dated applicability: Rule 6(11) unit price,
+    the Rule 6(1)(aa) origin commencement, the Rule 6(2) contact components and
+    the Rule 3/26 exemptions all reported "conflicting manufacture/packing event
+    evidence" for a label whose date a person reads at a glance.
+
+    What has to survive is the assumption being visible, which is what the
+    warning is for: the officer sees the century that was assumed and can
+    correct it. A genuinely ambiguous marking -- 08/09/26, which is two
+    different dates -- still resolves to nothing; that case is covered above.
+    """
     a = correct(case, field="expiry_date", raw="EXP 31/12/26")
     item = a.intelligence["fields"]["expiry_date"][0]
-    assert item["value"] is None and item["candidates"][0]["iso"] == "2026-12-31"
+    assert item["value"] == "2026-12-31" and item["candidates"][0]["iso"] == "2026-12-31"
     assert "2000" in item["warning"]
 
 
@@ -337,3 +354,32 @@ def test_http_new_observation_without_ocr_score_renders_and_invalid_json_is_acti
     assert response.status_code == 303
     page = http_case.client.get(path)
     assert page.status_code == 200 and "No original OCR score is recorded" in page.text
+
+
+def test_allergen_referral_card_renders_and_stays_out_of_the_rules(http_case):
+    # The record starts with "Ingredients: Milk powder, INS 330", so the sweep
+    # has something to find without anyone entering a concern.
+    login(http_case)
+    page = http_case.client.get(f"/inspections/{http_case.case.a.scan.scan_id}")
+    assert page.status_code == 200
+    assert "Allergens named on this label" in page.text
+    assert "Milk" in page.text and "Named outright" in page.text
+    # It must present itself as a referral, never as a Legal Metrology finding.
+    assert "Food safety referral" in page.text
+    assert "regulation 5(3)" in page.text
+    assert "not a Legal Metrology" in page.text
+    # And it must not silently become a compliance verdict on the record.
+    assert "SCREEN.SCALE_FREE" not in page.text
+
+
+def test_allergen_referral_card_is_absent_when_no_allergen_was_read(http_case):
+    token = login(http_case)
+    path = f"/inspections/{http_case.case.a.scan.scan_id}"
+    http_case.client.post(
+        path + "/intelligence/correct",
+        data=payload(csrf_token=token, raw="Ingredients: Water, sugar, citric acid (INS 330)"),
+        follow_redirects=False,
+    )
+    page = http_case.client.get(path)
+    assert page.status_code == 200
+    assert "Allergens named on this label" not in page.text

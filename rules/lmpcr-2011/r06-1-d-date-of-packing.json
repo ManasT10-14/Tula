@@ -1,6 +1,8 @@
 {
   "id": "LMPCR.R6.1.D.DATE",
   "title": "Applicable manufacture-date declaration (category-aware screening)",
+  "plain": "The month and year it was made or packed",
+  "plain_action": "Find the manufacturing or packing date and confirm the product category, since food and some other goods follow their own date rules.",
   "citation": {
     "clause": "Rule 6(1)(d)",
     "text": "Screening paraphrase: apply the manufacture-date requirement and applicable historical/category exceptions under Rule 6(1)(d). Food date duties require the FSSAI route."

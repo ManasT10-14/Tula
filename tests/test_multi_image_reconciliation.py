@@ -299,14 +299,31 @@ def test_unresolved_packing_event_cannot_borrow_manufacturing_chronology():
 
 
 def test_caller_context_cannot_set_or_clear_derived_date_uncertainty(rules):
+    # The caller may not manufacture doubt where the label is consistent...
     clear = extract([image("a.png", "MFG 03/2026", "Net wt 500 g", "MRP Rs 100")])
-    assert not exemptions.determine(clear.declarations,
-        legal_context={**CONTEXT, "date_evidence_uncertain": True}).review_reasons
+    stated = exemptions.determine(clear.declarations,
+        legal_context={**CONTEXT, "date_evidence_uncertain": True})
+    assert not stated.review_reasons and not stated.exemption_blockers
+
+    # ...nor talk the engine out of doubt the evidence actually carries.
     uncertain = extract([image("a.png", "MFG 03/2023", "Net wt 5 g"),
                          image("b.png", "MFG 03/2026")])
+    assert exemptions.determine(uncertain.declarations,
+        legal_context={**CONTEXT, "date_evidence_uncertain": False}).exemption_blockers
+
     verdicts = findings(uncertain, rules, {**CONTEXT, "date_evidence_uncertain": False})
+    # Relief stays withheld: a package whose own printed dates disagree may not
+    # buy a favourable Rule 26(a) exemption on the strength of them.
     assert Verdict.EXEMPT not in verdicts.values()
-    assert Verdict.PASS not in verdicts.values()
+    # A rule whose commencement falls between the competing dates cannot be
+    # decided either -- unit price commenced 1 January 2024, between 03/2023
+    # and 03/2026 -- and `legal.scope` gates it on the rule's own transition.
+    assert verdicts["LMPCR.R6.1.F.UNIT_PRICE_PRESENT"] is Verdict.INCONCLUSIVE
+    # But a date conflict is not a reason to abandon every duty. Whether a net
+    # quantity is declared at all does not depend on which date is right, and
+    # blanking every rule on any date-ambiguous package was the defect this
+    # separation of `exemption_blockers` from `review_reasons` fixes.
+    assert verdicts["LMPCR.R6.1.C.NET_QUANTITY"] is Verdict.PASS
 
 
 def test_legacy_exemption_cannot_consume_an_explicitly_uncertain_quantity():

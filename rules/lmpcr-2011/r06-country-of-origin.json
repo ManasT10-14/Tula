@@ -1,6 +1,8 @@
 {
   "id": "LMPCR.R6.COUNTRY_OF_ORIGIN",
   "title": "Country of origin for imported commodities",
+  "plain": "Imported goods name their country of origin",
+  "plain_action": "Confirm whether this commodity was imported. A barcode prefix or a foreign-sounding brand does not settle it.",
   "citation": {
     "clause": "Rule 6(1)(aa)",
     "text": "Screening paraphrase: imported products carry country of origin, manufacture or assembly as applicable; food may have a distinct origin requirement."

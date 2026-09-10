@@ -1,6 +1,8 @@
 {
   "id": "LMPCR.R6.1.B.GENERIC_NAME",
   "title": "Common or generic name of the commodity",
+  "plain": "What the product actually is",
+  "plain_action": "The pack must say what the commodity is -- \"biscuits\", \"mustard oil\" -- not only its brand name. Look for that wording.",
   "citation": {
     "clause": "Rule 6(1)(b)",
     "text": "Every package shall bear the common or generic name of the commodity contained in the package."

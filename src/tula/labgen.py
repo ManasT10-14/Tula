@@ -26,7 +26,7 @@ from __future__ import annotations
 import json
 import math
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import date, timedelta
 from functools import lru_cache
 from pathlib import Path
 
@@ -176,6 +176,14 @@ class LabelSpec:
     address: str = "Plot 42, MIDC Industrial Estate, Pune 411018"
     consumer_care: str | None = "Gold Foods Pvt Ltd, Plot 42, Pune 411018; care@goldfoods.co.in; 1800 200 1234"
     packing_date: date = field(default_factory=lambda: date(2026, 3, 1))
+    # A real Indian food label carries a best-before or use-by date beside its
+    # manufacturing date, and the generated labels are meant to be compliant
+    # except for the one defect a scenario is testing. Left as `None` this is
+    # derived from the packing date, so a scenario that moves that date does
+    # not silently produce a best-before earlier than it. Set `no_best_before`
+    # to draw a food label that genuinely lacks one.
+    best_before: date | None = None
+    no_best_before: bool = False
     origin: str | None = "Made in India"
     gtin: str | None = "8901234567890"
 
@@ -216,6 +224,11 @@ class LabelSpec:
             value = getattr(self, name)
             if value is not None and (not math.isfinite(value) or value < 0):
                 raise ValueError(f"{name} must be finite and nonnegative")
+        if self.best_before is None and not self.no_best_before:
+            # Nine months is an unremarkable shelf life for a packaged snack.
+            self.best_before = self.packing_date + timedelta(days=270)
+        if self.best_before is not None and self.best_before < self.packing_date:
+            raise ValueError("A best-before date cannot precede the packing date")
 
     def net_qty_text(self) -> str:
         return f"{self.net_qty_value} {self.net_qty_unit}"
@@ -333,6 +346,8 @@ def render(spec: LabelSpec, out_dir: str | Path, stem: str = "label") -> RenderR
     write(f"Manufactured by: {spec.manufacturer}", body, gap_mm=1.1)
     write(spec.address, body - 0.2, gap_mm=1.1)
     write(f"Mfg: {spec.packing_date.month:02d}/{spec.packing_date.year}", body, gap_mm=1.1)
+    if spec.best_before is not None and not spec.no_best_before:
+        write(f"Best Before: {spec.best_before.strftime('%d-%b-%Y').upper()}", body)
     if spec.consumer_care:
         write(f"Consumer Care: {spec.consumer_care}", body - 0.2, gap_mm=1.1)
     if spec.origin:

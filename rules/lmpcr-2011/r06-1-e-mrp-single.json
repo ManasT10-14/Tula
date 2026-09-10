@@ -1,6 +1,8 @@
 {
   "id": "LMPCR.R6.1.E.MRP_SINGLE",
   "title": "Competing retail-price declarations and revisions",
+  "plain": "Only one retail price is shown",
+  "plain_action": "If more than one price appears, check whether one is a sticker over another, and record both before deciding.",
   "citation": {
     "clause": "Rule 6(3), Rule 18(2A)/(3), applicable Rule 33 orders",
     "text": "Screening paraphrase: price revisions and competing prices require contextual review; multiple printed prices alone do not establish an offence."

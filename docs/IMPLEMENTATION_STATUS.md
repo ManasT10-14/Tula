@@ -8,7 +8,7 @@ Existing architecture: Python 3.11+, FastAPI/Jinja/HTMX, SQLite, CPU RapidOCR/ON
 
 ## Current optional geography and dashboard checkpoint — 7 September 2026
 
-The supplied 43-section SIH product requirements reference was reread in full from the retained attachment (27,923 bytes; SHA-256 `cb3dd1e82a2d079fde387977ed93424572b05fff56bb67a2c30c6f753f2b6404`). It informed the feature scope and coverage ledger. It did not replace official legal sources: the active 18-rule pack remains source-linked, versioned and explicitly marked `2026.09.07-legal-review-1`, with independent legal approval still open.
+The supplied 43-section SIH product requirements reference was reread in full from the retained attachment (27,923 bytes; SHA-256 `cb3dd1e82a2d079fde387977ed93424572b05fff56bb67a2c30c6f753f2b6404`). It informed the feature scope and coverage ledger. It did not replace official legal sources: the active 22-rule pack remains source-linked, versioned and explicitly marked `2026.09.10-expanded-1`, with independent legal approval still open.
 
 Inspect now offers explicit optional **Record device location** and **Clear recorded location** controls. Location permission is requested only after the button is pressed; there is no continuous tracking. Coordinates are validated, rounded to six decimals for the saved inspection and carried through private capture drafts and durable jobs. Invalid, non-finite or out-of-range values are rejected before upload. The precise coordinate is excluded from operational audit-event details.
 

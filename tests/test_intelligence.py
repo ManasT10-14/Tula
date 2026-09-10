@@ -6,7 +6,7 @@ import pytest
 
 from tula.domain.enums import DeclarationClass as DC
 from tula.domain.enums import Panel
-from tula.extract import normalizers
+from tula.extract import intelligence, normalizers
 from tula.extract.intelligence import analyze_allergens, date_candidates, extract_intelligence
 from tula.extract.pipeline import extract
 from tula.ocr.base import OcrLine, OcrResult
@@ -261,3 +261,123 @@ def test_intelligence_template_renders_real_crops_and_escaped_ocr(request_contex
     assert "Manual verification required" in output and "2026-08-09" in output
     assert "<script>alert(1)</script>" not in output
     assert "&lt;script&gt;" in output
+
+
+# ---------------------------------------------------------------------------
+# Unprompted allergen screening
+# ---------------------------------------------------------------------------
+
+
+def _ingredient(value, method="ingredient_block"):
+    return {"value": value, "raw": value, "sources": [], "method": method,
+            "ocr_confidence": 0.9, "extraction_confidence": 0.87, "status": "detected"}
+
+
+def test_screen_names_allergens_nobody_asked_about():
+    # The officer-directed search answers "is milk in this?". This answers the
+    # question they actually have: "what is in this?"
+    screen = intelligence.screen_allergens([
+        _ingredient("Wheat flour, sugar, milk solids, cashew paste, soya lecithin, salt."),
+    ])
+    found = {item["allergen"]: item["kind"] for item in screen["detected"]}
+    assert found["milk"] == "explicit"
+    assert found["tree nuts"] == "explicit"
+    assert found["soy"] == "explicit"
+    assert found["gluten"] == "possible"  # wheat implies it; the word is absent
+
+
+def test_screen_separates_the_ingredients_from_the_contains_statement():
+    screen = intelligence.screen_allergens([
+        _ingredient("Wheat flour, milk solids, cashew paste, soya lecithin."),
+        _ingredient("Contains milk. May contain traces of peanuts.", "allergen_statement"),
+    ])
+    by_name = {item["allergen"]: item for item in screen["detected"]}
+    assert by_name["milk"]["declared_in_statement"]
+    assert by_name["peanuts"]["kind"] == "cross_contact"
+    # Named in the ingredients, absent from the statement: the pattern worth
+    # an officer's attention. "Possible" matches never qualify.
+    assert screen["undeclared"] == ["soy", "tree nuts"]
+
+
+def test_screen_reports_nothing_for_a_label_that_names_nothing():
+    screen = intelligence.screen_allergens([
+        _ingredient("Water, sugar, citric acid (INS 330), permitted natural colour."),
+    ])
+    assert screen["detected"] == []
+    assert screen["undeclared"] == []
+    assert screen["referral"] == ""
+
+
+def test_screen_does_not_read_a_denial_as_a_declaration():
+    screen = intelligence.screen_allergens([
+        _ingredient("Contains no milk. Coconut milk, cocoa butter, peanut-free facility."),
+    ])
+    assert "milk" not in {item["allergen"] for item in screen["detected"]}
+
+
+def test_screen_is_reachable_from_the_recorded_analysis():
+    # It rides on the same structure the officer's own concern list uses, so
+    # every caller that stores or re-runs allergen analysis carries it too.
+    result = intelligence.analyze_allergens([_ingredient("Milk solids, wheat flour.")], ())
+    assert result["concerns"] == []
+    assert {item["allergen"] for item in result["screen"]["detected"]} == {"milk", "gluten"}
+    assert "regulation 5(3)" in result["screen"]["basis"]
+    assert "not a Legal Metrology" in result["screen"]["referral"]
+
+
+# ---------------------------------------------------------------------------
+# Hindi labels, which the Rules put on an equal footing with English
+# ---------------------------------------------------------------------------
+
+
+def test_screen_reads_a_devanagari_ingredient_list():
+    # Rule 6 permits the declaration in Hindi in Devanagari or in English. A
+    # lexicon that reads only English reads only half the labels it is shown.
+    screen = intelligence.screen_allergens([
+        _ingredient("गेहूं का आटा, दूध ठोस, काजू, चीनी, नमक"),
+    ])
+    found = {item["allergen"]: item["kind"] for item in screen["detected"]}
+    assert found["milk"] == "explicit"        # दूध
+    assert found["tree nuts"] == "explicit"   # काजू
+    assert found["gluten"] == "possible"      # गेहूं
+    assert screen["undeclared"] == ["milk", "tree nuts"]
+
+
+def test_hindi_cross_contact_reads_after_the_allergen_not_before():
+    # English qualifies before the noun and Hindi after it, so the clause has
+    # to be read on both sides of the match.
+    screen = intelligence.screen_allergens([
+        _ingredient("गेहूं का आटा, दूध ठोस"),
+        _ingredient("इसमें दूध शामिल है। मूंगफली के अंश हो सकते हैं।", "allergen_statement"),
+    ])
+    kinds = {item["allergen"]: item["kind"] for item in screen["detected"]}
+    assert kinds["milk"] == "explicit"
+    assert kinds["peanuts"] == "cross_contact"
+    # The danda ends the sentence; without it the cross-contact cue would leak
+    # backwards and demote the milk declaration.
+    assert any(i["allergen"] == "milk" and i["declared_in_statement"]
+               for i in screen["detected"])
+
+
+def test_hindi_free_from_claim_is_not_a_declaration():
+    screen = intelligence.screen_allergens([
+        _ingredient("ग्लूटेन रहित जई, दूध मुक्त, चीनी"),
+    ])
+    assert screen["detected"] == []
+
+
+def test_english_facility_wordings_beyond_the_word_facility():
+    for statement in (
+        "Made in a factory that also handles peanuts",
+        "Produced on shared equipment with sesame",
+        "Manufactured in premises that also processes almonds",
+    ):
+        screen = intelligence.screen_allergens([
+            _ingredient("Rice, salt"),
+            _ingredient(statement, "allergen_statement"),
+        ])
+        assert screen["detected"], statement
+        assert all(item["kind"] == "cross_contact" for item in screen["detected"]), statement
+        # A cross-contact mention is never escalated into an undeclared
+        # ingredient referral.
+        assert screen["undeclared"] == []

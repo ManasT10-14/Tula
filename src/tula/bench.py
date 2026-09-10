@@ -72,6 +72,7 @@ R_BILINGUAL = "LMPCR.R9.3.BILINGUAL"
 R_NET_QTY = "LMPCR.R6.1.C.NET_QUANTITY"
 R_GTIN = "FORENSIC.GTIN.PREFIX"
 R_GTIN_CHECK = "FORENSIC.GTIN.CHECK_DIGIT"
+R_EXPIRY_FOOD = "LMPCR.R6.1.D.EXPIRY_FOOD"
 R_MRP_PRESENT = "LMPCR.R6.1.E.MRP_PRESENT"
 R_GENERIC = "LMPCR.R6.1.B.GENERIC_NAME"
 R_MANUFACTURER = "LMPCR.R6.1.A.MANUFACTURER"
@@ -268,6 +269,28 @@ SCENARIOS: list[Scenario] = [
                "the digit proves it was a framing error, not a fabrication.",
         spec=LabelSpec(gtin="901234567890"),
         expect={R_GTIN_CHECK: "UNVERIFIED"},
+        max_violations=0,
+    ),
+    Scenario(
+        key="food_without_a_best_before",
+        title="A food pack that never says how long it keeps",
+        proves="Whether a best-before duty exists at all is a food-law question, "
+               "so this screen stays silent until the commodity category is "
+               "confirmed. Once it is food, and the whole pack is in evidence, "
+               "the missing declaration is a finding rather than a shrug.",
+        spec=LabelSpec(no_best_before=True, package_category="food"),
+        expect={R_EXPIRY_FOOD: "VIOLATION"},
+    ),
+    Scenario(
+        key="best_before_on_one_face_only",
+        title="The same pack, photographed from one side",
+        proves="The companion to the scenario above, and the reason this screen "
+               "reads the package rather than a declaration: a date that was not "
+               "found may simply be on a face nobody photographed, so a partial "
+               "capture cannot convict.",
+        spec=LabelSpec(no_best_before=True, package_category="food",
+                       covers_all_declarations=False),
+        expect={R_EXPIRY_FOOD: "INCONCLUSIVE"},
         max_violations=0,
     ),
 ]

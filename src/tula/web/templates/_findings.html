@@ -7,20 +7,69 @@
   · engine {{ a.engine }} · {{ a.elapsed_ms }} ms
 </p>
 
+{% if a.demo_fixture %}
+{# A replayed recording must never be mistaken for a live run, so this says so
+   before anything else on the page and is not collapsible. #}
+<div class="card replay-banner">
+  <p class="eyebrow">Stored demonstration result · {{ a.demo_fixture }}</p>
+  <p class="small" style="margin:0">These findings were produced by running this same
+  pipeline over these same photographs and recorded, rather than recomputed just now.
+  Nothing here is hand-written: re-run with <code>TULA_DEMO_FIXTURES=off</code> to
+  analyse the images live and compare. A recording made under a different rule pack or
+  recogniser is refused rather than replayed.</p>
+</div>
+{% endif %}
+
 {% set counts = a.counts() %}
 <div class="tiles" style="margin:.9rem 0 1.2rem">
   <div class="tile"><b style="color:var(--bad)">{{ counts['VIOLATION'] }}</b><span>Violation</span></div>
   {% if counts['ADVISORY'] %}
   <div class="tile"><b style="color:var(--warn)">{{ counts['ADVISORY'] }}</b><span>Advisory</span></div>
   {% endif %}
-  <div class="tile"><b style="color:var(--warn)">{{ counts['INCONCLUSIVE'] + counts['UNVERIFIED'] }}</b><span>Inconclusive</span></div>
+  <div class="tile"><b style="color:var(--warn)">{{ counts['INCONCLUSIVE'] + counts['UNVERIFIED'] }}</b><span>Not decided</span></div>
   <div class="tile"><b style="color:var(--accent)">{{ counts['EXEMPT'] }}</b><span>Exempt</span></div>
   <div class="tile"><b style="color:var(--ok)">{{ counts['PASS'] }}</b><span>Checks passed</span></div>
 </div>
 
+{# ---- what to do next -------------------------------------------------- #}
+{# Placed above the findings because it is the only part an officer standing
+   in a shop has to act on, and because it turns "manual legal review required"
+   into a specific instruction with a number attached to it. #}
+{% set facts = pending_facts(a) %}
+{% set cov = a.scan.coverage %}
+{% set scale_blocked = needs_scale(a) %}
+{% if facts or not cov.is_complete or scale_blocked %}
+<section class="card next-steps">
+  <p class="eyebrow" style="color:var(--accent)">Do this next</p>
+  <ol class="steps">
+    {% for fact in facts %}
+    <li>
+      <a href="#package-context">{{ fact.action }}</a>
+      <span class="chip info">decides up to {{ fact.count }}</span>
+      <span class="small muted">Held up by {{ fact.label }}.</span>
+    </li>
+    {% endfor %}
+    {% if not cov.is_complete %}
+    <li>
+      Photograph the faces not yet captured, or tick <em>whole package captured</em>
+      <span class="small muted">Until then a declaration that was not found may simply be on a
+      face nobody photographed, so no check can report it missing.</span>
+    </li>
+    {% endif %}
+    {% if scale_blocked %}
+    <li>
+      Re-photograph with the printed scale card in frame
+      <span class="chip info">decides up to {{ scale_blocked | length }}</span>
+      <span class="small muted">Lettering height is measured in millimetres, and a photograph
+      on its own has none. The card supplies them.</span>
+    </li>
+    {% endif %}
+  </ol>
+</section>
+{% endif %}
+
 {# What this capture is allowed to prove. Shown before the findings, because it
    is the frame every "not declared" verdict below has to be read through. #}
-{% set cov = a.scan.coverage %}
 <div class="card" style="border-left:3px solid {{ 'var(--ok)' if cov.is_legible and cov.is_complete else 'var(--warn)' }};margin-bottom:1.1rem">
   <p class="eyebrow" style="color:{{ 'var(--ok)' if cov.is_legible and cov.is_complete else 'var(--warn)' }}">Evidence coverage</p>
   <p class="small" style="margin:0 0 .35rem">
@@ -31,12 +80,13 @@
   </p>
   <p class="small muted" style="margin:0">
     {% if not cov.is_legible %}
-    Too little was read to establish that any declaration is <em>absent</em>. Presence
-    checks report as inconclusive — the system will not accuse a package on the strength
-    of a photograph it could not read.
+    {# The coverage model's own reason, so the panel and the findings cannot
+       disagree about why presence checks stopped short. #}
+    {{ cov.can_prove_absence()[1] }} Presence checks report as not decided — the system
+    will not accuse a package on the strength of a photograph it could not read.
     {% elif not cov.is_complete %}
     Only part of the package is in evidence. A declaration that was not found may sit on a
-    face that was never photographed, so presence checks stop at inconclusive. Capture the
+    face that was never photographed, so presence checks stop at not-decided. Capture the
     remaining faces, or tick “whole package captured”, to let them decide.
     {% else %}
     The whole package is in evidence and legible, so a declaration that is not found here
@@ -55,61 +105,84 @@
 {% endif %}
 
 {% if a.measurements or a.package.pdp_area_cm2 %}
-<h3>Measurements</h3>
-<div class="tw" tabindex="0" role="region" aria-label="Declaration results">
-  <table>
-    <thead><tr><th>Quantity</th><th>Value</th><th>Uncertainty (k=2)</th><th>Tier</th><th>Method</th></tr></thead>
-    <tbody>
-      {% for key, m in a.measurements.items() %}
-      <tr>
-        <td class="mono">{{ key }}</td>
-        <td class="num">{{ "%.2f"|format(m.value) }} {{ m.unit }}</td>
-        <td class="num">± {{ "%.2f"|format(m.uncertainty) }}</td>
-        <td><span class="chip info">{{ m.tier.value }}</span></td>
-        <td class="small muted">{{ m.method or "—" }}</td>
-      </tr>
-      {% endfor %}
-      {% if a.package.pdp_area_cm2 %}
-      {% set p = a.package.pdp_area_cm2 %}
-      <tr>
-        <td class="mono">pdp_area</td>
-        <td class="num">{{ "%.1f"|format(p.value) }} {{ p.unit }}</td>
-        <td class="num">± {{ "%.1f"|format(p.uncertainty) }}</td>
-        <td><span class="chip info">{{ p.tier.value }}</span></td>
-        <td class="small muted">{{ p.method or "—" }}</td>
-      </tr>
-      {% endif %}
-    </tbody>
-  </table>
-</div>
+<details class="card" style="margin-bottom:1.1rem">
+  <summary><strong>Measurements</strong> <span class="small muted">what was measured, and how precisely</span></summary>
+  <div class="tw" tabindex="0" role="region" aria-label="Measurements" style="margin-top:.8rem">
+    <table>
+      <thead><tr><th>Quantity</th><th>Value</th><th>Uncertainty (k=2)</th><th>Tier</th><th>Method</th></tr></thead>
+      <tbody>
+        {% for key, m in a.measurements.items() %}
+        <tr>
+          <td class="mono">{{ key }}</td>
+          <td class="num">{{ "%.2f"|format(m.value) }} {{ m.unit }}</td>
+          <td class="num">± {{ "%.2f"|format(m.uncertainty) }}</td>
+          <td><span class="chip info">{{ m.tier.value }}</span></td>
+          <td class="small muted">{{ m.method or "—" }}</td>
+        </tr>
+        {% endfor %}
+        {% if a.package.pdp_area_cm2 %}
+        {% set p = a.package.pdp_area_cm2 %}
+        <tr>
+          <td class="mono">pdp_area</td>
+          <td class="num">{{ "%.1f"|format(p.value) }} {{ p.unit }}</td>
+          <td class="num">± {{ "%.1f"|format(p.uncertainty) }}</td>
+          <td><span class="chip info">{{ p.tier.value }}</span></td>
+          <td class="small muted">{{ p.method or "—" }}</td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</details>
 {% endif %}
 
-<h3>Findings</h3>
-{% for f in a.findings %}
-{% set cls = verdict_class(f.verdict) %}
-<div class="finding {{ cls }}">
-  <div class="finding-hd">
-    <span class="chip {{ cls }}">{{ verdict_label[f.verdict] }}</span>
-    <span class="cite">{{ f.citation.clause }}</span>
-    <strong>{{ finding_message(f) }}</strong>
-  </div>
-  {% if f.detail %}<p class="small muted" style="margin:.2rem 0 0">{{ f.detail }}</p>{% endif %}
-  {% if f.measured or f.extracted %}
-  <dl>
-    {% if f.extracted %}<dt>As printed</dt><dd>{{ f.extracted|replace("\n", "  /  ") }}</dd>{% endif %}
-    {% if f.measured %}<dt>Measured</dt><dd>{{ f.measured.render() }}</dd>{% endif %}
-    {% if f.threshold is not none %}<dt>Minimum</dt><dd>{{ "%.2f"|format(f.threshold) }} mm</dd>{% endif %}
-    {% if f.penalty_ref %}<dt>Penalty</dt><dd>{{ f.penalty_ref }}</dd>{% endif %}
-  </dl>
-  {% endif %}
-</div>
+{# ---- the findings themselves ------------------------------------------ #}
+{% for group in finding_groups(a) %}
+<section class="group">
+  <details {{ 'open' if group.expanded }}>
+    <summary>
+      <h3>{{ group.title }} <span class="chip muted">{{ group.findings | length }}</span></h3>
+      <span class="small muted">{{ group.blurb }}</span>
+    </summary>
+    {% for f in group.findings %}
+    {% set cls = verdict_class(f.verdict) %}
+    <div class="finding {{ cls }}">
+      <div class="finding-hd">
+        <span class="chip {{ cls }}">{{ verdict_label[f.verdict] }}</span>
+        <strong>{{ f.plain or finding_message(f) }}</strong>
+      </div>
+      {% if f.plain_action %}
+      <p class="small do" style="margin:.45rem 0 0">{{ f.plain_action }}</p>
+      {% endif %}
+      <details class="basis">
+        <summary class="small">Why, and the clause it comes from</summary>
+        <p class="small" style="margin:.5rem 0 0">{{ finding_message(f) }}</p>
+        {% if f.detail %}<p class="small muted" style="margin:.3rem 0 0">{{ f.detail }}</p>{% endif %}
+        <dl>
+          <dt>Clause</dt><dd>{{ f.citation.clause }}</dd>
+          {% if f.extracted %}<dt>As printed</dt><dd>{{ f.extracted|replace("\n", "  /  ") }}</dd>{% endif %}
+          {% if f.measured %}<dt>Measured</dt><dd>{{ f.measured.render() }}</dd>{% endif %}
+          {% if f.threshold is not none %}<dt>Minimum</dt><dd>{{ "%.2f"|format(f.threshold) }} mm</dd>{% endif %}
+          {% if f.penalty_ref %}<dt>Penalty</dt><dd>{{ f.penalty_ref }}</dd>{% endif %}
+          <dt>Rule</dt><dd class="mono">{{ f.rule_id }}</dd>
+        </dl>
+      </details>
+    </div>
+    {% endfor %}
+  </details>
+</section>
 {% endfor %}
 
 {% if a.warnings %}
-<h3>Notes and limitations</h3>
-<ul class="small muted">
-  {% for w in a.warnings %}<li>{{ w }}</li>{% endfor %}
-</ul>
+<details class="card" style="margin-top:1.1rem">
+  <summary><strong>Notes and limitations</strong>
+    <span class="chip muted">{{ a.warnings | length }}</span>
+    <span class="small muted">capture quality, unresolved readings, and what this screen does not decide</span>
+  </summary>
+  <ul class="small muted" style="margin-top:.7rem">
+    {% for w in a.warnings %}<li>{{ w }}</li>{% endfor %}
+  </ul>
+</details>
 {% endif %}
 
 <div class="row" style="margin-top:1.2rem">

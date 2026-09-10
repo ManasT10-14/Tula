@@ -1,6 +1,8 @@
 {
   "id": "LMPCR.R9.3.BILINGUAL",
   "title": "Net quantity in Hindi or English (script screening)",
+  "plain": "Printed in Hindi or English",
+  "plain_action": "Check the script the declarations are printed in.",
   "citation": {
     "clause": "Rule 9(4)",
     "text": "The declarations required under these rules shall be made in Hindi in Devanagari script or in English, and nothing shall prevent the use of any other language in addition."

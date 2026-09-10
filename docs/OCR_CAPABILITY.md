@@ -144,3 +144,126 @@ accuracy estimate, or evidence about any real product. Reproduce with:
 ```powershell
 python scripts/benchmark_difficult_labels.py --out out/ocr-audit-<date>
 ```
+
+---
+
+# When the recogniser was not the problem
+
+Measured 10 September 2026 on one photographed packet of Nakoda Ratlami Sev, three
+frames, with `scripts/evaluate_arrow_layouts.py`.
+
+The complaint that prompted this was that almost every rule returned
+`INCONCLUSIVE` on real photographs even where the declaration was plainly
+visible. The recogniser was not at fault. It read `NAKODA FOODS MARKETING PVT.
+LTD.` at 0.98, `care@nakodafoods.com` at 0.98, `Product Of INDIA` at 0.96 and
+`PKD ON:01-JULY-26` at 0.98. Everything downstream of that then found a reason to
+distrust what it had been given.
+
+## What was actually wrong
+
+Each of these was independently sufficient to make most of the pack undecidable.
+
+| Where | What happened |
+|---|---|
+| `analyse.py` | Any declaration held for review marked **its whole frame unreadable**, which flipped scan-level legibility and turned every unrelated presence check inconclusive — reporting "only 76 lines were legible" about a capture that read 76 lines fine. One false reading suppressed the entire scan. |
+| `intelligence.py` | **Every two-digit year** was treated as unresolved. Indian packaging prints `JULY-26`. The century is resolved deterministically by the parser, so nothing was left open by it — but the date declaration, and every rule gated on dated applicability behind it, was undecidable on essentially every real pack. |
+| `normalizers.py` | `BETWEEN 10.00 AM TO 6.00 PM`, on a line that also says `MFG. DATE`, parsed as **October 2000**. That phantom date conflicted with the real one and withheld the Rule 6(11), 6(1)(aa), 6(2) and Rule 3/26 gates. |
+| `normalizers.py` | `made in a facility that processes peanuts` parsed as the country **"A Facility That"**, conflicting with `Product Of INDIA` on the same panel. |
+| `normalizers.py` | The unit price `0.34 perg` did not parse: it carries no currency symbol of its own (it follows the MRP's `135/-`) and the recogniser closed the gap in `per g`. |
+| `pipeline.py` | Two **cue-only fragments** with no date behind them — the words "MFG. DATE" inside a sentence asking customers to quote it, and a 0.02-confidence `MFD` fragment — outranked a packing date read at 0.98 and marked the event uncertain. |
+| `pipeline.py` | A contact block's confidence and conflict were taken over **every** line swept beneath its heading, so an FSSAI licence number at 0.54 withheld a manufacturer name at 0.98, a street at 0.87 and a PIN at 0.96. |
+| `layout.py` | `distance()` tolerates a candidate one character-height above the anchor, for side-by-side rows. Consecutive lines of a paragraph overlap by more than that, so an address block walked **upwards** into an oil-code legend, and a phrase split across a line break joined backwards. |
+| `pipeline.py` | `Manufactured&Marketedby` — no spaces — matched no manufacturer cue. `CUSTOMER` / `CARE` split across two lines matched no consumer-care cue. |
+| `context.py` | Nutrition exclusion was per-line and vocabulary-based. `SaturatedFat` is one token so `\bfat\b` misses it; `Salt (as NaCl)` is in no nutrient list; `12.30g` carries no nutrient word at all. Each was read as the pack's identity or its net quantity, and every pattern added to stop one promoted the next cell in the table. Replaced with a **region**: the table's extent is located from a few anchors, and membership is decided by geometry. |
+
+## Result on the same three photographs
+
+| | before | after |
+|---|---|---|
+| Declarations correct | 3 | **11** |
+| Held as review candidates | 3 | 0 |
+| Abstained | 9 | 1 |
+| **Wrong** | **0** | **0** |
+| Rules decided (of 17) | 5 | **11** |
+
+Every remaining undecided rule now names one specific thing that would settle
+it: confirm the commodity category, confirm import status, confirm the package
+shape, or re-photograph with the scale card. The console lists those as actions
+with a count beside each, derived by re-running the pack with the fact assumed
+rather than from a hand-written table.
+
+One declaration is still correctly withheld: the consumer-care telephone
+number's digits genuinely have competing OCR readings, and showing an officer
+one of two conflicting numbers is worse than showing none.
+
+## The one reading that needed more than a fix
+
+The net quantity `400g` is inkjet-coded and scores 0.540, below the 0.55 floor,
+on a pack whose printed arrows are out of register — following the arrow from
+`NET QUANTITY` lands on the next field's value. Neither the score nor the layout
+settles it. What settles it is the label's own arithmetic: Rule 6(11) makes the
+unit sale price the retail price over the net quantity, so an MRP of 135 against
+a printed 0.34 per gram can only be a 400 g pack. `_price_corroborates_quantity`
+checks that the reading falls inside the interval the printed unit price's
+rounding admits, and records the corroboration on the declaration. Two
+independent sources agreeing is not a guess; one faint reading on its own is.
+
+## Regression
+
+Unchanged on both retained sets, run the same day:
+
+* ten photographs — 14 selected exact, 12 accepted exact, 15 candidate recoveries, **0 incorrect accepted**
+* four photographs — 10 of 14 literal, 12 of 14 candidates, 4 of 5 structured, **0 wrong accepted**
+
+## Limits of this measurement
+
+**One package.** Three frames, one annotator, unblinded, annotated before the
+runs were scored. This characterises a specific failure mode on a specific
+layout; it is not an accuracy claim and the denominator is far too small to be
+one. The regression sets above are what guard against having traded their
+correctness for this one. Reproduce with:
+
+```powershell
+python scripts/evaluate_arrow_layouts.py --out out/arrow-layout-<date>
+```
+
+---
+
+# Reading the scale off the package's own barcode
+
+Added 10 September 2026. `metrology.from_barcode`, wired into `analyse` as scale
+source (c) and into the scale-free sweep's bounds.
+
+Rule 7(2) is in millimetres; a photograph has none. Until now the only automatic
+scale was the declared quantity plus a bulk-density prior — which fails exactly
+where it is most needed, because on inkjet-coded flexible packaging the declared
+quantity is the thing that could not be read.
+
+Almost every retail package carries a second object of regulated size: its
+barcode. EAN-13 and UPC-A are 95 modules between the outer bar edges, EAN-8 is
+67; the module is 0.330 mm at nominal magnification; and GS1 permits retail
+point-of-sale symbols between 80% and 200% of nominal. Measuring the symbol's
+pixel width therefore brackets millimetres-per-pixel, with a k=2 interval equal
+to exactly the range the standard permits.
+
+Measured on the demonstration pack: the EAN-13 spans 273 px, giving
+**0.0919–0.2297 mm/px**. Independent of the quantity prior, so the two fuse; the
+sweep bracket they imply is intersected rather than replaced, and brackets that
+disagree widen the sweep instead of narrowing it.
+
+**What it buys.** Where the quantity is unreadable the sweep would run 15–600 mm;
+the barcode narrows it to about 48–185 mm, a tenfold reduction, and a narrower
+sweep decides packages a wider one must abstain on. Where the quantity *is*
+readable — as on this pack — the prior is often tighter (74–180 mm here) and the
+intersection changes nothing. It is insurance for the hard case, not an
+improvement on the easy one.
+
+**What it cannot buy.** It is Tier C and stays Tier C. `R8.1` and `R8.2` require
+Tier B, so this can never sustain a height violation; the engine's tier gate
+enforces that whatever any estimate claims. A bracket from a printing standard
+is evidence about labels in general. A prosecution needs a measurement of this
+label, which means the scale card in the frame.
+
+Rotated symbols are rejected: the horizontal span of a tilted barcode is
+foreshortened, and a foreshortened ruler reports a package smaller than it is —
+the direction that invents shortfalls.

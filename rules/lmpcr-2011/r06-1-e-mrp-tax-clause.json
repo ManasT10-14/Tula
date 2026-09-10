@@ -1,6 +1,8 @@
 {
   "id": "LMPCR.R6.1.E.MRP_FORM",
   "title": "Retail sale price declared in the prescribed form",
+  "plain": "The price says it includes all taxes",
+  "plain_action": "Look for the words \"inclusive of all taxes\" beside the MRP.",
   "citation": {
     "clause": "Rule 6(1)(e) read with Rule 2(m)",
     "text": "The retail sale price shall be declared in the form 'Maximum Retail Price Rs. ... inclusive of all taxes', or in the form 'MRP Rs. ... incl. of all taxes'."

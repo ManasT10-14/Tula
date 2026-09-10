@@ -182,6 +182,32 @@
   {% endif %}
 
   {% set allergens = a.intelligence.get('allergens', {}) %}
+  {% set screen = allergens.get('screen', {}) %}
+  {% if screen.get('detected') %}
+  <div class="card" id="allergen-screen">
+    <p class="eyebrow">Food safety referral · not a Legal Metrology finding</p>
+    <h3 style="margin-top:0">Allergens named on this label</h3>
+    <p class="small muted">Read from the ingredient text without being asked. {{ screen.get('basis', '') }}</p>
+    {% if screen.get('undeclared') %}
+    <p class="chip warn" style="margin:10px 0">Named in the ingredients, but in no Contains statement: {{ screen.undeclared|map('title')|join(', ') }}</p>
+    <p class="small muted">A Contains statement may still be printed on a face that was not captured. Confirm against the whole package before referring it.</p>
+    {% endif %}
+    <div class="table-wrap" style="margin-top:12px"><table>
+      <thead><tr><th scope="col">Allergen</th><th scope="col">Evidence</th><th scope="col">Contains statement</th><th scope="col">Label context</th></tr></thead>
+      <tbody>
+      {% for item in screen.detected %}
+        <tr>
+          <td><strong>{{ item.allergen|title }}</strong></td>
+          <td><span class="chip {{ 'warn' if item.kind == 'explicit' else '' }}">{{ {'explicit':'Named outright','possible':'Related ingredient','cross_contact':'Cross-contact statement'}.get(item.kind, item.kind) }}</span></td>
+          <td class="small">{{ 'Declared' if item.declared_in_statement else 'Not found' }}</td>
+          <td class="small">“{{ item.context }}”</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+    <p class="small muted" style="margin-top:12px">{{ screen.get('referral', '') }} {{ screen.get('disclaimer', '') }}</p>
+  </div>
+  {% endif %}
   <div class="card" id="allergen-analysis">
     <p class="eyebrow">Supplementary information</p>
     <h3 style="margin-top:0">Ingredient and allergen review</h3>

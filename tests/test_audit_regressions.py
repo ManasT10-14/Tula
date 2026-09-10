@@ -118,7 +118,11 @@ def test_corrupt_metadata_degrades_without_crashing(tmp_path):
     a.meta.write_text('{"mm_per_px":-0.5}')
     result = analyse([Capture(str(a.png))], AnalyseOptions(engine_name="fixture"))
     assert any("invalid capture metadata" in w for w in result.warnings)
-    assert not result.measurements
+    # Rejected metadata must contribute nothing. The declared quantity and the
+    # panel found in the image still support a Tier C prior, which is a
+    # different piece of evidence and may not convict either.
+    assert not any(s.source == "device_depth" for s in result.scan.scales)
+    assert all(m.tier is AssuranceTier.C for m in result.measurements.values())
     assert any(f.rule_id.endswith("NETQTY_HEIGHT") and f.verdict is Verdict.INCONCLUSIVE for f in result.findings)
 
 

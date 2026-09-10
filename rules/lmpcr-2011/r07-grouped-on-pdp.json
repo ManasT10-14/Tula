@@ -1,6 +1,8 @@
 {
   "id": "LMPCR.R7.GROUPED",
   "title": "Mandatory declarations grouped together on one panel",
+  "plain": "The declarations are together, on one panel",
+  "plain_action": "Check whether the mandatory declarations are grouped on a single face, and photograph the whole of that face.",
   "citation": {
     "clause": "Rule 2(h) and Rule 8(1) (panel screening)",
     "text": "Panel screening only. The PDP may include pre-printed information in one place and on-line information in another; physical panel differences alone do not establish an offence."

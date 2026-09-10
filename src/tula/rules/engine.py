@@ -186,7 +186,9 @@ class RulesEngine:
             if package.klass.value != "retail":
                 return self._finding(rule, scan, Verdict.EXEMPT, ctx,
                                      detail="Confirmed Rule 3 exclusion from the retail-package duties screened here. Other legal duties are not decided.")
-            if package.exemptions and not package.legal_context.get("legal_review_reasons"):
+            if (package.exemptions
+                    and not package.legal_context.get("legal_review_reasons")
+                    and not package.legal_context.get("exemption_blockers")):
                 return self._finding(rule, scan, Verdict.EXEMPT, ctx,
                                      detail="Relieved from the screened PCR duty by " + "; ".join(package.exemptions))
             scoped = legal.scope(rule, facts, facts["ctx"]["assessment_date"], self.pack.legal_policy)
@@ -313,6 +315,12 @@ class RulesEngine:
             declaration=rule.declaration,
             verdict=verdict,
             severity=rule.severity,
+            plain=rule.plain,
+            # The next step is only worth printing while something is still
+            # open. On a rule that passed there is nothing to do.
+            plain_action=(rule.plain_action
+                          if verdict in (Verdict.INCONCLUSIVE, Verdict.UNVERIFIED,
+                                         Verdict.VIOLATION, Verdict.ADVISORY) else ""),
             message=message,
             detail=detail,
             measured=measured if isinstance(measured, Measured) else None,
